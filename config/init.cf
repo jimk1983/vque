@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# linux shell color control
+# cl_: color_
+# r: red; 
+# g: green; 
+# b: blue 
+# y: yellow; 
+# p: purple
+# c: close color control
+# echo -e "${cl_r}echo red color${cl_c}"
+
+cl_r="\\033[31m"
+cl_g="\\033[32m"
+cl_y="\\033[33m"
+cl_b="\\033[34m"
+cl_p="\\033[35m"
+cl_c="\\033[0m"
+
+enable_dbg=1
+
+pinf(){
+    echo -e "${cl_p}$*${cl_c}"
+}
+pwar(){
+    echo -e "${cl_y}$*${cl_c}"
+}
+pmsg(){
+    echo -e "${cl_b}$*${cl_c}"
+}
+perr(){
+    echo -e "${cl_r}$*${cl_c}"
+}
+pdbg(){
+    [ "1" = "$enable_dbg" ] && echo -e "${cl_b}$*${cl_c}"
+}
+
