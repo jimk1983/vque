@@ -1,26 +1,33 @@
 #!/bin/sh
 
-#File relative directory
+#1.File relative directory
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do
         # resolve $SOURCE until the file is no longer a symlink
-        CURDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+        ROOTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
         SOURCE="$(readlink "$SOURCE")"
-        [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" 
+        [[ $SOURCE != /* ]] && SOURCE="$ROOTDIR/$SOURCE" 
 	# if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
-CURDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+ROOTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
-CFGDIR=$CURDIR/config
+CFGDIR=$ROOTDIR/config
 
-#include the configure shell
-initcfgfile=$CFGDIR/init.cf
-makecfgfile=$CFGDIR/make.cf
+#2.include the configure shell
+initcfgfile=${CFGDIR}/init.conf
+makecfgfile=${CFGDIR}/make.conf
+buildcfgfile=${CFGDIR}/build.conf
 
 . ${initcfgfile}
 . ${makecfgfile}
+. ${buildcfgfile}
 
-pdbg ${make_file}
+#3.Create a new Makefile
+
+
+
+
+
 
 
 
