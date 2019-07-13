@@ -22,7 +22,7 @@ buildcfgfile=${CFGDIR}/build.conf
 . ${makecfgfile}
 . ${buildcfgfile}
 
-#3.Create a new Makefile
+pmsg "vque configure successful!"
 
 
 
