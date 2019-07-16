@@ -1,0 +1,103 @@
+ifeq ($(BUILDS), debug)
+	CFLAG+=-g -O0
+	BUILDS=debug
+else ifeq ($(BUILDS), release)
+	CFLAG+=-O3
+	BUILDS=release
+else
+	CFLAG+=-O3
+	BUILDS=release
+endif
+
+# installation directory
+INST_BIN=/usr/local/bin
+INST_LIB=/usr/local/lib
+INST_INC=/usr/local/include
+
+# version control
+VERSION=1.0.0
+VER_MAJOR=1
+VER_MINOR=0
+VER_REVISION=0
+
+# all : prepare targets...
+BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
+OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/vos/$(BUILDS)_obj
+all : prepare $(BIN_DIR)/libvos.a
+prepare:
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  /mnt/hgfs/VMWareShare/openvque/libs/libvos /mnt/hgfs/VMWareShare/openvque/libs/libvos/network
+
+clean:
+	@rm -fr $(BIN_DIR)
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_time.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_sock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_rwlock.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_mutex.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/network/vos_route.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_event.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_dlist.c
+
+/mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.o : /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
+	gcc $(COPTM) -I/mnt/hgfs/VMWareShare/openvque/deps/include $(CFLAG) -c -o $@ /mnt/hgfs/VMWareShare/openvque/libs/libvos/vos_spin.c
