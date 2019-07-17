@@ -9,6 +9,8 @@ else
 	BUILDS=release
 endif
 
+LDFLAGS=
+
 # dependent include
 DEP_DIR=/mnt/hgfs/VMWareShare/openvque/deps
 OUT_DIR=/mnt/hgfs/VMWareShare/openvque/outs
@@ -30,6 +32,7 @@ BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/vos/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/libvos
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
+LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -L/mnt/hgfs/VMWareShare/openvque/libs/linux -ldl -lpthread -lrt -lm
 
 all : prepare $(BIN_DIR)/libvos.a
 prepare:
@@ -39,31 +42,31 @@ prepare:
 clean:
 	@rm -fr $(BIN_DIR)
 
-$(BIN_DIR)/libvos.a :  $(BIN_DIR)/libs/libvos/vos_time.o $(BIN_DIR)/libs/libvos/network/vos_sock.o $(BIN_DIR)/libs/libvos/vos_rwlock.o $(BIN_DIR)/libs/libvos/vos_mutex.o $(BIN_DIR)/libs/libvos/network/vos_route.o $(BIN_DIR)/libs/libvos/vos_event.o $(BIN_DIR)/libs/libvos/vos_dlist.o $(BIN_DIR)/libs/libvos/vos_spin.o
+$(BIN_DIR)/libvos.a :  $(BIN_DIR)/libs/libvos/vos_rwlock.o $(BIN_DIR)/libs/libvos/network/vos_sock.o $(BIN_DIR)/libs/libvos/network/vos_route.o $(BIN_DIR)/libs/libvos/vos_mutex.o $(BIN_DIR)/libs/libvos/vos_spin.o $(BIN_DIR)/libs/libvos/vos_time.o $(BIN_DIR)/libs/libvos/vos_dlist.o $(BIN_DIR)/libs/libvos/vos_event.o
 	$(AR) cr $@ $^
 	@ranlib  $@
-
-$(BIN_DIR)/libs/libvos/vos_time.o : $(ROOT_DIR)/libs/libvos/vos_time.c
-	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_time.c
-
-$(BIN_DIR)/libs/libvos/network/vos_sock.o : $(ROOT_DIR)/libs/libvos/network/vos_sock.c
-	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/network/vos_sock.c
 
 $(BIN_DIR)/libs/libvos/vos_rwlock.o : $(ROOT_DIR)/libs/libvos/vos_rwlock.c
 	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_rwlock.c
 
-$(BIN_DIR)/libs/libvos/vos_mutex.o : $(ROOT_DIR)/libs/libvos/vos_mutex.c
-	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_mutex.c
+$(BIN_DIR)/libs/libvos/network/vos_sock.o : $(ROOT_DIR)/libs/libvos/network/vos_sock.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/network/vos_sock.c
 
 $(BIN_DIR)/libs/libvos/network/vos_route.o : $(ROOT_DIR)/libs/libvos/network/vos_route.c
 	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/network/vos_route.c
 
-$(BIN_DIR)/libs/libvos/vos_event.o : $(ROOT_DIR)/libs/libvos/vos_event.c
-	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_event.c
+$(BIN_DIR)/libs/libvos/vos_mutex.o : $(ROOT_DIR)/libs/libvos/vos_mutex.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_mutex.c
+
+$(BIN_DIR)/libs/libvos/vos_spin.o : $(ROOT_DIR)/libs/libvos/vos_spin.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_spin.c
+
+$(BIN_DIR)/libs/libvos/vos_time.o : $(ROOT_DIR)/libs/libvos/vos_time.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_time.c
 
 $(BIN_DIR)/libs/libvos/vos_dlist.o : $(ROOT_DIR)/libs/libvos/vos_dlist.c
 	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_dlist.c
 
-$(BIN_DIR)/libs/libvos/vos_spin.o : $(ROOT_DIR)/libs/libvos/vos_spin.c
-	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_spin.c
+$(BIN_DIR)/libs/libvos/vos_event.o : $(ROOT_DIR)/libs/libvos/vos_event.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/libvos/vos_event.c
 

@@ -9,6 +9,8 @@ else
 	BUILDS=release
 endif
 
+LDFLAGS=
+
 # dependent include
 DEP_DIR=/mnt/hgfs/VMWareShare/openvque/deps
 OUT_DIR=/mnt/hgfs/VMWareShare/openvque/outs
@@ -30,22 +32,24 @@ BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/proxygw/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/VMWareShare/openvque/src
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
+LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -L/mnt/hgfs/VMWareShare/openvque/libs/linux -lvque -lvos -ldl -lpthread -lrt -lm
 
 all : prepare $(BIN_DIR)/proxygw
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(BIN_DIR)/src/main
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(BIN_DIR)/src/share/core $(BIN_DIR)/src/main
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR)
 
- :  $(BIN_DIR)/src/main/main.o
-	 $(OPTM) -shared -Wl,--sort-common,-soname,.$(VER_MAJOR) -o $@  $(BIN_DIR)/src/main/main.o
-	@rm -f  .$(VER_MAJOR)
-	@cd $(BUILDS_DIR) && ldconfig -l .$(VERSION)  && ln -s .$(VER_MAJOR) 
+$(BIN_DIR)/proxygw :  $(BIN_DIR)/src/share/core/core_hash.o $(BIN_DIR)/src/main/main.o
+	gcc $(OPTM) -Wl,--as-needed,--sort-common,-rpath=.,-rpath=$(BUILDS_DIR) -L$(BUILDS_DIR) -o $@  $(BIN_DIR)/src/share/core/core_hash.o $(BIN_DIR)/src/main/main.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
+
+$(BIN_DIR)/src/share/core/core_hash.o : $(ROOT_DIR)/src/share/core/core_hash.c
+	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/src/share/core/core_hash.c
 
 $(BIN_DIR)/src/main/main.o : $(ROOT_DIR)/src/main/main.cpp
 	gcc $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/src/main/main.cpp

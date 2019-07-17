@@ -9,6 +9,8 @@ else
 	BUILDS=release
 endif
 
+LDFLAGS=
+
 # dependent include
 DEP_DIR=/mnt/hgfs/VMWareShare/openvque/deps
 OUT_DIR=/mnt/hgfs/VMWareShare/openvque/outs
@@ -30,6 +32,7 @@ BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/vque/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/libvque
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
+LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -L/mnt/hgfs/VMWareShare/openvque/libs/linux -lvos -ldl -lpthread -lrt -lm
 
 all : prepare $(BIN_DIR)/libvque.a
 prepare:
