@@ -36,16 +36,16 @@ LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openv
 LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
 LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/proxygw/
 
-all : prepare $(BIN_DIR)/proxygw postpare
+all : prepare $(BIN_DIR)/proxygw
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/share/core $(OBJ_DIR)/src/main $(LIBS_INC)
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/share/core $(OBJ_DIR)/src/main 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
 
 $(BIN_DIR)/proxygw :  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(BIN_DIR) -L$(BIN_DIR) -o $@  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o $(LDFLAGS)
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif

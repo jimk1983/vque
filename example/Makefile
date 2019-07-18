@@ -36,16 +36,16 @@ LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openv
 LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
 LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/example/
 
-all : prepare $(BIN_DIR)/example postpare
+all : prepare $(BIN_DIR)/example
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client $(LIBS_INC)
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
 
 $(BIN_DIR)/example :  $(OBJ_DIR)/example/client/test_vos.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(BIN_DIR) -L$(BIN_DIR) -o $@  $(OBJ_DIR)/example/client/test_vos.o $(LDFLAGS)
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/client/test_vos.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
