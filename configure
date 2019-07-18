@@ -13,6 +13,8 @@ ROOTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
 CFGDIR=$ROOTDIR/config
 
+rm -rf outs
+
 #2.include the configure shell
 initcfgfile=${CFGDIR}/init.conf
 makecfgfile=${CFGDIR}/make.conf
