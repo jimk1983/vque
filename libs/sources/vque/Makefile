@@ -29,16 +29,22 @@ VER_REVISION=0
 
 # all : prepare targets...
 BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
-OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/vque/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/libvque
+OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)_obj
+SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/sources/vque
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
-LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -L/mnt/hgfs/VMWareShare/openvque/libs/linux -lvos -ldl -lpthread -lrt -lm
+LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openvque/libs/include -L/mnt/hgfs/VMWareShare/openvque/libs/bins -lvos -ldl -lpthread -lrt -lm
+LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
+LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/vque/
 
-all : prepare $(BIN_DIR)/libvque.a
+all : prepare $(BIN_DIR)/libvque.a postpare
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR) 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(LIBS_INC)
 
 .PHONY: clean
 clean:
-	@rm -fr $(BIN_DIR)
+	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
+
+postpare:
+	@cp -fr $(BIN_DIR)/libvque.a $(LIBS_BIN) 
+	@rm -fr $(BIN_DIR)/libvque.a 
 

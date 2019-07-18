@@ -33,14 +33,16 @@ OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/VMWareShare/openvque/src
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
 LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openvque/libs/include -L/mnt/hgfs/VMWareShare/openvque/libs/bins -lvque -lvos -ldl -lpthread -lrt -lm
+LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
+LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/proxygw/
 
-all : prepare $(BIN_DIR)/proxygw
+all : prepare $(BIN_DIR)/proxygw postpare
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/share/core $(OBJ_DIR)/src/main
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/share/core $(OBJ_DIR)/src/main $(LIBS_INC)
 
 .PHONY: clean
 clean:
-	@rm -fr $(BIN_DIR)
+	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
 
 $(BIN_DIR)/proxygw :  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o
 	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(BIN_DIR) -L$(BIN_DIR) -o $@  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o $(LDFLAGS)

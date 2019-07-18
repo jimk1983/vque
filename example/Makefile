@@ -33,14 +33,16 @@ OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/VMWareShare/openvque/example
 CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/deps/include
 LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openvque/libs/include -L/mnt/hgfs/VMWareShare/openvque/libs/bins -lvos -ldl -lpthread -lrt -lm
+LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
+LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/example/
 
-all : prepare $(BIN_DIR)/example
+all : prepare $(BIN_DIR)/example postpare
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client $(LIBS_INC)
 
 .PHONY: clean
 clean:
-	@rm -fr $(BIN_DIR)
+	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
 
 $(BIN_DIR)/example :  $(OBJ_DIR)/example/client/test_vos.o
 	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(BIN_DIR) -L$(BIN_DIR) -o $@  $(OBJ_DIR)/example/client/test_vos.o $(LDFLAGS)

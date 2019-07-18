@@ -1,4 +1,6 @@
 #!/bin/sh
+#author: 	jiangkang 
+#datetime:	2019.07
 
 #1.File relative directory
 SOURCE="${BASH_SOURCE[0]}"
@@ -24,7 +26,7 @@ buildcfgfile=${CFGDIR}/build.conf
 . ${makecfgfile}
 . ${buildcfgfile}
 
-pmsg "vque configure successful!"
+pmsg "All Configure Successful!"
 
 
 
