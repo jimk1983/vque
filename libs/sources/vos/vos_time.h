@@ -23,7 +23,7 @@
 typedef struct tagVosAbsTime
 {
     struct timespec stAbsTime;
-}VOS_ABS_TIME_S;
+}VOS_ABS_TIME_T;
 
 #define VOS_LOCAL_SYSTIME_BUFLEN        28
 
@@ -35,14 +35,17 @@ typedef struct tagLocalSysTime
     UINT32_T  uiHour;
     UINT32_T  uiMinute;
     UINT32_T  uiSecond;
-    UINT32_T  uiMiliSec;    
-}VOS_LOCAL_SYSTEM_TIME_S;
+    UINT32_T  uiMiliSec;
+    UINT32_T  uiMicroSec;
+    
+    UINT32_T  uiDayOfWeek;
+}VOS_SYS_TIME_T;
 
 void VOS_Sleep(UINT32_T ulSeconds);
 void VOS_MSleep(UINT32_T ulMSleep);
 void VOS_USleep(UINT32_T ulUSleep);
-void VOS_GetAbsTime(VOS_ABS_TIME_S *pstAbsTime, UINT32_T ulTimeMiliSec);
-void VOS_GetLocalSysTime(VOS_LOCAL_SYSTEM_TIME_S *pstSysTime);
+void VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec);
+void VOS_GetLocalSysTime(VOS_SYS_TIME_T *pstSysTime);
 
 
 #endif

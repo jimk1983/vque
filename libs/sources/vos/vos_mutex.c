@@ -263,7 +263,7 @@ INT32_T VOS_SM_P(VOS_SM_T *pstSem, UINT32_T ulTimeOutMiliSec)
 #elif VOS_PLAT_LINUX
     pthread_mutex_t *pstMutex = NULL;
     pthread_cond_t *pstCond = NULL;
-    VOS_ABS_TIME_S stAbsTime = {{0}};
+    VOS_ABS_TIME_T stAbsTime = {{0}};
     
     pstMutex = &pstSem->stMutex;
     pstCond = &pstSem->stCond;

@@ -76,7 +76,7 @@ void VOS_USleep(UINT32_T ulUSleep)
  * @param pstEvent [in] the event handle
  * @param uiMillTimeout [in] timeout
  */
-void VOS_GetAbsTime(VOS_ABS_TIME_S *pstAbsTime, UINT32_T ulTimeMiliSec)
+void VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec)
 {
     UINT32_T ulSec     =   0;
     UINT32_T ulNSec    =   0;
@@ -125,7 +125,7 @@ void VOS_GetAbsTime(VOS_ABS_TIME_S *pstAbsTime, UINT32_T ulTimeMiliSec)
  * @brief get the system-time formats
  * @param pstSysTime [in] the formats system-times
  */
-void VOS_GetLocalSysTime(VOS_LOCAL_SYSTEM_TIME_S *pstSysTime)
+void VOS_GetLocalSysTime(VOS_SYS_TIME_T *pstSysTime)
 {
     struct tm *pstTime = NULL;
     struct timeval tv;;
@@ -137,7 +137,7 @@ void VOS_GetLocalSysTime(VOS_LOCAL_SYSTEM_TIME_S *pstSysTime)
     }
     
 #if VOS_PLAT_LINUX
-    memset((char *)pstSysTime, 0, sizeof(VOS_LOCAL_SYSTEM_TIME_S));
+    memset((char *)pstSysTime, 0, sizeof(VOS_SYS_TIME_T));
 
     /*获取年月日,时分秒*/
     pstTime  = localtime(&t);
@@ -156,9 +156,150 @@ void VOS_GetLocalSysTime(VOS_LOCAL_SYSTEM_TIME_S *pstSysTime)
     
     pstSysTime->uiMiliSec   =  tv.tv_usec;
 #elif VOS_PLAT_WIN
-        
+    SYSTEMTIME st;
+    
+    GetLocalTime(&st);
+
+    pstSysTime->uiYear = st.wYear;
+    pstSysTime->uiMoth = st.wMonth;
+    pstSysTime->uiDay  = st.wDay;
+    pstSysTime->uiHour = st.wHour;
+    pstSysTime->uiMinute = st.wMinute;
+    pstSysTime->uiSecond = st.wSecond;
+    
 #endif
 
     return;
 }
+
+
+/**
+ * @brief get the system-time now
+ * @param buf [inout] time buffer
+ */
+UINT32_T VOS_GetSysTimeNow(CHAR *buf){
+    VOS_SYS_TIME_T  vtm = {0};
+    UINT32_T        ret = 0;
+    
+#ifdef VOS_PLAT_LINUX
+    struct timeval tv;
+    struct tm now;
+    ret = gettimeofday(&tv,NULL);
+    if( VOS_OK != ret )
+    {
+        return 0;
+    }
+    localtime_r(&tv.tv_sec, &now);
+
+    vtm.uiYear = now.tm_year + 1900;
+    vtm.uiMoth = now.tm_mon + 1;
+    vtm.uiDay = now.tm_mday;
+    vtm.uiHour = now.tm_hour;
+    vtm.uiMinute = now.tm_min;
+    vtm.uiSecond = now.tm_sec;
+    vtm.uiMiliSec = tv.tv_usec/1000;
+    vtm.uiMicroSec = tv.tv_usec%1000;
+    
+    vtm.uiDayOfWeek = now.tm_wday;
+#else /* VSYS_WINDOWS */
+    SYSTEMTIME st;
+    ret = VOS_OK;
+    GetLocalTime(&st);
+
+    vtm.uiYear = st.wYear;
+    vtm.uiMoth = st.wMonth;
+    vtm.uiDay = st.wDay;
+    vtm.uiHour = st.wHour;
+    vtm.uiMinute = st.wMinute;
+    vtm.uiSecond = st.wSecond;
+    vtm.uiMiliSec = st.wMilliseconds;
+    vtm.uiMicroSec = 0;
+    
+    vtm.uiDayOfWeek = st.wDayOfWeek;
+#endif
+
+    ret = sprintf((char *)buf, "%d%02d%02d %02d:%02d:%02d.%03d",
+                      vtm.uiYear, vtm.uiMoth, vtm.uiDay, vtm.uiHour,
+                      vtm.uiMinute, vtm.uiSecond, vtm.uiMiliSec);
+
+    return ret;
+}
+
+/**
+ * @brief time to string
+ * @param buf [inout] time string
+ */
+CHAR* VOS_TimeToString(time_t* tm, CHAR* buf)
+{
+    struct tm* tmnow = localtime(tm);
+    if (NULL != buf)
+    {
+        sprintf((char *)buf, "%d-%02d-%02d %02d:%02d:%02d", tmnow->tm_year + 1900, 
+                                                    tmnow->tm_mon + 1, 
+                                                    tmnow->tm_mday, 
+                                                    tmnow->tm_hour, 
+                                                    tmnow->tm_min, 
+                                                    tmnow->tm_sec);
+    }
+    return buf;
+}
+
+
+
+/**
+ * @brief time string
+ * @param buf [inout] time now
+ */
+CHAR* VOS_TimeNow(CHAR* buf)
+{
+    time_t now;
+    struct tm* tmnow;
+    time(&now);
+    tmnow = localtime(&now);
+    sprintf((char *)buf, "%d-%02d-%02d %02d:%02d:%02d", tmnow->tm_year + 1900, 
+                                                tmnow->tm_mon + 1, 
+                                                tmnow->tm_mday, 
+                                                tmnow->tm_hour, 
+                                                tmnow->tm_min, 
+                                                tmnow->tm_sec);
+    return buf;
+}
+
+
+
+/**
+ * @brief tm to time_t
+ * @param ptm [in] tm time
+ */
+time_t VOS_TmToTime(struct tm* ptm)
+{
+    ptm->tm_year -= 1900;
+    ptm->tm_mon -= 1;
+    ptm->tm_isdst = -1;
+    return mktime(ptm);
+}
+
+/**
+ * @brief time_t to tm
+ * @param ptm [in] tm time
+ */
+void VOS_TimeToTm(const time_t* time, struct tm* ptm)
+{
+    struct tm* ptime;
+    
+    if (NULL == time || NULL == ptm)
+    {
+        return;
+    }
+    
+    ptime = localtime(time);
+    ptm->tm_year = ptime->tm_year + 1900;
+    ptm->tm_mon  = ptm->tm_mon + 1;
+    ptm->tm_mday = ptime->tm_mday;
+    ptm->tm_hour = ptime->tm_hour;
+    ptm->tm_min  = ptime->tm_min;
+    ptm->tm_sec  = ptime->tm_sec;
+}
+
+
 

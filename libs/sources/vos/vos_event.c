@@ -110,7 +110,7 @@ INT32_T VOS_ThreadEvent_Waitfor(VOS_EVT_T *pstEvent, UINT32_T uiMillTimeout)
 #if VOS_PLAT_LINUX
     pthread_mutex_t*    pstMutex = NULL;
     pthread_cond_t*     pstCond = NULL;
-    VOS_ABS_TIME_S      stAbsTime = {{0}};
+    VOS_ABS_TIME_T      stAbsTime = {{0}};
     
     pstMutex = &pstEvent->stMutex;
     pstCond = &pstEvent->stCond;
