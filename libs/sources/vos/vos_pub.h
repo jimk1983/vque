@@ -21,12 +21,16 @@
 
 #include <vos/vos_platos.h>
 #include <vos/vos_macro.h>
+#include <vos/vos_error.h>
 #include <vos/vos_automic.h>
 #include <vos/vos_dlist.h>
 #include <vos/vos_mutex.h>
 #include <vos/vos_spin.h>
 #include <vos/vos_rwlock.h>
+#include <vos/vos_time.h>
 #include <vos/vos_event.h>
+#include <vos/vos_hash.h>
+#include <vos/vos_shm.h>
 
 
 

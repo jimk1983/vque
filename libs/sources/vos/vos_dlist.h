@@ -117,8 +117,8 @@ CINLINE BOOL_T VOS_DList_IsEmpty( IN const VOS_DLIST_S *pListHead)
  */
 CINLINE BOOL_T VOS_DList_RemoveEntry( IN VOS_DLIST_S *pListEntry)
 {
-    PVOS_DLIST_S next;
-    PVOS_DLIST_S prev;
+    PVOS_DLIST_S next = NULL;
+    PVOS_DLIST_S prev = NULL;
 
     prev = pListEntry->prev;
     next = pListEntry->next;
@@ -151,8 +151,8 @@ CINLINE BOOL_T VOS_DList_CheckEntry( IN VOS_DLIST_S *pListEntry)
  */
 CINLINE PVOS_DLIST_S VOS_DList_RemoveTail( INOUT PVOS_DLIST_S pListHead )
 {
-    PVOS_DLIST_S prev;
-    PVOS_DLIST_S Entry;
+    PVOS_DLIST_S prev   = NULL;
+    PVOS_DLIST_S Entry  = NULL;
 
     Entry = pListHead->prev;
     prev = Entry->prev;
@@ -217,15 +217,38 @@ CINLINE VOID VOS_DList_InsertTail( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIS
 }
 
 
-inline BOOL_T VOS_DList_IsEmpty_s( IN const VOS_DLIST_S *pListHead);
-inline BOOL_T VOS_DList_RemoveEntry_s( IN VOS_DLIST_S *pListEntry);
-inline BOOL_T VOS_DList_CheckEntry_s( IN VOS_DLIST_S *pListEntry);
+/**
+ * @brief get the entry from the head->next
+ * @param list [inout] the list head pointer
+ * @param pEntry [inout] remove from the list,out entry
+ * @retval return none
+ */
+CINLINE VOID VOS_DList_HeadGet(INOUT PVOS_DLIST_S pstListHead, PVOS_DLIST_S *ppstNode)
+{
+    PVOS_DLIST_S pEntry = NULL;
+    
+    pEntry = pstListHead->next;
+    VOS_DLIST_DEL(pEntry);
+    *ppstNode = pEntry;    
+    return;
+}
 
-inline PVOS_DLIST_S VOS_DList_RemoveTail_s( INOUT PVOS_DLIST_S pListHead );
-inline PVOS_DLIST_S  VOS_DList_RemoveHead_s(      INOUT PVOS_DLIST_S pListHead );
 
-inline VOID VOS_DList_InsertHead_s( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIST_S pEntry );
-inline VOID VOS_DList_InsertTail_s( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIST_S pEntry );
+/**
+ * @brief get the entry from the head->next
+ * @param list [inout] the list head pointer
+ * @param pEntry [inout] the out entry
+ * @retval return none
+ */
+CINLINE VOID VOS_DList_TailGet(INOUT PVOS_DLIST_S pstListHead, PVOS_DLIST_S *ppstNode)
+{
+    PVOS_DLIST_S  pEntry = NULL;
+    
+    pEntry = pstListHead->prev;
+    VOS_DLIST_DEL(pEntry);
+    *ppstNode =pEntry;
+    return;
+}
 
 
 #endif

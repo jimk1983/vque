@@ -10,7 +10,7 @@ typedef volatile long   vatm32_t;
 typedef volatile __int64 vatmv64_t;
 typedef long* vatm_t;
 typedef __int64* vatm64_t;
-#else /* VSYS_POSIX */
+#else /* VSYS_LINUX(POSIX) */
 typedef volatile int32_t vatm32_t;
 typedef volatile int64_t vatmv64_t;
 typedef int32_t *vatm_t;

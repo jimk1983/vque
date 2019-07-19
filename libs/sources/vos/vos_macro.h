@@ -19,8 +19,8 @@
 #define _VOS_MACRO_H_
 
 
-
-
+/*系统默认定义的最大ID长度*/
+#define     SYS_MAXID_LEN           64
 
 
 

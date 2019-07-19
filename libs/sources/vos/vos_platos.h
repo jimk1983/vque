@@ -51,8 +51,8 @@
 #define     VOS_PLAT_BIGENDIAN          0
 /*定义是否需要C++11支持*/
 #define     VOS_PLAT_SUPPORT_Class11    0
-/*定义是否开启DUMP*/
-#define     VOS_PLAT_DUMP               1
+/*定义是否开启DBG*/
+#define     VOS_PLAT_DBG                1
 
 
 
@@ -61,6 +61,14 @@
 /**************************************************/
 #ifndef VOID
 typedef void                VOID, *PVOID;
+#endif
+
+#ifndef CHAR
+typedef signed char         CHAR, *PCHAR;
+#endif
+
+#ifndef UCHAR
+typedef unsigned char       UCHAR, *PUCHAR;
 #endif
     
 #ifndef BOOL_T
@@ -122,7 +130,7 @@ typedef signed long    INT64_T, *PINT64_T;
 typedef unsigned long  UINT64_T, *PUINT64_T;
 #endif
 
-#define VOS_INVALID_VAL32   0xFFFFFFFF
+#define VOS_INVALID_VAL   0xFFFFFFFF
 
 #elif VOS_PLATCPU_64
 #ifndef INT64_T
@@ -132,7 +140,7 @@ typedef signed long long    INT64_T, *PINT64_T;
 typedef unsigned long long  UINT64_T, *PUINT64_T;
 #endif
 
-#define VOS_INVALID_VAL64   0xFFFFFFFFFFFFFFFF
+#define VOS_INVALID_VAL   0xFFFFFFFFFFFFFFFF
 
 #endif
 
@@ -152,101 +160,12 @@ typedef unsigned long long  UINT64_T, *PUINT64_T;
 
 #define VOS_COREDUMP        {char *ptr=0x00;*(ptr)=0x00;}
 
-#if VOS_PLAT_DUMP
+#if VOS_PLAT_DBG
 #define VOS_ASSERT(expr)     if(!(expr))VOS_COREDUMP
 #else
 #define VOS_ASSERT(expr)
 #endif
     
-#ifndef VOS_OK
-#define VOS_OK               0
-#endif
-        
-#ifndef VOS_ERR
-#define VOS_ERR             (~(0))
-#endif
-
-#ifndef SYS_OK
-#define SYS_OK              VOS_OK
-#endif
-
-#ifndef SYS_ERR
-#define SYS_ERR             VOS_ERR
-#endif
-
-#ifndef VOS_TRUE
-#define VOS_TRUE            1
-#endif
-    
-#ifndef VOS_FALSE
-#define VOS_FALSE           0
-#endif
-    
-
-/**************************************************/
-/***************** 系统错误码       ********************/
-/**************************************************/
-
-/*系统错误*/
-#define VOS_SYS_ERR                         -1
-/*参数错误*/
-#define VOS_SYS_PARAM_INVALID               -2
-/*超时错误*/
-#define VOS_SYS_TIMEOUT                     -3
-/*阻塞*/
-#define VOS_SYS_EWOULDBLOCK                 -4
-/*已经存在*/
-#define VOS_SYS_EXIST                       -5
-/*已经存在*/
-#define VOS_SYS_NOTEXIST                    -6
-/*写错误*/
-#define VOS_SYS_WERR                        -7
-
-/**************************************************/
-/***************** 系统重定义       ********************/
-/**************************************************/
-
-
-#ifndef SYS_TRUE
-#define SYS_TRUE                            VOS_TRUE
-#endif
-    
-#ifndef SYS_FALSE
-#define SYS_FALSE                           VOS_FALSE
-#endif
-
-#ifndef SYS_ERR_PARAM
-#define SYS_ERR_PARAM                       VOS_SYS_PARAM_INVALID
-#endif
-
-#ifndef SYS_ERR_TIMEOUT
-#define SYS_ERR_TIMEOUT                     VOS_SYS_TIMEOUT
-#endif
-
-#ifndef SYS_ERR_EWOULDBLOCK                
-#define SYS_ERR_EWOULDBLOCK                 VOS_SYS_EWOULDBLOCK
-#endif
-
-#ifndef SYS_ERR_EXIST
-#define SYS_ERR_EXIST                       VOS_SYS_EXIST
-#endif
-
-#ifndef SYS_ERR_NOTEXIST
-#define SYS_ERR_NOTEXIST                    VOS_SYS_NOTEXIST
-#endif
-
-#ifndef SYS_ERR_WERR
-#define SYS_ERR_WERR                        VOS_SYS_WERR
-#endif
-
-#ifndef MAX_PATH
-#define MAX_PATH                            260
-#endif
-
-#ifndef SYS_IPV4LEN
-#define SYS_IPV4LEN                         32
-#endif
-
 #define VOS_SSL_ENABLE  0
 #if VOS_SSL_ENABLE
 #include <openssl/ssl.h>
@@ -379,6 +298,24 @@ typedef unsigned long long  UINT64_T, *PUINT64_T;
 #elif VOS_PLAT_WIN
 #endif
 
+
+#define PERR_FORMAT "[**-=ERROR=-**][FILE=%s, FUNC=%s,LINE=%d]--->"
+
+#define PError(ErrMsg, ...)\
+{\
+  (void)printf((PERR_FORMAT ErrMsg "\n"),__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);\
+}
+
+
+#if VOS_PLAT_DBG
+#define PEVENT_FORMAT "[FILE=%s,FUNC=%s,LINE=%d]--->"
+#define PEVENT(EvtMsg, ...)\
+{\
+  (void)printf((PEVENT_FORMAT EvtMsg "\n"),__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);\
+}
+#else
+#define PEVENT(EvtMsg, ...)
+#endif
 
 #endif
 
