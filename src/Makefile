@@ -42,7 +42,7 @@ prepare:
 
 .PHONY: clean
 clean:
-	@rm -fr $(BIN_DIR) $(OBJ_DIR) $(LIBS_INC) 
+	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
 $(BIN_DIR)/proxygw :  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o
 	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o $(LDFLAGS)

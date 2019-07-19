@@ -25,12 +25,14 @@
  */
 
 #ifdef __cplusplus
-#define VOS_EXBEGIN extern "C" {
-#define VOS_EXEND }
+#define VOS_EXCBEGIN extern "C" {
+#define VOS_EXCEND }
 #else
-#define VOS_EXBEGIN
-#define VOS_EXEND
+#define VOS_EXCBEGIN
+#define VOS_EXCEND
 #endif /* __cplusplus */
+
+#define CINLINE static inline
 
 /**************************************************/
 /***************** 系统配置 ***********************/
@@ -49,11 +51,22 @@
 #define     VOS_PLAT_BIGENDIAN          0
 /*定义是否需要C++11支持*/
 #define     VOS_PLAT_SUPPORT_Class11    0
+/*定义是否开启DUMP*/
+#define     VOS_PLAT_DUMP               1
+
 
 
 /**************************************************/
 /***************** 系统定义 ***********************/
 /**************************************************/
+#ifndef VOID
+typedef void                VOID, *PVOID;
+#endif
+    
+#ifndef BOOL_T
+typedef unsigned char       BOOL_T, *PBOOL_T;
+#endif
+
 #ifndef INT8_T
 typedef signed char         INT8_T, *PINT8_T;
 #endif
@@ -73,8 +86,6 @@ typedef signed int          INT32_T, *PINT32_T;
 #ifndef UINT32_T
 typedef unsigned int        UINT32_T, *PUINT32_T;
 #endif
-
-#define VINLINE static _inline
 
 typedef struct tagDoublelong
 {
@@ -140,8 +151,12 @@ typedef unsigned long long  UINT64_T, *PUINT64_T;
 #define INOUT
 
 #define VOS_COREDUMP        {char *ptr=0x00;*(ptr)=0x00;}
+
+#if VOS_PLAT_DUMP
 #define VOS_ASSERT(expr)     if(!(expr))VOS_COREDUMP
-    
+#else
+#define VOS_ASSERT(expr)
+#endif
     
 #ifndef VOS_OK
 #define VOS_OK               0
