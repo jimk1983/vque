@@ -24,7 +24,7 @@
  * @brief init a new rwlock handle
  * @param pstMutex [in] the create mutex handle
  */
-INT32_T VOS_ThreadMutex_Init(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_Init(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
     CRITICAL_SECTION *pstMutexLock = NULL;
@@ -53,7 +53,7 @@ INT32_T VOS_ThreadMutex_Init(VOS_RW_LOCK_S *pstMutex)
  * @brief rwlock option
  * @param pstMutex [in] the mutex handle
  */
-INT32_T VOS_ThreadMutex_RWLock(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_RWLock(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
         CRITICAL_SECTION *pstMutexLock = NULL;
@@ -81,7 +81,7 @@ INT32_T VOS_ThreadMutex_RWLock(VOS_RW_LOCK_S *pstMutex)
  * @brief rwlock option
  * @param pstMutex [in] the mutex handle
  */
-INT32_T VOS_ThreadMutex_RWUnLock(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_RWUnLock(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
     CRITICAL_SECTION *pstMutexLock = NULL;
@@ -111,7 +111,7 @@ INT32_T VOS_ThreadMutex_RWUnLock(VOS_RW_LOCK_S *pstMutex)
  * @brief rwlock option
  * @param pstMutex [in] the mutex handle
  */
-INT32_T VOS_ThreadMutex_RLock(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_RLock(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
         CRITICAL_SECTION *pstMutexLock = NULL;
@@ -144,7 +144,7 @@ INT32_T VOS_ThreadMutex_RLock(VOS_RW_LOCK_S *pstMutex)
  * @brief unlock option
  * @param pstMutex [in] the mutex handle
  */
-INT32_T VOS_ThreadMutex_RUnLock(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_RUnLock(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
             CRITICAL_SECTION *pstMutexLock = NULL;
@@ -171,7 +171,7 @@ INT32_T VOS_ThreadMutex_RUnLock(VOS_RW_LOCK_S *pstMutex)
  * @brief destroy option
  * @param pstMutex [in] the mutex handle
  */
-INT32_T VOS_ThreadMutex_Destroy(VOS_RW_LOCK_S *pstMutex)
+INT32_T VOS_ThreadMutex_Destroy(VOS_MUTEX_T *pstMutex)
 {
 #if VOS_PLAT_WIN
             CRITICAL_SECTION *pstMutexLock = NULL;
@@ -306,6 +306,11 @@ INT32_T VOS_SM_P(VOS_SM_T *pstSem, UINT32_T ulTimeOutMiliSec)
     return VOS_OK;
 }
 
+
+/**
+ * @brief  the sem V option
+ * @param pstMutex [in] the sem handle
+ */
 INT32_T VOS_SM_V(VOS_SM_T *pstSem)
 {
     INT32_T uiErr = 0;
@@ -336,6 +341,10 @@ INT32_T VOS_SM_V(VOS_SM_T *pstSem)
 
 
 
+/**
+ * @brief  destroy the sem 
+ * @param pstMutex [in] the sem handle
+ */
 INT32_T VOS_SM_Destroy(VOS_SM_T *pstSem)
 {
     if ( NULL == pstSem )

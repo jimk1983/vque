@@ -16,6 +16,13 @@
     修改内容   : 创建文件
 
 ******************************************************************************/
+/**
+ * @vos_automic.h
+ * @brief vos 链表的操作
+ * @author jimk 
+ * @date 2019-07
+ */
+
 #ifndef _VOS_DLIST_H_
 #define _VOS_DLIST_H_
 
@@ -169,8 +176,8 @@ CINLINE PVOS_DLIST_S VOS_DList_RemoveTail( INOUT PVOS_DLIST_S pListHead )
  */
 CINLINE PVOS_DLIST_S  VOS_DList_RemoveHead(      INOUT PVOS_DLIST_S pListHead )
 {
-    PVOS_DLIST_S Blink;
-    PVOS_DLIST_S Entry;
+    PVOS_DLIST_S Blink = NULL;
+    PVOS_DLIST_S Entry = NULL;
 
     Entry = pListHead->next;
     Blink = Entry->next;
@@ -188,7 +195,7 @@ CINLINE PVOS_DLIST_S  VOS_DList_RemoveHead(      INOUT PVOS_DLIST_S pListHead )
  */
 CINLINE VOID VOS_DList_InsertHead( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIST_S pEntry )
 {
-    PVOS_DLIST_S next;
+    PVOS_DLIST_S next = NULL;
     
     next = pListHead->next;
     pEntry->prev = pListHead;
@@ -206,7 +213,7 @@ CINLINE VOID VOS_DList_InsertHead( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIS
  */
 CINLINE VOID VOS_DList_InsertTail( INOUT PVOS_DLIST_S pListHead, INOUT PVOS_DLIST_S pEntry )
 {
-    PVOS_DLIST_S prev;
+    PVOS_DLIST_S prev = NULL;
     
     prev = pListHead->prev;
     pEntry->prev = prev;

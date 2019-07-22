@@ -8,7 +8,7 @@
   作    者  : 蒋康
   生成日期   : 
   最近修改   :
-  功能描述   : 
+  功能描述   : VOS下的系统定义
   函数列表   :
   修改历史   :
   1.日    期   :
@@ -19,8 +19,20 @@
 #define _VOS_MACRO_H_
 
 
-/*系统默认定义的最大ID长度*/
+/** 系统最大ID长度*/
 #define     SYS_MAXID_LEN           64
+
+/** 系统GUID的长度*/
+#define     SYS_GUID_LEN            64
+
+/** 系统IPV4的长度*/
+#define     SYS_IPV4LEN             32
+
+/** 系统的文件路径长度*/
+#define     SYS_FILE_LEN            256
+
+
+
 
 
 
