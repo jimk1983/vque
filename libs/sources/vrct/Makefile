@@ -12,9 +12,9 @@ endif
 LDFLAGS=
 
 # dependent include
-DEP_DIR=/mnt/hgfs/VMWareShare/openvque/deps
-OUT_DIR=/mnt/hgfs/VMWareShare/openvque/outs
-ROOT_DIR=/mnt/hgfs/VMWareShare/openvque
+DEP_DIR=/mnt/hgfs/vmshare/vque/deps
+OUT_DIR=/mnt/hgfs/vmshare/vque/outs
+ROOT_DIR=/mnt/hgfs/vmshare/vque
 
 # installation directory
 INST_BIN=/usr/local/bin
@@ -28,13 +28,13 @@ VER_MINOR=0
 VER_REVISION=0
 
 # all : prepare targets...
-BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
-OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/sources/vrct
-CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/libs/sources -I/mnt/hgfs/VMWareShare/openvque/deps/include
-LDFLAGS+=-L/mnt/hgfs/VMWareShare/openvque/deps/lib -I/mnt/hgfs/VMWareShare/openvque/libs/include -L/mnt/hgfs/VMWareShare/openvque/libs/bins -lvos -ldl -lpthread -lrt -lm
-LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
-LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/vrct/
+BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
+OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
+SRC_DIR=/mnt/hgfs/vmshare/vque/libs/sources/vrct
+CFLAG+=-I/mnt/hgfs/vmshare/vque/libs/sources -I/mnt/hgfs/vmshare/vque/deps/include
+LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvos -ldl -lpthread -lrt -lm
+LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
+LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/vrct/
 
 all : prepare $(BIN_DIR)/libvrct.a postpare
 prepare:

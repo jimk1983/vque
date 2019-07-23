@@ -12,9 +12,9 @@ endif
 LDFLAGS=
 
 # dependent include
-DEP_DIR=/mnt/hgfs/VMWareShare/openvque/deps
-OUT_DIR=/mnt/hgfs/VMWareShare/openvque/outs
-ROOT_DIR=/mnt/hgfs/VMWareShare/openvque
+DEP_DIR=/mnt/hgfs/vmshare/vque/deps
+OUT_DIR=/mnt/hgfs/vmshare/vque/outs
+ROOT_DIR=/mnt/hgfs/vmshare/vque
 
 # installation directory
 INST_BIN=/usr/local/bin
@@ -28,13 +28,13 @@ VER_MINOR=0
 VER_REVISION=0
 
 # all : prepare targets...
-BIN_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)
-OBJ_DIR=/mnt/hgfs/VMWareShare/openvque/outs/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/VMWareShare/openvque/libs/sources/vos
-CFLAG+=-I/mnt/hgfs/VMWareShare/openvque/libs/sources
+BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
+OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
+SRC_DIR=/mnt/hgfs/vmshare/vque/libs/sources/vos
+CFLAG+=-I/mnt/hgfs/vmshare/vque/libs/sources
 LDFLAGS+=-ldl -lpthread -lrt -lm
-LIBS_BIN=/mnt/hgfs/VMWareShare/openvque/libs/bins/
-LIBS_INC=/mnt/hgfs/VMWareShare/openvque/libs/include/vos/
+LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
+LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/vos/
 
 all : prepare $(BIN_DIR)/libvos.a postpare
 prepare:
