@@ -40,8 +40,28 @@
 /*流控高水位*/
 #define VRCT_BUFHI_LEVEL                    1000
 
-     
-     
+
+/** 通用结构定义*/
+typedef struct tagVRctCommCallback
+{
+      VOID* pvcbFunc;
+      VOID* pvData;
+}VRCT_CALLBACK_S, *PVRCT_CALLBACK_S;
+
+#define VRCT_CALLBACK_INIT(pstCallBack_, pfFunc_, pvUserData_)\
+do{\
+    (pstCallBack_)->pvcbFunc = (VOID *)pfFunc_;\
+    (pstCallBack_)->pvData   = (VOID *)pvUserData_;\
+}while(0);
+
+
+typedef struct tagVosEventReactor               VRCT_REACTOR_S, *PVRCT_REACTOR_S;
+typedef struct tagVosReactorNetEvtManager       VRCT_MGR_NETEVT_S,*PVRCT_MGR_NETEVT_S;
+typedef struct tagVosReactorNetEvtOpts          VRCT_NETEVT_OPT_S,*PVRCT_NETEVT_OPT_S;
+
+
+
+
 #endif
 
 

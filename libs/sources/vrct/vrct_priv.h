@@ -21,13 +21,14 @@
 #ifndef _VRCT_PRIV_H_
 #define _VRCT_PRIV_H_
 
+
 #include <vrct/vrct_api.h>
 #include <vrct/vrct_macro.h>
-#include <vrct/vrct_ctx.h>
 #include <vrct/vrct_net.h>
 #include <vrct/vrct_msq.h>
 #include <vrct/vrct_timer.h>
 #include <vrct/vrct_expire.h>
+#include <vrct/vrct_ctx.h>
 
 
 #endif

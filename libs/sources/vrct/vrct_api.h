@@ -27,27 +27,40 @@
 #define _VRCT_API_H_
 
 /** 最大的包长度*/
-#define     VRCT_PACK_MAX       65536
+#define     VRCT_PACK_MAX           65536
 
 /** 协议框架头部设定: 包大小直接规定用INT32_T来表示*/
 typedef struct tagVosReactorSetPacketInfo
 {
-    INT32_T     MaxSize;            /*包最大长度*/
-    INT32_T     HeadOffset;         /*头部大小偏移*/
+    INT32_T     MaxSize;            /** 包最大长度*/
+    INT32_T     HeadOffset;         /** 头部大小偏移*/
 }VRCT_PACK_INFO_S, *PVRCT_PACK_INFO_S;
 
+typedef VOID    (*PFVRCT_COMM_CB)(VOID *pvCtx);
 
-/*IO的工作模式*/
+/** IO的工作模式*/
 typedef enum
 {
-    VRCT_IOTYPE_NET = 0,            /*网络IO*/
-    VRCT_IOTYPE_MSG,                /*消息IO*/
-    VRCT_IOTYPE_TIMER,              /*定时器IO*/
-    VRCT_IOTYPE_SPAIR,              /*消息对IO*/
+    VRCT_IOTYPE_NET = 0,            /** 网络IO*/
+    VRCT_IOTYPE_MSG,                /** 消息IO*/
+    VRCT_IOTYPE_TIMER,              /** 定时器IO*/
+    VRCT_IOTYPE_SPAIR,              /** 消息对IO*/
     
     VRCT_IOTYPE_NUMS
 }VRCT_IOTYPE_E;
 
+
+#define VRCT_POLL_ETIN      (EPOLLIN  | EPOLLET)
+#define VRCT_POLL_ETOUT     (EPOLLOUT | EPOLLET)
+#define VRCT_POLL_ETINOUT   (EPOLLOUT | EPOLLIN | EPOLLET)
+
+#define VRCT_POLL_LTIN      (EPOLLIN)
+#define VRCT_POLL_LTOUT     (EPOLLOUT)
+#define VRCT_POLL_LTINOUT   (EPOLLOUT | EPOLLIN)
+
+#define VRCT_POLL_ADD       EPOLL_CTL_ADD
+#define VRCT_POLL_MOD       EPOLL_CTL_MOD
+#define VRCT_POLL_DEL       EPOLL_CTL_DEL
 
 
 

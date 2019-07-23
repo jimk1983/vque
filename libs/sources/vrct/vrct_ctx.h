@@ -24,16 +24,39 @@
  */
 #ifndef _VRCT_CTX_H_
 #define _VRCT_CTX_H_
+
+/** VRCT初始化信息*/
+typedef struct tagVosEventReactorInit
+{
+    INT32_T                     TaskID;                     /** 所属ID*/
+    CHAR                        acGuid[SYS_GUID_LEN];       /** 该Reactor唯一GUID*/
+    INT32_T                     Epollfd;                    /** 该Reactor的EpollFD*/
+    INT32_T                     LogLevel;                   /** 日志级别*/
+    INT32_T                     MsqSize;                    /** 该Reactor的消息上限*/
+    INT32_T                     Stop;                       /** 该Reactor停止*/
+    PFVRCT_COMM_CB              pfInitCB;                   /** 线程初始化*/
+    PVOID                       pvInitCtx;                  /** 线程初始化上下文*/
+}VRCT_INIT_S, *PVRCT_INIT_S;
+
+/** VOS的Reactor主结构*/
+struct tagVosEventReactor
+{
+    PVRCT_REACTOR_S             pstVRctor;
     
+    VRCT_INIT_S                 stInfo;                     /** 初始化信息*/
     
-    
-    
-    
-    
+    VRCT_MGR_NETEVT_S           stMgrNet;                   /** 所有FD的管理器*/
+    //VRCT_MGR_MSEQUE_S           stMgrMsq;                   /** 消息控制流*/
+    //VRCT_MGR_TIMER_S            stMgrTimer;                 /** 定时器管理器*/
+    //VRCT_MGR_EXPIR_S            stMgrExpirer;               /** 老化管理器*/
+    VOS_EVT_T                   hWaitForStart;              /** 初始化启动完成*/
+    VOS_EVT_T                   hWaitForExit;               /** 本实例线程安全退出*/
+};
+
+
+
+
+
+
 #endif
-
-
-
-
-
 

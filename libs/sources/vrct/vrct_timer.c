@@ -24,6 +24,9 @@
  */
 
 
+#include <vos/vos_pub.h>
+#include <vrct/vrct_priv.h>
+
 
 
 

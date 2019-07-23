@@ -22,7 +22,9 @@
  * @author jimk 
  * @date 2019-07
  */
-
+    
+#include <vos/vos_pub.h>
+ #include <vrct/vrct_priv.h>
 
 
 
