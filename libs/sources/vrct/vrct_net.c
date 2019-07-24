@@ -28,6 +28,71 @@
 
 
 /**
+ * @brief init the net work event manager
+ * @param pvRctor [in] vos reactor
+ * @param Maxsize [in] reactor fd max size
+ */
+INT32_T VRCT_NetworkEvtManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T MaxSize)
+{
+    if ( NULL == pstRctor )
+    {
+        PError("param error!");
+        return VOS_ERR;
+    }
+    
+    pstRctor->stMgrNet.apstEpollEvtOps= (PVRCT_NETEVT_OPT_S *)malloc(sizeof(PVRCT_NETEVT_OPT_S) * MaxSize);
+    if ( NULL == pstRctor->stMgrNet.apstEpollEvtOps  )
+    {
+        PError("[TKD:%02d EID:%02d]=>Malloc failed! MaxSize=%lu",
+                    pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, MaxSize);
+        return SYS_ERR;
+    }
+    
+    memset(pstRctor->stMgrNet.apstEpollEvtOps,0,sizeof(sizeof(PVRCT_NETEVT_OPT_S) * MaxSize));
+    
+    for(INT32_T iIndex=0; iIndex < MaxSize; iIndex++)
+    {
+        pstRctor->stMgrNet.apstEpollEvtOps[iIndex] =NULL;
+    }
+    
+    pstRctor->stMgrNet.MaxSize = MaxSize;
+    
+    return VOS_OK;
+}
+
+
+/**
+ * @brief UnInit the net work event manager
+ * @param pvRctor [in] vos reactor
+ */
+VOID VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S          pstRctor)
+{
+    INT32_T         iIndex = 0;
+    
+    if ( NULL != pstRctor )
+    {
+        for(iIndex=0; iIndex < pstRctor->stMgrNet.MaxSize; iIndex++)
+        {
+            if ( NULL != pstRctor->stMgrNet.apstEpollEvtOps[iIndex] )
+            {
+                PEvent("[TKD:%02d EID:%02d]=>network memory free! index= %d",
+                        pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, iIndex);
+                
+                /*网络的资源是需要自己释放的*/
+                if ( pstRctor->stMgrNet.apstEpollEvtOps[iIndex]->IoType == VRCT_IOTYPE_NET )
+                {
+                    free(pstRctor->stMgrNet.apstEpollEvtOps[iIndex]);
+                    pstRctor->stMgrNet.apstEpollEvtOps[iIndex] =NULL;
+                }
+            }
+        }
+        free(pstRctor->stMgrNet.apstEpollEvtOps);
+        pstRctor->stMgrNet.apstEpollEvtOps = NULL;
+        
+    }
+}
+
+/**
  * @brief register the network event
  * @param pvRctor [in] the vos reactor
  * @param fd [in] the socket
@@ -37,18 +102,18 @@
  * @param pvctx [in] the context
  * @author jimk 
  */
-INT32_T  VRCT_API_NetworkEvtOptsRegister(     VOID *pvRctor, 
+INT32_T  VRCT_NetworkEvtRegister(     PVRCT_REACTOR_S pstRctor,
                                                     INT32_T fd,
+                                                    INT32_T IoType,
                                                     INT32_T EvtMask,
-                                                    PFVRCT_COMM_CB pfRecvCb, 
-                                                    PFVRCT_COMM_CB pfSendCb, 
+                                                    PFVRCT_NETEVT_CB pfRecvCb, 
+                                                    PFVRCT_NETEVT_CB pfSendCb, 
                                                     VOID* pvCtx)
  {   
-    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     PVRCT_NETEVT_OPT_S      pstNetOpts  = NULL;
     struct  epoll_event     stEvent     = {0};
     
-     if ( NULL == pvRctor
+     if ( NULL == pstRctor
          || 0 >= fd
          || VRCT_FDMAX-1 < fd )
      {
@@ -67,11 +132,9 @@ INT32_T  VRCT_API_NetworkEvtOptsRegister(     VOID *pvRctor,
      
      memset(pstNetOpts,0,sizeof(VRCT_NETEVT_OPT_S));
      
-     VOS_DLIST_INIT(&pstNetOpts->stNode);
-    
      VRCT_NETCALLBACK_INIT( pstNetOpts,
                              fd,
-                             VRCT_IOTYPE_NET,
+                             IoType,
                              EvtMask,
                              pfRecvCb,
                              pfSendCb,
@@ -110,15 +173,14 @@ INT32_T  VRCT_API_NetworkEvtOptsRegister(     VOID *pvRctor,
 * @param fd [in] the socket
 * @author jimk 
 */
-VOID   VRCT_API_NetworkEvtOptsUnRegister(VOID *pvRctor,           INT32_T fd)
+VOID   VRCT_NetworkEvtUnRegister(PVRCT_REACTOR_S             pstRctor,INT32_T fd)
 {
-    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     struct epoll_event      stEvent     = {0};
 
     if ( 0 >= fd
      || fd >= VRCT_FDMAX-1 )
     {
-        PError("Param error! fd=%d", fd);
+        PError("Param error!fd=%d", fd);
         return;
     }
     
@@ -149,9 +211,8 @@ VOID   VRCT_API_NetworkEvtOptsUnRegister(VOID *pvRctor,           INT32_T fd)
 * @param ctrlopt [in] the socket
 * @author jimk 
 */
- INT32_T   VRCT_API_NetworkEvtOptsCtrl(VOID *pvRctor,         INT32_T fd, INT32_T CtrlOpt)
+ INT32_T   VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor,INT32_T fd, INT32_T OptCtrl)
  {
-    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     struct epoll_event      stEvent     = {0};
     
     if ( 0 >= fd
@@ -162,7 +223,7 @@ VOID   VRCT_API_NetworkEvtOptsUnRegister(VOID *pvRctor,           INT32_T fd)
     }
 
     stEvent.data.fd     = fd;
-    stEvent.events      = CtrlOpt;
+    stEvent.events      = OptCtrl;
     
     if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_MOD, fd, &stEvent))
     {

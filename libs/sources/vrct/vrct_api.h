@@ -37,6 +37,8 @@ typedef struct tagVosReactorSetPacketInfo
 }VRCT_PACK_INFO_S, *PVRCT_PACK_INFO_S;
 
 typedef VOID    (*PFVRCT_COMM_CB)(VOID *pvCtx);
+typedef VOID    (*PFVRCT_NETEVT_CB)(INT32_T fd, VOID *pvConn);
+
 
 /** IO的工作模式*/
 typedef enum
@@ -49,7 +51,6 @@ typedef enum
     VRCT_IOTYPE_NUMS
 }VRCT_IOTYPE_E;
 
-
 #define VRCT_POLL_ETIN      (EPOLLIN  | EPOLLET)
 #define VRCT_POLL_ETOUT     (EPOLLOUT | EPOLLET)
 #define VRCT_POLL_ETINOUT   (EPOLLOUT | EPOLLIN | EPOLLET)
@@ -61,6 +62,16 @@ typedef enum
 #define VRCT_POLL_ADD       EPOLL_CTL_ADD
 #define VRCT_POLL_MOD       EPOLL_CTL_MOD
 #define VRCT_POLL_DEL       EPOLL_CTL_DEL
+
+
+/** 定时器的类型*/
+typedef enum
+{
+    VRCT_TMTYPE_ONE = 0,              /** 一次性定时器*/
+    VRCT_TMTYPE_RECYLE,               /** 循环定时器*/
+    
+    VRCT_TMTYPE_NUMS
+}VRCT_TMTYPE_E;
 
 
 

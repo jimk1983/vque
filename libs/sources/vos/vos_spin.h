@@ -22,18 +22,18 @@
 
 #if VOS_PLAT_WIN
 typedef CRITICAL_SECTION VOS_SPINLOCK_T, *PVOS_SPINLOCK_T;
-#define VOS_Spin_Init(pstSpinLock)         (InitializeCriticalSectionEx(pstSpinLock, 81920, CRITICAL_SECTION_NO_DEBUG_INFO) - 1)
-#define VOS_Spin_Destroy(pstSpinLock)      DeleteCriticalSection(pstSpinLock)
-#define VOS_Spin_Lock(pstSpinLock)         EnterCriticalSection(pstSpinLock)
-#define VOS_Spin_Unlock(pstSpinLock)       LeaveCriticalSection(pstSpinLock)
-#define VOS_Spin_Trylock(pstSpinLock)      (TryEnterCriticalSection(pstSpinLock) - 1)
+#define VOS_SPIN_INIT(pstSpinLock)         (InitializeCriticalSectionEx(pstSpinLock, 81920, CRITICAL_SECTION_NO_DEBUG_INFO) - 1);
+#define VOS_SPIN_FINI(pstSpinLock)         DeleteCriticalSection(pstSpinLock);
+#define VOS_SPIN_LOCK(pstSpinLock)         EnterCriticalSection(pstSpinLock);
+#define VOS_SPIN_UNLOCK(pstSpinLock)       LeaveCriticalSection(pstSpinLock);
+#define VOS_SPIN_TRYLOCK(pstSpinLock)      (TryEnterCriticalSection(pstSpinLock) - 1)
 #else
 typedef pthread_spinlock_t VOS_SPINLOCK_T, *PVOS_SPINLOCK_T;
-#define VOS_Spin_Init(pstSpinLock)         pthread_spin_init(spin, PTHREAD_PROCESS_PRIVATE)
-#define VOS_Spin_Destroy(pstSpinLock)      pthread_spin_destroy(spin)
-#define VOS_Spin_Lock(pstSpinLock)         pthread_spin_lock(spin)
-#define VOS_Spin_Unlock(pstSpinLock)       pthread_spin_unlock(spin)
-#define VOS_Spin_Trylock(pstSpinLock)      pthread_spin_trylock(spin)
+#define VOS_SPIN_INIT(pstSpinLock)         pthread_spin_init(pstSpinLock, PTHREAD_PROCESS_PRIVATE);
+#define VOS_SPIN_FINI(pstSpinLock)         pthread_spin_destroy(pstSpinLock);
+#define VOS_SPIN_LOCK(pstSpinLock)         pthread_spin_lock(pstSpinLock);
+#define VOS_SPIN_UNLOCK(pstSpinLock)       pthread_spin_unlock(pstSpinLock);
+#define VOS_SPIN_TRYLOCK(pstSpinLock)      pthread_spin_trylock(pstSpinLock)
 #endif
 
 #endif

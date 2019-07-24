@@ -56,10 +56,17 @@ do{\
 
 
 typedef struct tagVosEventReactor               VRCT_REACTOR_S, *PVRCT_REACTOR_S;
-typedef struct tagVosReactorNetEvtManager       VRCT_MGR_NETEVT_S,*PVRCT_MGR_NETEVT_S;
+typedef struct tagVosReactorNetEvtManager       VRCT_NETEVT_MGR_S,*PVRCT_NETEVT_MGR_S;
 typedef struct tagVosReactorNetEvtOpts          VRCT_NETEVT_OPT_S,*PVRCT_NETEVT_OPT_S;
 
+typedef struct tagVosReactorTimerManager        VRCT_TIMER_MGR_S,*PVRCT_TIMER_MGR_S;
+typedef struct tagVosReactorTimerOpts           VRCT_TIMER_OPT_S,*PVRCT_TIMER_OPT_S;
 
+//typedef struct tagVosReactorExpireManager       VRCT_EXPIRE_MGR_S,*PVRCT_EXPIRE_MGR_S;
+//typedef struct tagVosReactorExpireOpts          VRCT_EXPIRE_OPT_S,*PVRCT_EXPIRE_OPT_S;
+
+//typedef struct tagVosReactorMessageQueManager   VRCT_MSQUE_MGR_S,*PVRCT_MSQUE_MGR_S;
+//typedef struct tagVosReactorMessageQueOpts      VRCT_MSQUE_OPT_S,*PVRCT_MSQUE_OPT_S;
 
 
 #endif

@@ -309,12 +309,12 @@ typedef unsigned long long  UINT64_T, *PUINT64_T;
 
 #if VOS_PLAT_DBG
 #define PEVENT_FORMAT "[FILE=%s,FUNC=%s,LINE=%d]--->"
-#define PEVENT(EvtMsg, ...)\
+#define PEvent(EvtMsg, ...)\
 {\
   (void)printf((PEVENT_FORMAT EvtMsg "\n"),__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);\
 }
 #else
-#define PEVENT(EvtMsg, ...)
+#define PEvent(EvtMsg, ...)
 #endif
 
 #endif

@@ -45,10 +45,10 @@ struct tagVosEventReactor
     
     VRCT_INIT_S                 stInfo;                     /** 初始化信息*/
     
-    VRCT_MGR_NETEVT_S           stMgrNet;                   /** 所有FD的管理器*/
-    //VRCT_MGR_MSEQUE_S           stMgrMsq;                   /** 消息控制流*/
-    //VRCT_MGR_TIMER_S            stMgrTimer;                 /** 定时器管理器*/
-    //VRCT_MGR_EXPIR_S            stMgrExpirer;               /** 老化管理器*/
+    VRCT_NETEVT_MGR_S           stMgrNet;                   /** 所有FD的管理器*/
+    VRCT_TIMER_MGR_S            stMgrTimer;                 /** 定时器管理器*/
+    //VRCT_MSQUE_MGR_S            stMgrMsQue;                 /** 消息控制流*/
+    //VRCT_EXPIRE_MGR_S           stMgrExpirer;               /** 老化管理器*/
     VOS_EVT_T                   hWaitForStart;              /** 初始化启动完成*/
     VOS_EVT_T                   hWaitForExit;               /** 本实例线程安全退出*/
 };

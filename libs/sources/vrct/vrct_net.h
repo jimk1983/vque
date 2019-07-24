@@ -25,13 +25,15 @@
 #ifndef _VRCT_NET_H_
 #define _VRCT_NET_H_
 
-
+#define     VRCT_TIMER_QUIK     0
+#define     VRCT_TIMER_SLOW     1
 
 /*网络事件处理器: 所有事件触发器的基础*/
 struct tagVosReactorNetEvtManager
 {
-    PVRCT_REACTOR_S             pstVReactor;                /** 总触发器*/
+    PVRCT_REACTOR_S             pstVReactor;                
     VRCT_NETEVT_OPT_S**         apstEpollEvtOps;            /** socketfd操作数组，空间换时间*/
+    UINT32_T                    MaxSize;                    /** 最大Size*/
 };
 
 /*单个节点需要包含的信息*/
@@ -45,10 +47,8 @@ struct tagVosReactorNetEvtOpts
     VRCT_CALLBACK_S             stSend;                     /** 发送的事件处理回调函数和节点指针*/
 };
 
-typedef VOID (*vrct_netevt_recv_cb)(VOID *pvConn);
-typedef VOID (*vrct_netevt_send_cb)(VOID *pvConn);
-
 #define VRCT_NETCALLBACK_INIT(pstNetOpts_, fd_, iotype_, EventMask_, pfRecv_, pfSend_, pvConner_) do{\
+    VOS_DLIST_INIT(&(pstNetOpts_)->stNode);\
     (pstNetOpts_)->fd = (fd_);\
     (pstNetOpts_)->IoType = (iotype_);\
     (pstNetOpts_)->EventMask = (EventMask_);\
@@ -59,6 +59,17 @@ typedef VOID (*vrct_netevt_send_cb)(VOID *pvConn);
 
 
 
+INT32_T     VRCT_NetworkEvtManagerInit(PVRCT_REACTOR_S           pstRctor, UINT32_T MaxSize);
+VOID        VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S            pstRctor);
+INT32_T     VRCT_NetworkEvtRegister(PVRCT_REACTOR_S pstRctor,
+                                                    INT32_T fd,
+                                                    INT32_T IoType,
+                                                    INT32_T EvtMask,
+                                                    PFVRCT_NETEVT_CB pfRecvCb, 
+                                                    PFVRCT_NETEVT_CB pfSendCb, 
+                                                    VOID* pvCtx);
+VOID        VRCT_NetworkEvtUnRegister(PVRCT_REACTOR_S          pstRctor, INT32_T fd);
+INT32_T     VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor,INT32_T fd, INT32_T OptCtrl);
 
 
 
