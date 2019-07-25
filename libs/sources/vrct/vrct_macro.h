@@ -41,7 +41,7 @@
 #define VRCT_BUFHI_LEVEL                    1000
 
 
-typedef struct tagVosEventReactor               VRCT_REACTOR_S, *PVRCT_REACTOR_S;
+typedef struct tagVosReactor                    VRCT_REACTOR_S, *PVRCT_REACTOR_S;
 typedef struct tagVosReactorNetEvtManager       VRCT_NETEVT_MGR_S,*PVRCT_NETEVT_MGR_S;
 typedef struct tagVosReactorTimerManager        VRCT_TIMER_MGR_S,*PVRCT_TIMER_MGR_S;
 typedef struct tagVosReactorMessageQueueManager VRCT_MSQUE_MGR_S,*PVRCT_MSQUE_MGR_S;

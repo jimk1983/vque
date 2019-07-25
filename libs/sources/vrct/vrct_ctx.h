@@ -26,7 +26,7 @@
 #define _VRCT_CTX_H_
 
 /** VRCT初始化信息*/
-typedef struct tagVosEventReactorInit
+typedef struct tagVosReactorInit
 {
     INT32_T                     TaskID;                     /** 所属ID*/
     CHAR                        acGuid[SYS_GUID_LEN];       /** 该Reactor唯一GUID*/
@@ -39,7 +39,7 @@ typedef struct tagVosEventReactorInit
 
 
 /** VOS的Reactor主结构*/
-struct tagVosEventReactor
+struct tagVosReactor
 {
     PVRCT_REACTOR_S             pstVRctor;
     VRCT_INIT_S                 stInfo;                     /** 初始化信息*/
@@ -50,6 +50,8 @@ struct tagVosEventReactor
     VOS_EVT_T                   hWaitForExit;               /** 本实例线程安全退出*/
 };
 
+
+VOID*   VRCT_MainWorkerCb(VOID *pvArgv);
 
 
 

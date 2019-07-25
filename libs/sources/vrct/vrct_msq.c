@@ -31,6 +31,63 @@ VOID    VRCT_MsgQueManagerUnInit(PVRCT_REACTOR_S          pstRctor);
 
 
 /**
+ * @brief register the message queue option
+ * @param pstRctor  [in]    vos reactor
+ * @param pstMsqOpt [in]    message queue option
+ */
+INT32_T VRCT_MsgQueOptsRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S pstMsqOpt)
+{
+    INT32_T     FliterID = 0;
+    
+    if ( NULL == pstRctor
+        || NULL == pstMsqOpt )
+    {
+        PError("param error!");
+        return VOS_ERR;
+    }
+    
+    for (; FliterID < VRCT_MSQPF_NUMS ; FliterID++)
+    {
+        if ( NULL == pstRctor->stMgrMsQue.apstMsgOpts[FliterID] )
+        {
+            pstMsqOpt->PipeFliterID = FliterID;
+            pstRctor->stMgrMsQue.apstMsgOpts[FliterID] = pstMsqOpt;
+            break;
+        }
+    }
+    
+    if ( FliterID >= VRCT_MSQPF_NUMS-1 )
+    {
+        PError("[TKD:%02d EID:%02d]=>Not enough idle fliter id!",
+                pstRctor->stInfo.TaskID, 
+                pstRctor->stInfo.Epollfd);
+        return VOS_ERR;
+    }
+    
+    return VOS_OK;
+}
+
+
+/**
+ * @brief un-register the message queue option
+ * @param pstRctor  [in]    vos reactor
+ * @param pstMsqOpt [in]    message queue option
+ */
+VOID VRCT_MsgQueOptsUnRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S pstMsqOpt)
+{
+    if ( NULL == pstMsqOpt
+        || pstMsqOpt->PipeFliterID >= VRCT_MSQPF_NUMS )
+    {
+        return;
+    }
+    
+    if ( NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsqOpt->PipeFliterID] )
+    {
+        pstRctor->stMgrMsQue.apstMsgOpts[pstMsqOpt->PipeFliterID] = NULL;
+    }
+}
+
+/**
  * @brief init the message queue event manager
  * @param fd [in] eventfd
  * @param pvCtx [in] reactor 
@@ -63,13 +120,24 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                 pstMsgNode->pvMsgData, 
                 pstMsgNode->MsgSize);
         
-        if ( pstMsgNode->PipeFliterID < VRCT_MSQPF_NUMS
-            && NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID] )
+        switch(pstMsgNode->MsgCode)
         {
-            ((PFVRCT_MSGCTL_CB)pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvcbFunc)(pstMsgNode->pvMsgData,
-                                                                                                                pstMsgNode->MsgSize,
-                                                                                                                pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvData);
+            case VRCT_MSQCODE_USER:
+                if ( pstMsgNode->PipeFliterID < VRCT_MSQPF_NUMS
+                    && NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID] )
+                {
+                    ((PFVRCT_MSGCTL_CB)pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvcbFunc)(pstMsgNode->pvMsgData,
+                                                                                                                        pstMsgNode->MsgSize,
+                                                                                                                        pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvData);
+                }
+                break;
+           case VRCT_MSQCODE_EXIT:
+                
+                break;
+            default:
+                break;
         }
+        
         
         pstMsgNode->pvMsgData = NULL;
         pstMsgNode->MsgCode = 0;

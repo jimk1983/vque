@@ -21,7 +21,7 @@ initcfgfile=${CFGDIR}/init.conf
 
 if [ $1 == "clean" ]
 then
-	rm -rf $ROOTDIR/outs/*
+	rm -rf $ROOTDIR/outs/
 	rm -rf $ROOTDIR/libs/include/*
 	rm -rf $ROOTDIR/libs/bins/*
 	pmsg "all clean success!"

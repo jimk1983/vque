@@ -73,6 +73,19 @@ struct tagVosReactorMessageQueueManager
     VRCT_SOCKPAIR_S             stSockPair;                 
 };
 
+typedef enum
+{
+    VRCT_MSQCODE_USER =0,
+    VRCT_MSQCODE_EXIT,
+    
+    VRCT_MSGCODE_NUMS
+}VRCT_MSGCODE_E;
+
+INT32_T     VRCT_MsgQueOptsRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S pstMsqOpt);
+VOID        VRCT_MsgQueOptsUnRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S pstMsqOpt);
+
+INT32_T     VRCT_MsgQueManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T MaxSize);
+VOID        VRCT_MsgQueManagerUnInit(PVRCT_REACTOR_S          pstRctor);
       
 #endif
  

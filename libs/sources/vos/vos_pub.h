@@ -31,7 +31,7 @@
 #include <vos/vos_event.h>
 #include <vos/vos_hash.h>
 #include <vos/vos_shm.h>
-
+#include <vos/vos_utils.h>
 
 
 

@@ -46,6 +46,12 @@ void VOS_MSleep(UINT32_T ulMSleep);
 void VOS_USleep(UINT32_T ulUSleep);
 void VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec);
 void VOS_GetLocalSysTime(VOS_SYS_TIME_T *pstSysTime);
+UINT32_T VOS_GetSysTimeNow(CHAR *buf);
+
+CHAR*   VOS_TimeToString(time_t* tm, CHAR* buf);
+CHAR*   VOS_TimeNow(CHAR* buf);
+time_t  VOS_TmToTime(struct tm* ptm);
+void    VOS_TimeToTm(const time_t* time, struct tm* ptm);
 
 
 typedef UINT64_T VOS_TSTAMP_T;

@@ -29,7 +29,6 @@
 /** 最大的包长度*/
 #define     VRCT_PACK_MAX           65536
 
-
 /** 协议框架头部设定: 包大小直接规定用INT32_T来表示*/
 typedef struct tagVosReactorSetPacketInfo
 {
@@ -117,6 +116,8 @@ typedef struct tagVosReactorMessageQueueOption
 
 
 
+VOID*       VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize);
+VOID        VRCT_API_Release(PVOID *ppvRctor);
 
 
 

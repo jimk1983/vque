@@ -30,26 +30,26 @@ VER_REVISION=0
 # all : prepare targets...
 BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/vmshare/vque/example
+SRC_DIR=/mnt/hgfs/vmshare/vque/examplevque
 CFLAG+=-I. -I/mnt/hgfs/vmshare/vque/libs/include -I-I/mnt/hgfs/vmshare/vque/deps/include
-LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvos -ldl -lpthread -lrt -lm
+LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvrct -lvos -ldl -lpthread -lrt -lm
 LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
-LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/
+LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/examplevque/
 
-all : prepare $(BIN_DIR)/example
+all : prepare $(BIN_DIR)/examplevque
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/examplevque 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/example :  $(OBJ_DIR)/example/client/test_vos.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/client/test_vos.o $(LDFLAGS)
+$(BIN_DIR)/examplevque :  $(OBJ_DIR)/examplevque/main.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/examplevque/main.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
 
-$(OBJ_DIR)/example/client/test_vos.o : $(ROOT_DIR)/example/client/test_vos.cpp
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/client/test_vos.cpp
+$(OBJ_DIR)/examplevque/main.o : $(ROOT_DIR)/examplevque/main.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/main.cpp
 

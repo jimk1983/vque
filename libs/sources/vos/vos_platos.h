@@ -330,19 +330,19 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 #endif
 
 
-#define PERR_FORMAT "[**-=ERROR=-**][FILE=%s, FUNC=%s,LINE=%d]--->"
+#define PERR_FORMAT " [FILE=%s, FUNC=%s,LINE=%d]"
 
 #define PError(ErrMsg, ...)\
 {\
-  (void)printf((PERR_FORMAT ErrMsg "\n"),__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);\
+  (void)printf(("[ERR] " ErrMsg PERR_FORMAT "\n"),##__VA_ARGS__, __FILE__,__FUNCTION__,__LINE__);\
 }
 
 
 #if VOS_PLAT_DBG
-#define PEVENT_FORMAT "[FILE=%s,FUNC=%s,LINE=%d]--->"
+#define PEVENT_FORMAT " [FILE=%s,FUNC=%s,LINE=%d]"
 #define PEvent(EvtMsg, ...)\
 {\
-  (void)printf((PEVENT_FORMAT EvtMsg "\n"),__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);\
+  (void)printf(("[EVT] " EvtMsg PEVENT_FORMAT "\n"),##__VA_ARGS__,__FILE__,__FUNCTION__,__LINE__);\
 }
 #else
 #define PEvent(EvtMsg, ...)
