@@ -41,33 +41,14 @@
 #define VRCT_BUFHI_LEVEL                    1000
 
 
-/** 通用结构定义*/
-typedef struct tagVRctCommCallback
-{
-      VOID* pvcbFunc;
-      VOID* pvData;
-}VRCT_CALLBACK_S, *PVRCT_CALLBACK_S;
-
-#define VRCT_CALLBACK_INIT(pstCallBack_, pfFunc_, pvUserData_)\
-do{\
-    (pstCallBack_)->pvcbFunc = (VOID *)pfFunc_;\
-    (pstCallBack_)->pvData   = (VOID *)pvUserData_;\
-}while(0);
-
-
 typedef struct tagVosEventReactor               VRCT_REACTOR_S, *PVRCT_REACTOR_S;
 typedef struct tagVosReactorNetEvtManager       VRCT_NETEVT_MGR_S,*PVRCT_NETEVT_MGR_S;
-typedef struct tagVosReactorNetEvtOpts          VRCT_NETEVT_OPT_S,*PVRCT_NETEVT_OPT_S;
-
 typedef struct tagVosReactorTimerManager        VRCT_TIMER_MGR_S,*PVRCT_TIMER_MGR_S;
-typedef struct tagVosReactorTimerOpts           VRCT_TIMER_OPT_S,*PVRCT_TIMER_OPT_S;
+typedef struct tagVosReactorMessageQueueManager VRCT_MSQUE_MGR_S,*PVRCT_MSQUE_MGR_S;
+
 
 //typedef struct tagVosReactorExpireManager       VRCT_EXPIRE_MGR_S,*PVRCT_EXPIRE_MGR_S;
 //typedef struct tagVosReactorExpireOpts          VRCT_EXPIRE_OPT_S,*PVRCT_EXPIRE_OPT_S;
-
-//typedef struct tagVosReactorMessageQueManager   VRCT_MSQUE_MGR_S,*PVRCT_MSQUE_MGR_S;
-//typedef struct tagVosReactorMessageQueOpts      VRCT_MSQUE_OPT_S,*PVRCT_MSQUE_OPT_S;
-
 
 #endif
 

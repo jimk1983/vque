@@ -29,7 +29,6 @@
 
 #define     VRCT_SLOW_TIMES                      10
 
-
 /**
  * @brief Timer register the options
  * @param pvRctor [in] vos reactor
@@ -41,6 +40,10 @@ CINLINE INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_
     if ( pstTimeOps->TimeOut > VRCT_SLOW_TIMES  )
     {
         VOS_DLIST_ADD_TAIL(&pstRctor->stMgrTimer.stSlowList, &pstTimeOps->stNode);
+    }
+    else
+    {
+        VOS_DLIST_ADD_TAIL(&pstRctor->stMgrTimer.stQuickList, &pstTimeOps->stNode);
     }
     
     return VOS_OK;
@@ -78,7 +81,7 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
     PEvent("[TKD:%02d EID:%02d]=>Main Timer Heap Startup!",   pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
     
     /*快定时器堆*/
-    if ( fd == pstRctor->stMgrTimer.stQuickOps.fd 
+    if ( fd == pstRctor->stMgrTimer.stQuickOpts.fd 
         && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stQuickList) )
     {
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stQuickList, VRCT_TIMER_OPT_S, stNode)
@@ -95,7 +98,7 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
             {
                 pstTimeNodeNext = VOS_DLIST_ENTRY(pstTimeNodeTmp->stNode.next, VRCT_TIMER_OPT_S, stNode);
                 
-                VRCT_TimerEvtOptsUnRegister(pstTimeNodeTmp);
+                VOS_DLIST_DEL(&pstTimeNodeTmp->stNode);
                 
                 pstTimeNodeTmp = pstTimeNodeNext;
                 continue;
@@ -116,7 +119,7 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
     }
     
     /*慢定时器堆*/
-    if ( fd == pstRctor->stMgrTimer.stSlowOps.fd
+    if ( fd == pstRctor->stMgrTimer.stSlowOpts.fd
         && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stSlowList) )
     {
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stSlowList, VRCT_TIMER_OPT_S, stNode)
@@ -177,7 +180,7 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
     pstRctor->stMgrTimer.pstVReactor            = pstRctor;
     VOS_DLIST_INIT(&pstRctor->stMgrTimer.stQuickList);
     
-    VRCT_NETCALLBACK_INIT( &pstRctor->stMgrTimer.stQuickOps,
+    VRCT_NETCALLBACK_INIT( &pstRctor->stMgrTimer.stQuickOpts,
                              timerqickfd,
                              VRCT_IOTYPE_TIMER,
                              VRCT_POLL_LTIN,
@@ -185,13 +188,7 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
                              NULL,
                              pstRctor);
     
-    if (VOS_ERR == VRCT_NetworkEvtRegister(pstRctor,
-                                            timerqickfd, 
-                                            VRCT_IOTYPE_TIMER, 
-                                            VRCT_POLL_LTIN, 
-                                            VRCT_TimerCtrlMainCB, 
-                                            NULL, 
-                                            pstRctor) )
+    if (VOS_ERR == VRCT_NetworkEvtOptsRegister(pstRctor,  &pstRctor->stMgrTimer.stQuickOpts) )
     {
         PError("[TKD:%02d EID:%02d]=>register options error, timerfd=%d",
                     pstRctor->stInfo.TaskID,
@@ -213,7 +210,7 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 errno, strerror(errno));
-        VRCT_NetworkEvtUnRegister(pstRctor, timerqickfd);
+        VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stQuickOpts);
         close(timerqickfd);
         return VOS_ERR;
     }
@@ -225,13 +222,13 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 errno, strerror(errno));
-        VRCT_NetworkEvtUnRegister(pstRctor, timerqickfd);
+        VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stQuickOpts);
         close(timerqickfd);
         close(timerslowfd);
         return VOS_ERR;
     }
     
-    VRCT_NETCALLBACK_INIT( &pstRctor->stMgrTimer.stSlowOps,
+    VRCT_NETCALLBACK_INIT( &pstRctor->stMgrTimer.stSlowOpts,
                              timerslowfd,
                              VRCT_IOTYPE_TIMER,
                              VRCT_POLL_LTIN,
@@ -241,19 +238,13 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
     
     VOS_DLIST_INIT(&pstRctor->stMgrTimer.stSlowList);
     
-    if (VOS_ERR == VRCT_NetworkEvtRegister(pstRctor,
-                                            timerslowfd, 
-                                            VRCT_IOTYPE_TIMER, 
-                                            VRCT_POLL_LTIN, 
-                                            VRCT_TimerCtrlMainCB, 
-                                            NULL, 
-                                            pstRctor) )
+    if (VOS_ERR == VRCT_NetworkEvtOptsRegister(pstRctor, &pstRctor->stMgrTimer.stSlowOpts) )
     {
         PError("[TKD:%02d EID:%02d]=>register options error, timerfd=%d",
                     pstRctor->stInfo.TaskID,
                     pstRctor->stInfo.Epollfd,
                     timerqickfd);
-        VRCT_NetworkEvtUnRegister(pstRctor, timerqickfd);
+        VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stQuickOpts);
         close(timerqickfd);
         close(timerslowfd);
         return VOS_ERR;
@@ -278,15 +269,15 @@ INT32_T   VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor)
  * @brief un-init the timer manager
  * @param pvRctor [in] vos reactor
  */
-void VRCT_TimerCtrlManagerUnInit(PVRCT_REACTOR_S          pstRctor)
+VOID VRCT_TimerCtrlManagerUnInit(PVRCT_REACTOR_S          pstRctor)
 {
     PVOS_DLIST_S       pthisEntry=NULL, pNextEntry=NULL, plistHead=NULL;
     PVRCT_TIMER_OPT_S  pstTimerNode = NULL;
     
     if ( NULL != pstRctor )
     {
-        VRCT_NetworkEvtUnRegister(pstRctor, pstRctor->stMgrTimer.stQuickOps.fd);
-        VRCT_NetworkEvtUnRegister(pstRctor, pstRctor->stMgrTimer.stSlowOps.fd);
+        VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stQuickOpts);
+        VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stSlowOpts);
 
         plistHead = &pstRctor->stMgrTimer.stQuickList;
         if ( VOS_TRUE != VOS_DList_IsEmpty(plistHead))
@@ -319,8 +310,8 @@ void VRCT_TimerCtrlManagerUnInit(PVRCT_REACTOR_S          pstRctor)
             }
         }
         
-        close(pstRctor->stMgrTimer.stQuickOps.fd);
-        close(pstRctor->stMgrTimer.stSlowOps.fd);
+        close(pstRctor->stMgrTimer.stQuickOpts.fd);
+        close(pstRctor->stMgrTimer.stSlowOpts.fd);
     }
 }
 

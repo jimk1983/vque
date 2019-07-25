@@ -15,6 +15,14 @@ ROOTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
 CFGDIR=$ROOTDIR/config
 
+if [ $1 == "allclean" ]
+then
+	rm -rf $ROOTDIR/outs/*
+	rm -rf $ROOTDIR/libs/include/*
+	rm -rf $ROOTDIR/libs/bins/*
+fi
+
+
 rm -rf outs
 
 #2.include the configure shell

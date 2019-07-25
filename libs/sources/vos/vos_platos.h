@@ -95,6 +95,21 @@ typedef signed int          INT32_T, *PINT32_T;
 typedef unsigned int        UINT32_T, *PUINT32_T;
 #endif
 
+
+#ifndef VINT16_T
+typedef volatile signed short        VINT16_T, *PVINT16_T;
+#endif
+#ifndef VUINT16_T
+typedef volatile unsigned short      VUINT16_T, *PVUINT16_T;
+#endif
+#ifndef VINT32_T
+typedef volatile signed int          VINT32_T, *PVINT32_T;
+#endif
+#ifndef VUINT32_T
+typedef volatile unsigned int        VUINT32_T, *PVUINT32_T;
+#endif
+
+
 typedef struct tagDoublelong
 {
     struct tagulong_ul
@@ -130,14 +145,30 @@ typedef signed long    INT64_T, *PINT64_T;
 typedef unsigned long  UINT64_T, *PUINT64_T;
 #endif
 
+#ifndef VINT64_T
+typedef volatile signed long    VINT64_T, *PVINT64_T;
+#endif
+#ifndef VUINT64_T
+typedef volatile unsigned long  UVINT64_T, *PVUINT64_T;
+#endif
+
 #define VOS_INVALID_VAL   0xFFFFFFFF
 
 #elif VOS_PLATCPU_64
 #ifndef INT64_T
 typedef signed long long    INT64_T, *PINT64_T;
 #endif
+
 #ifndef UINT64_T
 typedef unsigned long long  UINT64_T, *PUINT64_T;
+#endif
+
+#ifndef VINT64_T
+typedef volatile signed long long    VINT64_T, *PVINT64_T;
+#endif
+
+#ifndef UINT64_T
+typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 #endif
 
 #define VOS_INVALID_VAL   0xFFFFFFFFFFFFFFFF

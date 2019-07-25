@@ -95,6 +95,92 @@ VOID VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S          pstRctor)
 /**
  * @brief register the network event
  * @param pvRctor [in] the vos reactor
+ * @param PVRCT_NETEVT_OPT_S [in] the socket network option
+ * @author jimk 
+ */
+INT32_T  VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NETEVT_OPT_S pstNetOpt)
+ {   
+    PVRCT_NETEVT_OPT_S      pstNetOpts  = NULL;
+    struct  epoll_event     stEvent     = {0};
+    
+    if ( NULL == pstRctor
+        || NULL == pstNetOpt )
+    {
+        PError("param error!");
+        return SYS_ERR_PARAM;
+    }
+        
+    if ( NULL != pstRctor->stMgrNet.apstEpollEvtOps[pstNetOpt->fd])
+    {
+        PError("[TKD:%02d EID:%02d]=>System error! Found the exist Socket=%d", 
+                                                                    pstRctor->stInfo.TaskID,  
+                                                                    pstRctor->stInfo.Epollfd,
+                                                                    pstNetOpt->fd);
+        return SYS_ERR;
+    }
+    
+    stEvent.data.fd = pstNetOpts->fd;
+    stEvent.events  = pstNetOpts->EventMask;
+    
+    if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_ADD, pstNetOpts->fd, &stEvent))
+    {
+        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!EpollFd=%d, Fd=%d, errno=%d:%s",  
+                 pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpt->fd, errno, strerror(errno));
+        return SYS_ERR;
+    }
+    
+    pstRctor->stMgrNet.apstEpollEvtOps[pstNetOpt->fd] = pstNetOpt;
+    
+    return SYS_OK;
+}
+
+                                                   
+/**
+* @brief unregister the network event
+* @param pvRctor [in] the vos reactor
+* @param fd [in] the socket
+* @author jimk 
+*/
+VOID   VRCT_NetworkEvtOptsUnRegister(PVRCT_REACTOR_S             pstRctor,  PVRCT_NETEVT_OPT_S pstNetOpt)
+{
+    struct epoll_event      stEvent     = {0};
+    INT32_T                 fd          = 0;
+
+    if ( NULL == pstNetOpt ) 
+    {
+        PError("Param error!");
+        return;
+    }
+    
+    fd = pstNetOpt->fd;
+    if (fd >= VRCT_FDMAX-1 ) 
+    {
+        PError("Param error!fd=%d", fd);
+        return;
+    }
+    
+    stEvent.data.fd = fd;  
+    stEvent.events  = VRCT_POLL_LTINOUT;
+    
+    if ( pstRctor->stMgrNet.apstEpollEvtOps[fd] != NULL )
+    { 
+        pstRctor->stMgrNet.apstEpollEvtOps[fd] = NULL;
+    }
+    
+    /*不能在close(fd)之后调用，错误码为0, success*/
+    if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_DEL, fd, &stEvent))
+    {
+        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(DEL) error!Fd=%d, errno=%d:%s",  
+                    pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,
+                    fd, errno, strerror(errno));
+        return;
+    }
+}
+
+
+/**
+ * @brief register the network event
+ * @param pvRctor [in] the vos reactor
  * @param fd [in] the socket
  * @param EvtMask [in] the event mask
  * @param pfRecvCb [in] the recv callback
