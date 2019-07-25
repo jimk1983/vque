@@ -15,23 +15,29 @@ ROOTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 
 CFGDIR=$ROOTDIR/config
 
-if [ $1 == "allclean" ]
+#init shell
+initcfgfile=${CFGDIR}/init.conf
+. ${initcfgfile} 
+
+if [ $1 == "clean" ]
 then
 	rm -rf $ROOTDIR/outs/*
 	rm -rf $ROOTDIR/libs/include/*
 	rm -rf $ROOTDIR/libs/bins/*
+	pmsg "all clean success!"
+	exit
 fi
 
 
 rm -rf outs
 
-#2.include the configure shell
-initcfgfile=${CFGDIR}/init.conf
+#2.configure shell
 makecfgfile=${CFGDIR}/make.conf
-buildcfgfile=${CFGDIR}/build.conf
-
-. ${initcfgfile}
 . ${makecfgfile}
+
+
+#3. make build shell
+buildcfgfile=${CFGDIR}/build.conf
 . ${buildcfgfile}
 
 pmsg "All Configure Successful!"
