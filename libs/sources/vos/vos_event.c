@@ -139,6 +139,7 @@ INT32_T VOS_ThreadEvent_Waitfor(VOS_EVT_T *pstEvent, UINT32_T uiMillTimeout)
         {
             //OK
             pthread_mutex_unlock(pstMutex);
+            return VOS_OK;
         }
         else
         {
@@ -172,6 +173,7 @@ INT32_T  VOS_ThreadEvent_Notify(VOS_EVT_T *pstEvent)
     pstMutex = &pstEvent->stMutex;
     pstCond = &pstEvent->stCond;
     
+    VOS_MSleep(300);
     pthread_mutex_lock(pstMutex);
     uiErr = pthread_cond_signal(pstCond);
     if ( uiErr == 0 )

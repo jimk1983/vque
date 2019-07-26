@@ -18,23 +18,33 @@
 ******************************************************************************/
 
 #include <vos/vos_pub.h>
-#include <vrct/vrct_priv.h>
+#include <vrct/vrct_api.h>
 
 
 int main(int argc, char *argv[])
 {
     VOID *pvRctor = NULL;
     
-    pvRctor = VRCT_API_Create(0, 1000);
-    if ( NULL == pvRctor )
+    while(1)
     {
-        PError("Reactor create failed!");
-        return -1;
+        pvRctor = VRCT_API_Create(0, 100000);
+        if ( NULL == pvRctor )
+        {
+            PError("Reactor create failed!");
+            return -1;
+        }
+        
+        if( VOS_ERR == VRCT_API_Start(pvRctor) )
+        {
+            PError("Reactor start failed!");
+            return -1;
+        }
+        
+        //PEvent("system-time=%s", VOS_GetSysTimeNowStr());
+        VOS_Sleep(300);
+        
+        VRCT_API_Release(&pvRctor);
     }
-    
-    
-    VRCT_API_Release(&pvRctor);
-    
     return 0;
 }
 

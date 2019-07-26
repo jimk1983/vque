@@ -121,7 +121,7 @@ VOID    *VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize)
     {   
         PError("[TKD:%02d EID:%02d]=>Thread event init failed", 
             pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
-        goto ErrorExit;   
+        goto ErrorExit;
     }
     
     if ( SYS_ERR == VRCT_NetworkEvtManagerInit(pstRctor, VRCT_FDMAX) )
@@ -166,19 +166,26 @@ ErrorExit:
     return NULL;
 }
 
-
-INT32_T VRCT_API_Start(VOID*     pvRctor)
+/**
+ * @brief start the vos reactor task
+ * @param TaskID [in] task ID
+ * @param MaxSize [in] the message queue max size
+ */
+INT32_T VRCT_API_Start(PVOID      pvRctor)
 {
     PVRCT_REACTOR_S     pstRctor = (PVRCT_REACTOR_S)pvRctor;
     int                 iRet     = 0;
     pthread_t           handle   = 0;
-    pthread_attr_t      attr;
+    
     
     if ( NULL == pvRctor )
     {
         return VOS_ERR;
     }
     
+#if 0
+    pthread_attr_t      attr;
+
     iRet = pthread_attr_init(&attr);
     if (iRet) 
     {
@@ -186,32 +193,39 @@ INT32_T VRCT_API_Start(VOID*     pvRctor)
             pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
         return VOS_ERR;
     }
-
+    
+    /** 会导致线程分离*/
     iRet = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     if (iRet) 
     {
-        PError("[ETSK] [TKD:%02d EID:%02d]=>pthread_attr_setdetachstate() failed", 
+        PError("[TKD:%02d EID:%02d]=>pthread_attr_setdetachstate() failed", 
             pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
         return VOS_ERR;
     }
-    
     iRet = pthread_create(&handle, &attr, VRCT_MainWorkerCb, (VOID *)pstRctor);
+#else
+    iRet = pthread_create(&handle, NULL, VRCT_MainWorkerCb, (VOID *)pstRctor);
+#endif
     if ( 0 != iRet )
     {
-        PError("[ETSK] [TKD:%02d EID:%02d]=>epoll pthread create failed,errno=%d:%s",
+        PError("[TKD:%02d EID:%02d]=>epoll pthread create failed,errno=%d:%s",
             pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
         return VOS_ERR;
     }
-    
-    (void) pthread_attr_destroy(&attr);
     
     iRet = VOS_ThreadEvent_Waitfor(&pstRctor->hWaitForStart, 3000);
-    if ( VOS_OK != iRet)
+    if ( VOS_OK != iRet )
     {
-        PError("[ETSK] [TKD:%02d EID:%02d]=>wait for start event exit!", 
-            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+        PError("[TKD:%02d EID:%02d]=>wait for start event exit!iRet=%08x", 
+            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, iRet);
         return VOS_ERR;
     }
+    
+    //(void) pthread_attr_destroy(&attr);
+    
+    PEvent("[TKD:%02d EID:%02d]=>epoll pthread create successful!",
+                pstRctor->stInfo.TaskID, 
+                pstRctor->stInfo.Epollfd);
     
     return VOS_OK;
 }
@@ -239,15 +253,12 @@ VOID VRCT_API_Release(PVOID *ppvRctor)
         
         /*等待线程退出*/
         (void)VOS_ThreadEvent_Waitfor(&pstRctor->hWaitForExit, 100);
-        #if VOS_PLAT_LINUX
-        pthread_exit(0);
-        #endif
         
         VOS_ThreadEvent_Destroy(&pstRctor->hWaitForStart);
         VOS_ThreadEvent_Destroy(&pstRctor->hWaitForExit);
         VRCT_MsgQueManagerUnInit(pstRctor);
-        VRCT_NetworkEvtManagerUnInit(pstRctor);
         VRCT_TimerCtrlManagerUnInit(pstRctor);
+        VRCT_NetworkEvtManagerUnInit(pstRctor);
         
         if ( 0 <  pstRctor->stInfo.Epollfd  )
         {

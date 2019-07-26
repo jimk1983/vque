@@ -94,14 +94,14 @@ void VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec)
         struct timespec currentTime;
         (void)clock_gettime(CLOCK_MONOTONIC, &currentTime);
         
-        ulNSec = (uint32_t)currentTime.tv_nsec;
+        ulNSec = (UINT32_T)currentTime.tv_nsec;
         ulSum = (ulTimeMiliSec / 1000);
         ulNSec += ulSum * 1000000;
         pstAbsT->tv_nsec = ulNSec % 1000000000;
-        ulSec = (uint32_t)currentTime.tv_sec;
+        ulSec = (UINT32_T)currentTime.tv_sec;
         ulSec += ulTimeMiliSec / 1000;        
         ulSec += ulNSec /1000000000;
-        pstAbsT->tv_sec = (int32_t)ulSec;
+        pstAbsT->tv_sec = (UINT32_T)ulSec;
     #else
         struct timeval currentTime;
         gettimeofday(&currentTime, NULL);
@@ -218,12 +218,69 @@ UINT32_T VOS_GetSysTimeNow(CHAR *buf){
     vtm.uiDayOfWeek = st.wDayOfWeek;
 #endif
 
-    ret = sprintf((char *)buf, "%d%02d%02d %02d:%02d:%02d.%03d",
+    ret = sprintf((char *)buf, "%d-%02d-%02d %02d:%02d:%02d.%03d",
                       vtm.uiYear, vtm.uiMoth, vtm.uiDay, vtm.uiHour,
                       vtm.uiMinute, vtm.uiSecond, vtm.uiMiliSec);
 
     return ret;
 }
+
+
+/**
+ * @brief get the system-time now
+ * @param buf [inout] time buffer
+ */
+static __thread CHAR     g_th_timebuf[32];
+CHAR* VOS_GetSysTimeNowStr()
+{
+    VOS_SYS_TIME_T  vtm = {0};
+    UINT32_T        ret = 0;
+    
+    memset(g_th_timebuf,0,32);
+#ifdef VOS_PLAT_LINUX
+    struct timeval tv;
+    struct tm now;
+    ret = gettimeofday(&tv,NULL);
+    if( VOS_OK != ret )
+    {
+        return 0;
+    }
+    localtime_r(&tv.tv_sec, &now);
+
+    vtm.uiYear = now.tm_year + 1900;
+    vtm.uiMoth = now.tm_mon + 1;
+    vtm.uiDay = now.tm_mday;
+    vtm.uiHour = now.tm_hour;
+    vtm.uiMinute = now.tm_min;
+    vtm.uiSecond = now.tm_sec;
+    vtm.uiMiliSec = tv.tv_usec/1000;
+    vtm.uiMicroSec = tv.tv_usec%1000;
+    
+    vtm.uiDayOfWeek = now.tm_wday;
+#else /* VSYS_WINDOWS */
+    SYSTEMTIME st;
+    ret = VOS_OK;
+    GetLocalTime(&st);
+
+    vtm.uiYear = st.wYear;
+    vtm.uiMoth = st.wMonth;
+    vtm.uiDay = st.wDay;
+    vtm.uiHour = st.wHour;
+    vtm.uiMinute = st.wMinute;
+    vtm.uiSecond = st.wSecond;
+    vtm.uiMiliSec = st.wMilliseconds;
+    vtm.uiMicroSec = 0;
+    
+    vtm.uiDayOfWeek = st.wDayOfWeek;
+#endif
+
+    ret = sprintf((char *)g_th_timebuf, "%d-%02d-%02d %02d:%02d:%02d.%03d",
+                      vtm.uiYear, vtm.uiMoth, vtm.uiDay, vtm.uiHour,
+                      vtm.uiMinute, vtm.uiSecond, vtm.uiMiliSec);
+    
+    return g_th_timebuf;
+}
+
 
 /**
  * @brief time to string

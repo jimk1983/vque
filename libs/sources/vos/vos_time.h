@@ -41,12 +41,14 @@ typedef struct tagLocalSysTime
     UINT32_T  uiDayOfWeek;
 }VOS_SYS_TIME_T;
 
-void VOS_Sleep(UINT32_T ulSeconds);
-void VOS_MSleep(UINT32_T ulMSleep);
-void VOS_USleep(UINT32_T ulUSleep);
-void VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec);
-void VOS_GetLocalSysTime(VOS_SYS_TIME_T *pstSysTime);
+void    VOS_Sleep(UINT32_T ulSeconds);
+void    VOS_MSleep(UINT32_T ulMSleep);
+void    VOS_USleep(UINT32_T ulUSleep);
+void    VOS_GetAbsTime(VOS_ABS_TIME_T *pstAbsTime, UINT32_T ulTimeMiliSec);
+void    VOS_GetLocalSysTime(VOS_SYS_TIME_T *pstSysTime);
 UINT32_T VOS_GetSysTimeNow(CHAR *buf);
+CHAR*   VOS_GetSysTimeNowStr();
+
 
 CHAR*   VOS_TimeToString(time_t* tm, CHAR* buf);
 CHAR*   VOS_TimeNow(CHAR* buf);

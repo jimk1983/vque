@@ -32,7 +32,7 @@ typedef struct tagVosReactorInit
     CHAR                        acGuid[SYS_GUID_LEN];       /** 该Reactor唯一GUID*/
     INT32_T                     Epollfd;                    /** 该Reactor的EpollFD*/
     INT32_T                     LogLevel;                   /** 日志级别*/
-    INT32_T                     Stop;                       /** 该Reactor停止*/
+    VINT32_T                    Stop;                       /** 该Reactor停止*/
     PFVRCT_COMM_CB              pfInitCB;                   /** 线程初始化*/
     PVOID                       pvInitCtx;                  /** 线程初始化上下文*/
 }VRCT_INIT_S, *PVRCT_INIT_S;

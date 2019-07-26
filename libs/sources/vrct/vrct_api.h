@@ -118,6 +118,7 @@ typedef struct tagVosReactorMessageQueueOption
 
 VOID*       VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize);
 VOID        VRCT_API_Release(PVOID *ppvRctor);
+INT32_T     VRCT_API_Start(PVOID pvRctor);
 
 
 

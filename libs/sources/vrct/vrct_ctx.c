@@ -62,19 +62,20 @@
          return VOS_ERR;
      }
  
-     ppstarryNetOpts = pstRctor->stMgrNet.apstEpollEvtOps;
- 
-     while(VOS_TRUE)
+     while(!pstRctor->stInfo.Stop)
      {
          nums = epoll_wait(iEpollFd, event, VRCT_EVTMAX, -1);
-         
+         PEvent("[TKD:%02d EID:%02d]=>epoll_wait nums=%d!",
+                                 pstRctor->stInfo.TaskID, 
+                                 pstRctor->stInfo.Epollfd, 
+                                 nums);
          if (0 < nums )
          {
              for(i=0; i < nums; ++i)
              {
                  fd = event[i].data.fd;
                  
-                 pstNetOpts = ppstarryNetOpts[fd];
+                 pstNetOpts = pstRctor->stMgrNet.apstEpollEvtOps[fd];
                  if ( NULL == pstNetOpts )
                  {
                     /*需要保护in/out，可能在netopts中会release相关的fd节点信息*/
@@ -137,17 +138,21 @@
                              }
                          break;
                      default:
-                         PError("[TKD:%02d EID:%02d]=>unknow type=%d!", pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpts->IoType);
+                         PError("[TKD:%02d EID:%02d]=>unknow type=%d!", 
+                            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,
+                            pstNetOpts->IoType);
                          break;
                  }
              }
          }
      }
+     #if VOS_PLAT_LINUX
+     pthread_exit(0);
+     #endif
      
      return VOS_OK;
  }
  
-
  
  /**
   * @brief pthread main work pthread
@@ -155,8 +160,9 @@
   */
  VOID *VRCT_MainWorkerCb(VOID *pvArgv)
  {
-    PVRCT_REACTOR_S         pstRctor = (PVRCT_REACTOR_S)pvArgv;
-     
+    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvArgv;
+    UINT32_T                Tid         = VOS_GetSelfTId();
+    
     if ( NULL == pvArgv )
     {
         return NULL;
@@ -171,13 +177,13 @@
                 pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
        return NULL;
     }
-     
-    PEvent("[TKD:%02d EID:%02d]=>EPoll Tid==[%08x] Ready to work!",
-                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, 
-                VOS_GetSelfTId());
+    
+    PEvent("[TKD:%02d EID:%02d]=>EPoll [TID=%08x] Start to work!",
+                pstRctor->stInfo.TaskID, 
+                pstRctor->stInfo.Epollfd, 
+                Tid);
     
     VOS_ThreadEvent_Notify(&pstRctor->hWaitForStart);
-    
     if ( SYS_ERR == VRCT_MainDispatch(pstRctor) )
     {
         PError("[TKD:%02d EID:%02d]=>EPoll task dispatch exit!", 

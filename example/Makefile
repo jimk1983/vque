@@ -1,3 +1,5 @@
+BUILDS=debug
+
 ifeq ($(BUILDS), debug)
 	CFLAG+=-g -O0
 	BUILDS=debug
@@ -5,8 +7,7 @@ else ifeq ($(BUILDS), release)
 	CFLAG+=-O3
 	BUILDS=release
 else
-	CFLAG+=-O3
-	BUILDS=release
+	CFLAG+=-g -O0
 endif
 
 LDFLAGS=
@@ -31,7 +32,7 @@ VER_REVISION=0
 BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/vmshare/vque/example
-CFLAG+=-I. -I/mnt/hgfs/vmshare/vque/libs/include -I-I/mnt/hgfs/vmshare/vque/deps/include
+CFLAG+=-I. -I/mnt/hgfs/vmshare/vque/libs/sources -I-I/mnt/hgfs/vmshare/vque/deps/include
 LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvos -ldl -lpthread -lrt -lm
 LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
 LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/

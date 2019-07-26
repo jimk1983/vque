@@ -334,7 +334,7 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 
 #define PError(ErrMsg, ...)\
 {\
-  (void)printf(("[ERR] " ErrMsg PERR_FORMAT "\n"),##__VA_ARGS__, __FILE__,__FUNCTION__,__LINE__);\
+  (void)printf(("%s [ERR] " ErrMsg PERR_FORMAT "\n"),VOS_GetSysTimeNowStr(), ##__VA_ARGS__, __FILE__,__FUNCTION__,__LINE__);\
 }
 
 
@@ -342,7 +342,7 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 #define PEVENT_FORMAT " [FILE=%s,FUNC=%s,LINE=%d]"
 #define PEvent(EvtMsg, ...)\
 {\
-  (void)printf(("[EVT] " EvtMsg PEVENT_FORMAT "\n"),##__VA_ARGS__,__FILE__,__FUNCTION__,__LINE__);\
+  (void)printf(("%s [EVT] " EvtMsg PEVENT_FORMAT "\n"),VOS_GetSysTimeNowStr(),##__VA_ARGS__,__FILE__,__FUNCTION__,__LINE__);\
 }
 #else
 #define PEvent(EvtMsg, ...)

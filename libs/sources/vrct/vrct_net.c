@@ -56,6 +56,10 @@ INT32_T VRCT_NetworkEvtManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T M
     }
     
     pstRctor->stMgrNet.MaxSize = MaxSize;
+
+    PEvent("[TKD:%02d EID:%02d]=>Network Manager Init success!",
+                    pstRctor->stInfo.TaskID,
+                    pstRctor->stInfo.Epollfd );
     
     return VOS_OK;
 }
@@ -100,7 +104,6 @@ VOID VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S          pstRctor)
  */
 INT32_T  VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NETEVT_OPT_S pstNetOpt)
  {   
-    PVRCT_NETEVT_OPT_S      pstNetOpts  = NULL;
     struct  epoll_event     stEvent     = {0};
     
     if ( NULL == pstRctor
@@ -119,10 +122,10 @@ INT32_T  VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NE
         return SYS_ERR;
     }
     
-    stEvent.data.fd = pstNetOpts->fd;
-    stEvent.events  = pstNetOpts->EventMask;
+    stEvent.data.fd = pstNetOpt->fd;
+    stEvent.events  = pstNetOpt->EventMask;
     
-    if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_ADD, pstNetOpts->fd, &stEvent))
+    if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_ADD, pstNetOpt->fd, &stEvent))
     {
         PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!EpollFd=%d, Fd=%d, errno=%d:%s",  
                  pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpt->fd, errno, strerror(errno));

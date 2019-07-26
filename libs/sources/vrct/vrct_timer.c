@@ -78,12 +78,12 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
         return;
     }
     
-    PEvent("[TKD:%02d EID:%02d]=>Main Timer Heap Startup!",   pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
-    
     /*¿ì¶¨Ê±Æ÷¶Ñ*/
     if ( fd == pstRctor->stMgrTimer.stQuickOpts.fd 
         && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stQuickList) )
     {
+        PEvent("[TKD:%02d EID:%02d]=>Quickly Timer Heap! fd=%d", 
+            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, fd);
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stQuickList, VRCT_TIMER_OPT_S, stNode)
         {
             pstTimeNodeTmp->TimeStamp++;
@@ -122,6 +122,9 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
     if ( fd == pstRctor->stMgrTimer.stSlowOpts.fd
         && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stSlowList) )
     {
+        
+        PEvent("[TKD:%02d EID:%02d]=>Slowly Timer Heap! fd=%d", 
+            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, fd);
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stSlowList, VRCT_TIMER_OPT_S, stNode)
         {
             pstTimeNodeTmp->TimeStamp++;
@@ -276,13 +279,18 @@ VOID VRCT_TimerCtrlManagerUnInit(PVRCT_REACTOR_S          pstRctor)
     
     if ( NULL != pstRctor )
     {
+        /*protected for release*/
+        if ( 0 == pstRctor->stMgrTimer.stQuickOpts.fd  )
+        {
+            return;
+        }
+        
         VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stQuickOpts);
         VRCT_NetworkEvtOptsUnRegister(pstRctor, &pstRctor->stMgrTimer.stSlowOpts);
 
         plistHead = &pstRctor->stMgrTimer.stQuickList;
         if ( VOS_TRUE != VOS_DList_IsEmpty(plistHead))
         {
-            
             for ( pthisEntry = plistHead->prev;
                   pthisEntry != plistHead;
                   pthisEntry = pNextEntry )

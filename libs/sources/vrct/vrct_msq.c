@@ -132,7 +132,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                 }
                 break;
            case VRCT_MSQCODE_EXIT:
-                
+                pstRctor->stInfo.Stop = VOS_TRUE;
                 break;
             default:
                 break;
@@ -148,7 +148,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
         VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
         pstRctor->stMgrMsQue.iIdleNums++;
    }
-
+    
    return;
 }
 

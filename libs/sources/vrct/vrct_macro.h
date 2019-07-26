@@ -27,7 +27,7 @@
      
 
 /*最大的FD数*/
-#define VRCT_FDMAX                          102400
+#define VRCT_FDMAX                          1024
 /*最大的EVENT数*/
 #define VRCT_EVTMAX                         10240
 /*最大定时器数*/

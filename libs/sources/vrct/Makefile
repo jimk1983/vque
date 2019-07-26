@@ -1,3 +1,5 @@
+BUILDS=debug
+
 ifeq ($(BUILDS), debug)
 	CFLAG+=-g -O0
 	BUILDS=debug
@@ -5,8 +7,7 @@ else ifeq ($(BUILDS), release)
 	CFLAG+=-O3
 	BUILDS=release
 else
-	CFLAG+=-O3
-	BUILDS=release
+	CFLAG+=-g -O0
 endif
 
 LDFLAGS=
