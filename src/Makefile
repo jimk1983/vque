@@ -39,21 +39,21 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/proxygw/
 
 all : prepare $(BIN_DIR)/proxygw
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/share/core $(OBJ_DIR)/src/main 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/src/main $(OBJ_DIR)/src/share/core 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/proxygw :  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/src/share/core/core_hash.o $(OBJ_DIR)/src/main/main.o $(LDFLAGS)
+$(BIN_DIR)/proxygw :  $(OBJ_DIR)/src/main/main.o $(OBJ_DIR)/src/share/core/core_hash.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/src/main/main.o $(OBJ_DIR)/src/share/core/core_hash.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
 
-$(OBJ_DIR)/src/share/core/core_hash.o : $(ROOT_DIR)/src/share/core/core_hash.c
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/src/share/core/core_hash.c
-
 $(OBJ_DIR)/src/main/main.o : $(ROOT_DIR)/src/main/main.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/src/main/main.cpp
+
+$(OBJ_DIR)/src/share/core/core_hash.o : $(ROOT_DIR)/src/share/core/core_hash.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/src/share/core/core_hash.c
 

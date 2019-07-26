@@ -33,7 +33,7 @@ BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
 OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
 SRC_DIR=/mnt/hgfs/vmshare/vque/examplevque
 CFLAG+=-I. -I/mnt/hgfs/vmshare/vque/libs/sources -I-I/mnt/hgfs/vmshare/vque/deps/include
-LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvrct -lvos -ldl -lpthread -lrt -lm
+LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lUtilFrame -lvrct -lvos -ldl -lpthread -lrt -lm
 LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
 LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/examplevque/
 

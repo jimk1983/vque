@@ -20,10 +20,16 @@
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
 
+#include <UtilFrame/UtilsFrame.h>
+
 
 int main(int argc, char *argv[])
 {
     VOID *pvRctor = NULL;
+    char buffer[2048] = {0};
+    
+    std::string sValue;
+    UtilsFrame::JsonReadFile("1.json", buffer, sizeof(buffer));
     
     while(1)
     {

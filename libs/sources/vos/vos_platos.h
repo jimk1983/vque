@@ -52,7 +52,7 @@
 /*定义是否需要C++11支持*/
 #define     VOS_PLAT_SUPPORT_Class11    0
 /*定义是否开启DBG*/
-#define     VOS_PLAT_DBG                1
+#define     VOS_PLAT_DBG                0
 
 
 
@@ -346,6 +346,12 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 }
 #else
 #define PEvent(EvtMsg, ...)
+#endif
+
+
+
+#ifndef MAX_PATH
+#define MAX_PATH    260
 #endif
 
 #endif
