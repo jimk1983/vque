@@ -43,14 +43,14 @@ INT32_T VRCT_NetworkEvtManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T M
     pstRctor->stMgrNet.apstEpollEvtOps= (PVRCT_NETEVT_OPT_S *)malloc(sizeof(PVRCT_NETEVT_OPT_S) * MaxSize);
     if ( NULL == pstRctor->stMgrNet.apstEpollEvtOps  )
     {
-        PError("[TKD:%02d EID:%02d]=>Malloc failed! MaxSize=%lu",
+        PError("[TKD:%02d EID:%02d]=>Malloc failed! MaxSize=%d",
                     pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, MaxSize);
         return SYS_ERR;
     }
     
     memset(pstRctor->stMgrNet.apstEpollEvtOps,0,sizeof(sizeof(PVRCT_NETEVT_OPT_S) * MaxSize));
     
-    for(INT32_T iIndex=0; iIndex < MaxSize; iIndex++)
+    for(UINT32_T iIndex=0; iIndex < MaxSize; iIndex++)
     {
         pstRctor->stMgrNet.apstEpollEvtOps[iIndex] =NULL;
     }
@@ -71,7 +71,7 @@ INT32_T VRCT_NetworkEvtManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T M
  */
 VOID VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S          pstRctor)
 {
-    INT32_T         iIndex = 0;
+    UINT32_T         iIndex = 0;
     
     if ( NULL != pstRctor )
     {
@@ -127,7 +127,7 @@ INT32_T  VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NE
     
     if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_ADD, pstNetOpt->fd, &stEvent))
     {
-        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!EpollFd=%d, Fd=%d, errno=%d:%s",  
+        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!Fd=%d, errno=%d:%s",  
                  pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpt->fd, errno, strerror(errno));
         return SYS_ERR;
     }
@@ -244,7 +244,7 @@ INT32_T  VRCT_NetworkEvtRegister(     PVRCT_REACTOR_S pstRctor,
     
     if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_ADD, pstNetOpts->fd, &stEvent))
     {
-        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!EpollFd=%d, Fd=%d, errno=%d:%s",  
+        PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(ADD) error!Fd=%d, errno=%d:%s",  
                  pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, fd, errno, strerror(errno));
         free(pstNetOpts);
         return SYS_ERR;

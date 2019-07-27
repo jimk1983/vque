@@ -42,7 +42,6 @@
      INT32_T                 iEpollFd    = 0;
      INT32_T                 nums        = 0;
      struct epoll_event*     event       = NULL;
-     PVRCT_NETEVT_OPT_S*     ppstarryNetOpts = NULL;
      struct                  sockaddr_in stCliaddr;
      socklen_t               len         =sizeof(struct sockaddr_in);
  
@@ -173,8 +172,8 @@
     
     if ( VOS_ERR == VRCT_TimerCtrlManagerInit(pstRctor) )
     {
-       PError("[TKD:%02d EID:%02d]=>timer manager init success!", 
-                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+       PError("[TKD:%02d EID:%02d]=>timer manager init success!tid=%d", 
+                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,Tid);
        return NULL;
     }
     

@@ -73,8 +73,9 @@ VOID    VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
 }
 
 /**
- * @brief register the message queue optiion 
+ * @brief register the network optiion 
  * @param pvRctor [in] vos reactor 
+ * @param pstNetOpts [in] network option
  */
 INT32_T VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts)
 {
@@ -100,7 +101,7 @@ INT32_T VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts
 /**
  * @brief register the network event optiion 
  * @param pvRctor [in] vos reactor 
- * @param pstMsgOpts [in] network option
+ * @param pstNetOpts [in] network option
  */
 VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts)
 {
@@ -114,6 +115,52 @@ VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOp
 
     VRCT_NetworkEvtOptsUnRegister(pstRctor, pstNetOpts);
 }
+
+
+/**
+ * @brief register the timer event optiion 
+ * @param pvRctor [in] vos reactor 
+ * @param pstTimerOpts [in] timer option
+ */
+INT32_T VRCT_API_TimerOptRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+
+    if ( NULL == pstTimerOpts 
+        || NULL == pvRctor )
+    {
+        PError("Param error!");
+        return VOS_ERR;
+    }
+
+    if ( VOS_ERR == VRCT_TimerEvtOptsRegister(pstRctor, pstTimerOpts) )
+    {
+        PError("Vos reactor register the timer option error!");
+        return VOS_ERR;
+    }
+
+    return VOS_OK;
+}
+
+
+/**
+ * @brief register the timer event optiion 
+ * @param pvRctor [in] vos reactor 
+ * @param pstTimerOpts [in] timer option
+ */
+VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+    
+    if ( NULL == pstTimerOpts 
+        || NULL == pvRctor )
+    {
+        return;
+    }    
+
+    VRCT_TimerEvtOptsUnRegister(pstRctor, pstTimerOpts);
+}
+
 
 /**
  * @brief notify the pthread task exit
@@ -294,7 +341,7 @@ INT32_T VRCT_API_Start(PVOID      pvRctor)
     if ( 0 != iRet )
     {
         PError("[TKD:%02d EID:%02d]=>epoll pthread create failed,errno=%d:%s",
-            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, errno, strerror(errno));
         return VOS_ERR;
     }
     

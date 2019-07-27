@@ -162,9 +162,8 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
  */
 INT32_T VRCT_MsgQueManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T MaxSize)
 {
-    INT32_T             uiIndex         = 0; 
+    UINT32_T            uiIndex         = 0; 
     PVRCT_MSQ_ENTRY_S   pstEntry        = NULL;
-    PVRCT_NETEVT_OPT_S  pstNetOpts      = NULL;
     INT32_T             lnonBlockflag   = 1;
     INT32_T             lRet            = 0;
     INT32_T             Eventfd         = 0;

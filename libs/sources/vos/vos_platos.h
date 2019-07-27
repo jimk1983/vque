@@ -32,7 +32,7 @@
 #define VOS_EXCEND
 #endif /* __cplusplus */
 
-#define CINLINE static inline
+#define CINLINE inline
 
 /**************************************************/
 /***************** œµÕ≥≈‰÷√ ***********************/

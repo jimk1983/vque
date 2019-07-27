@@ -10,6 +10,10 @@ else
 	CFLAG+=-g -O0
 endif
 
+CFLAG+=-Wall -Werror  
+
+#CFLAG+=-fgnu89-inline 
+
 LDFLAGS=
 
 # dependent include

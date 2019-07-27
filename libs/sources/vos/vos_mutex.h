@@ -139,7 +139,7 @@ typedef CRITICAL_SECTION VOS_MTX_T;
 #elif VOS_PLAT_LINUX
 typedef pthread_mutex_t VOS_MTX_T;
 #define VOS_MTX_INIT(pstMtx)                (pthread_mutex_init(pstMtx, 0) ? VOS_ERR : VOS_OK)
-#define VOS_MTX_FINI(pstMtx)                (pthread_mutex_destroy(pstMtx) ? VOS_ERR : VOS_OK)
+#define VOS_MTX_FINI(pstMtx)                pthread_mutex_destroy(pstMtx)
 #define VOS_MTX_LOCK(pstMtx)                pthread_mutex_lock(pstMtx)
 #define VOS_MTX_UNLOCK(pstMtx)              pthread_mutex_unlock(pstMtx)
 #define VPS_MTX_TRYLOCK(pstMtx)             (pthread_mutex_trylock(pstMtx) ? VOS_ERR : VOS_OK)

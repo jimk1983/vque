@@ -34,7 +34,7 @@
  * @param pvRctor [in] vos reactor
  * @param pstTimeOps [in] timer options
  */
-CINLINE INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps)
+INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps)
 {
     
     if ( pstTimeOps->TimeOut > VRCT_SLOW_TIMES  )
@@ -54,13 +54,13 @@ CINLINE INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_
  * @param pvRctor [in] vos reactor
  * @param pstTimeOps [in] timer options
  */
-CINLINE VOID VRCT_TimerEvtOptsUnRegister(PVRCT_TIMER_OPT_S pstTimeOps)
+VOID VRCT_TimerEvtOptsUnRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps)
 {
+    
     VOS_DLIST_DEL(&pstTimeOps->stNode);
     
     return;
 }
-
 /**
  * @brief Timer Handler CallBack
  * @param pvRctor [in] vos reactor
@@ -68,7 +68,6 @@ CINLINE VOID VRCT_TimerEvtOptsUnRegister(PVRCT_TIMER_OPT_S pstTimeOps)
 VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
 {
     PVRCT_REACTOR_S     pstRctor         = (PVRCT_REACTOR_S)pvRctor;
-    PVOS_DLIST_S        pstNodeNext     = NULL;
     PVRCT_TIMER_OPT_S   pstTimeNodeTmp  = NULL;
     PVRCT_TIMER_OPT_S   pstTimeNodeNext = NULL;
     

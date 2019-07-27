@@ -46,8 +46,8 @@ struct tagVosReactorTimerManager
 INT32_T     VRCT_TimerCtrlManagerInit(PVRCT_REACTOR_S          pstRctor);
 VOID        VRCT_TimerCtrlManagerUnInit(PVRCT_REACTOR_S          pstRctor);
 
-CINLINE INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps);
-CINLINE VOID    VRCT_TimerEvtOptsUnRegister(PVRCT_TIMER_OPT_S pstTimeOps);
+INT32_T VRCT_TimerEvtOptsRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps);
+VOID    VRCT_TimerEvtOptsUnRegister(PVRCT_REACTOR_S pstRctor, PVRCT_TIMER_OPT_S pstTimeOps);
 
 
 
