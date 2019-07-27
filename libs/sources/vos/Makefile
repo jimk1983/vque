@@ -13,9 +13,9 @@ endif
 LDFLAGS=
 
 # dependent include
-DEP_DIR=/mnt/hgfs/vmshare/vque/deps
-OUT_DIR=/mnt/hgfs/vmshare/vque/outs
-ROOT_DIR=/mnt/hgfs/vmshare/vque
+DEP_DIR=/mnt/hgfs/wmshare/vque/deps
+OUT_DIR=/mnt/hgfs/wmshare/vque/outs
+ROOT_DIR=/mnt/hgfs/wmshare/vque
 
 # installation directory
 INST_BIN=/usr/local/bin
@@ -29,13 +29,13 @@ VER_MINOR=0
 VER_REVISION=0
 
 # all : prepare targets...
-BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
-OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/vmshare/vque/libs/sources/vos
-CFLAG+=-I/mnt/hgfs/vmshare/vque/libs/sources
+BIN_DIR=/mnt/hgfs/wmshare/vque/outs/$(BUILDS)
+OBJ_DIR=/mnt/hgfs/wmshare/vque/outs/$(BUILDS)_obj
+SRC_DIR=/mnt/hgfs/wmshare/vque/libs/sources/vos
+CFLAG+=-I/mnt/hgfs/wmshare/vque/libs/sources
 LDFLAGS+=-ldl -lpthread -lrt -lm
-LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
-LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/vos/
+LIBS_BIN=/mnt/hgfs/wmshare/vque/libs/bins/
+LIBS_INC=/mnt/hgfs/wmshare/vque/libs/include/vos/
 
 all : prepare $(BIN_DIR)/libvos.a postpare
 prepare:
@@ -49,9 +49,31 @@ postpare:
 	@cp -fr $(BIN_DIR)/libvos.a $(LIBS_BIN) 
 	@rm -fr $(BIN_DIR)/libvos.a 
 
+$(BIN_DIR)/libvrct.a :  $(OBJ_DIR)/libs/sources/vrct/vrct_api.o $(OBJ_DIR)/libs/sources/vrct/vrct_ctx.o $(OBJ_DIR)/libs/sources/vrct/vrct_expire.o $(OBJ_DIR)/libs/sources/vrct/vrct_msq.o $(OBJ_DIR)/libs/sources/vrct/vrct_net.o $(OBJ_DIR)/libs/sources/vrct/vrct_timer.o
+	$(AR) cr $@ $^
+	@ranlib  $@
+
 $(BIN_DIR)/libvos.a :  $(OBJ_DIR)/libs/sources/vos/vos_utils.o $(OBJ_DIR)/libs/sources/vos/vos_time.o $(OBJ_DIR)/libs/sources/vos/vos_shm.o $(OBJ_DIR)/libs/sources/vos/vos_hash.o $(OBJ_DIR)/libs/sources/vos/vos_event.o $(OBJ_DIR)/libs/sources/vos/vos_mutex.o $(OBJ_DIR)/libs/sources/vos/network/vos_route.o $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o $(OBJ_DIR)/libs/sources/vos/vos_dlist.o
 	$(AR) cr $@ $^
 	@ranlib  $@
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_api.o : $(ROOT_DIR)/libs/sources/vrct/vrct_api.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_api.c
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_ctx.o : $(ROOT_DIR)/libs/sources/vrct/vrct_ctx.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_ctx.c
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_expire.o : $(ROOT_DIR)/libs/sources/vrct/vrct_expire.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_expire.c
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_msq.o : $(ROOT_DIR)/libs/sources/vrct/vrct_msq.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_msq.c
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_net.o : $(ROOT_DIR)/libs/sources/vrct/vrct_net.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_net.c
+
+$(OBJ_DIR)/libs/sources/vrct/vrct_timer.o : $(ROOT_DIR)/libs/sources/vrct/vrct_timer.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vrct/vrct_timer.c
 
 $(OBJ_DIR)/libs/sources/vos/vos_utils.o : $(ROOT_DIR)/libs/sources/vos/vos_utils.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_utils.c

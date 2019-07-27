@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
     VOID *pvRctor = NULL;
     char buffer[2048] = {0};
     
-    std::string sValue;
-    UtilsFrame::JsonReadFile("1.json", buffer, sizeof(buffer));
+    //std::string sValue;
+    //UtilsFrame::JsonReadFile("1.json", buffer, sizeof(buffer));
     
     while(1)
     {
@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
             PError("Reactor start failed!");
             return -1;
         }
+
+        
         
         //PEvent("system-time=%s", VOS_GetSysTimeNowStr());
         VOS_Sleep(300);

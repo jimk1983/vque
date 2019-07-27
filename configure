@@ -19,7 +19,7 @@ CFGDIR=$ROOTDIR/config
 initcfgfile=${CFGDIR}/init.conf
 . ${initcfgfile} 
 
-if [ $1 == "clean" ]
+if [ "$1" = "clean" ]
 then
 	rm -rf $ROOTDIR/outs/
 	rm -rf $ROOTDIR/libs/include/*

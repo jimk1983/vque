@@ -30,13 +30,98 @@
 #define  VRCT_MSQSIZE       1000
 
 
+/**
+ * @brief register the message queue optiion 
+ * @param pvRctor [in] vos reactor 
+  * @param pstMsgOpts [in] message queue option
+ */
+INT32_T VRCT_API_MsqOptRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+    if ( NULL == pstMsqOpts 
+        || NULL == pvRctor )
+    {
+        PError("Param error!");
+        return VOS_ERR;
+    }
+
+    if ( VOS_ERR == VRCT_MsgQueOptsRegister(pstRctor, pstMsqOpts) )
+    {
+        PError("Vos reactor register the message queue option error!");
+        return VOS_ERR;
+    }
+
+    return VOS_OK;
+}
+
+/**
+ * @brief register the message queue optiion 
+ * @param pvRctor [in] vos reactor 
+ * @param pstMsgOpts [in] message queue option
+ */
+VOID    VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+    
+    if ( NULL == pstMsqOpts 
+        || NULL == pvRctor )
+    {
+        return;
+    }    
+
+    VRCT_MsgQueOptsUnRegister(pstRctor, pstMsqOpts);
+}
+
+/**
+ * @brief register the message queue optiion 
+ * @param pvRctor [in] vos reactor 
+ */
+INT32_T VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+
+    if ( NULL == pstNetOpts 
+        || NULL == pvRctor )
+    {
+        PError("Param error!");
+        return VOS_ERR;
+    }
+
+    if ( VOS_ERR == VRCT_NetworkEvtOptsRegister(pstRctor, pstNetOpts) )
+    {
+        PError("Vos reactor register the network option error!");
+        return VOS_ERR;
+    }
+
+    return VOS_OK;
+}
+
+
+/**
+ * @brief register the network event optiion 
+ * @param pvRctor [in] vos reactor 
+ * @param pstMsgOpts [in] network option
+ */
+VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts)
+{
+    PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
+    
+    if ( NULL == pstNetOpts 
+        || NULL == pvRctor )
+    {
+        return;
+    }    
+
+    VRCT_NetworkEvtOptsUnRegister(pstRctor, pstNetOpts);
+}
 
 /**
  * @brief notify the pthread task exit
  * @param pstRctor [inout] Vos reactor
  */
-VOID VRCT_API_ExitNotify(PVRCT_REACTOR_S pstRctor)
+VOID VRCT_API_ExitNotify(PVOID pvRctor)
 {
+    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
     PVOS_DLIST_S            pstEntry    = NULL;
     int                     uiVal       = 1;
@@ -273,6 +358,9 @@ VOID VRCT_API_Release(PVOID *ppvRctor)
         *ppstRctor = NULL;
     }
 }
+
+
+
 
 
 

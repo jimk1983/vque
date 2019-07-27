@@ -58,6 +58,7 @@ INT32_T VRCT_MsgQueOptsRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_
     
     if ( FliterID >= VRCT_MSQPF_NUMS-1 )
     {
+        pstMsqOpt->PipeFliterID= VOS_INVALID_VAL;
         PError("[TKD:%02d EID:%02d]=>Not enough idle fliter id!",
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd);
