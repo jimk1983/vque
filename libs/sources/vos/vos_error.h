@@ -58,6 +58,8 @@
 #define VOS_SYS_NOTEXIST                    (VOS_ERRMASK | 6)
 /*Ð´´íÎó*/
 #define VOS_SYS_WERR                        (VOS_ERRMASK | 7)
+/*¶ÓÁÐÂú*/
+#define VOS_SYS_QUEFULL                     (VOS_ERRMASK | 8)
 
 
 

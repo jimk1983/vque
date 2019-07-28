@@ -114,12 +114,20 @@ typedef struct tagVosReactorMessageQueueOption
 }VRCT_MSQ_OPT_S,*PVRCT_MSQ_OPT_S;
 
 
-
-
 VOID*       VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize);
 VOID        VRCT_API_Release(PVOID *ppvRctor);
 INT32_T     VRCT_API_Start(PVOID pvRctor);
+VOID        VRCT_API_Stop(PVOID pvRctor);
 
+INT32_T     VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts);
+VOID        VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts);
+
+INT32_T     VRCT_API_TimerOptRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts);
+VOID        VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts);
+
+INT32_T     VRCT_API_MsqOptRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts);
+VOID        VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts);
+INT32_T     VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, UINT32_T DataLen);
 
 
 #endif

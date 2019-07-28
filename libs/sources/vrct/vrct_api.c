@@ -72,6 +72,64 @@ VOID    VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
     VRCT_MsgQueOptsUnRegister(pstRctor, pstMsqOpts);
 }
 
+
+/**
+ * @brief register the message queue optiion 
+ * @param pvRctor [in] vos reactor 
+ * @param PipeFilterID [in] get the value on the register option
+ * @param pcData [in] message data
+ * @param iDataLen [in] message data length
+ */
+INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, UINT32_T DataLen)
+{
+    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
+    PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
+    PVOS_DLIST_S            pstEntry    = NULL;
+    INT32_T                 Val         = 1;
+    
+    if ( NULL == pstRctor )
+    {
+        PError("Param error!");
+        return VOS_ERR;
+    }
+    
+    if ( 0 == pstRctor->stMgrMsQue.iIdleNums )
+    {
+        PError("[TKD:%02d EID:%02d]=>Message queue idle node has zero!",
+                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+        return VOS_ERR;
+    }
+    
+    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stIdleLock);
+    pstEntry=VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stIdleList);
+    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
+    pstRctor->stMgrMsQue.iIdleNums--;
+    
+    pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
+    
+    pstMsgNode->MsgCode   = VRCT_MSQCODE_USER;
+    pstMsgNode->pvMsgData = pcData;
+    pstMsgNode->MsgSize   = DataLen;
+    
+    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stUsedLock);
+    VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stUsedList, &pstMsgNode->stNode);
+    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
+    pstRctor->stMgrMsQue.iUsedNums++;
+    
+    /*通过eventfd告知*/
+    if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
+    {
+        PError("[TKD:%02d EID:%02d]=>Event write error,errno=%d:%s",
+                pstRctor->stInfo.TaskID,
+                pstRctor->stInfo.Epollfd,
+                errno,
+                strerror(errno));
+        return VOS_SYS_QUEFULL;
+    }
+    
+    return VOS_OK;
+}
+
 /**
  * @brief register the network optiion 
  * @param pvRctor [in] vos reactor 
@@ -148,7 +206,7 @@ INT32_T VRCT_API_TimerOptRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts)
  * @param pvRctor [in] vos reactor 
  * @param pstTimerOpts [in] timer option
  */
-VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts)
+VOID    VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts)
 {
     PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
     
@@ -166,7 +224,7 @@ VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerO
  * @brief notify the pthread task exit
  * @param pstRctor [inout] Vos reactor
  */
-VOID VRCT_API_ExitNotify(PVOID pvRctor)
+VOID VRCT_API_Stop(PVOID pvRctor)
 {
     PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
@@ -381,7 +439,7 @@ VOID VRCT_API_Release(PVOID *ppvRctor)
             return;
         }
         
-        VRCT_API_ExitNotify(pstRctor);
+        VRCT_API_Stop(pstRctor);
         
         /*等待线程退出*/
         (void)VOS_ThreadEvent_Waitfor(&pstRctor->hWaitForExit, 100);

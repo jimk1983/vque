@@ -131,6 +131,13 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                                                                                                                         pstMsgNode->MsgSize,
                                                                                                                         pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvData);
                 }
+                else
+                {
+                    PError("[TKD:%02d EID:%02d]=>Not found the Register Pipe-fliter-id=[%d]!",
+                                pstRctor->stInfo.TaskID, 
+                                pstRctor->stInfo.Epollfd,
+                                pstMsgNode->PipeFliterID);
+                }
                 break;
            case VRCT_MSQCODE_EXIT:
                 pstRctor->stInfo.Stop = VOS_TRUE;

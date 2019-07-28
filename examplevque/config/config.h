@@ -1,4 +1,12 @@
 
+typedef enum
+{
+    TCODE_CLIENT = 0,   /*客户端*/
+    TCODE_SERVER,       /*服务器端*/
+    TCODE_MSQ,          /*消息队列*/
+    
+    TCODE_NUMS
+}TEST_TCODE_E;
 
 typedef struct tagExampleClient
 {
