@@ -228,6 +228,10 @@ const std::string  UtilsFrame::JsonGetStringByName(const char *pcBuffer, const c
     if ( document.Parse(pcBuffer).HasParseError() 
         || !document.HasMember(pcName) ) 
     {
+        printf("parse error: (%d:%lu)%s", 
+            document.GetParseError(), 
+            document.GetErrorOffset(), 
+            rapidjson::GetParseError_En(document.GetParseError()));
         return "";
     }
     
@@ -264,6 +268,10 @@ const std::string  UtilsFrame::JsonGetStringByName(const char *pcBuffer, const c
     if ( document.Parse(pcBuffer).HasParseError() 
         || !document.HasMember(pcName) ) 
     {
+        printf("parse error: (%d:%lu)%s", 
+            document.GetParseError(), 
+            document.GetErrorOffset(), 
+            rapidjson::GetParseError_En(document.GetParseError()));
         return "";
     }
     
@@ -296,6 +304,10 @@ int     UtilsFrame::JsonGetIntByArryName(const char *pcBuffer, const char  *pcNa
     if ( document.Parse(pcBuffer).HasParseError() 
         || !document.HasMember(pcName) ) 
     {
+        printf("parse error: (%d:%lu)%s", 
+            document.GetParseError(), 
+            document.GetErrorOffset(), 
+            rapidjson::GetParseError_En(document.GetParseError()));
         return 0;
     }
     
@@ -328,6 +340,10 @@ int     UtilsFrame::JsonGetIntByArryName(const char *pcBuffer, const char  *pcNa
     if ( document.Parse(pcBuffer).HasParseError() 
         || !document.HasMember(pcName) ) 
     {
+        printf("parse error: (%d:%lu)%s", 
+            document.GetParseError(), 
+            document.GetErrorOffset(), 
+            rapidjson::GetParseError_En(document.GetParseError()));
         return 0;
     }
     
@@ -365,6 +381,10 @@ int     UtilsFrame::JsonGetIntByArryName(const char *pcBuffer, const char  *pcNa
     if ( document.Parse(pcBuffer).HasParseError() 
         || !document.HasMember(pcName) ) 
     {
+        printf("parse error: (%d:%lu)%s", 
+            document.GetParseError(), 
+            document.GetErrorOffset(), 
+            rapidjson::GetParseError_En(document.GetParseError()));
         return 0;
     }
     

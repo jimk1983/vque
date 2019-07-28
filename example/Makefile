@@ -17,9 +17,9 @@ CFLAG+=-Wall -Werror
 LDFLAGS=
 
 # dependent include
-DEP_DIR=/mnt/hgfs/wmshare/vque/deps
-OUT_DIR=/mnt/hgfs/wmshare/vque/outs
-ROOT_DIR=/mnt/hgfs/wmshare/vque
+DEP_DIR=/mnt/hgfs/vmshare/vque/deps
+OUT_DIR=/mnt/hgfs/vmshare/vque/outs
+ROOT_DIR=/mnt/hgfs/vmshare/vque
 
 # installation directory
 INST_BIN=/usr/local/bin
@@ -33,13 +33,13 @@ VER_MINOR=0
 VER_REVISION=0
 
 # all : prepare targets...
-BIN_DIR=/mnt/hgfs/wmshare/vque/outs/$(BUILDS)
-OBJ_DIR=/mnt/hgfs/wmshare/vque/outs/$(BUILDS)_obj
-SRC_DIR=/mnt/hgfs/wmshare/vque/example
-CFLAG+=-I. -I/mnt/hgfs/wmshare/vque/libs/sources -I-I/mnt/hgfs/wmshare/vque/deps/include
-LDFLAGS+=-L/mnt/hgfs/wmshare/vque/deps/lib -I/mnt/hgfs/wmshare/vque/libs/include -L/mnt/hgfs/wmshare/vque/libs/bins -lvos -ldl -lpthread -lrt -lm
-LIBS_BIN=/mnt/hgfs/wmshare/vque/libs/bins/
-LIBS_INC=/mnt/hgfs/wmshare/vque/libs/include/example/
+BIN_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)
+OBJ_DIR=/mnt/hgfs/vmshare/vque/outs/$(BUILDS)_obj
+SRC_DIR=/mnt/hgfs/vmshare/vque/example
+CFLAG+=-I. -I/mnt/hgfs/vmshare/vque/libs/sources -I-I/mnt/hgfs/vmshare/vque/deps/include
+LDFLAGS+=-L/mnt/hgfs/vmshare/vque/deps/lib -I/mnt/hgfs/vmshare/vque/libs/include -L/mnt/hgfs/vmshare/vque/libs/bins -lvos -ldl -lpthread -lrt -lm
+LIBS_BIN=/mnt/hgfs/vmshare/vque/libs/bins/
+LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/
 
 all : prepare $(BIN_DIR)/example
 prepare:

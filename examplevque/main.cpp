@@ -22,37 +22,15 @@
 
 #include <UtilFrame/UtilsFrame.h>
 
+#include "config/config.h"
 
 int main(int argc, char *argv[])
 {
-    VOID *pvRctor = NULL;
-    char buffer[2048] = {0};
+    TEST_CONF_S    stCfg={0};
     
-    //std::string sValue;
-    //UtilsFrame::JsonReadFile("1.json", buffer, sizeof(buffer));
-    
-    while(1)
-    {
-        pvRctor = VRCT_API_Create(0, 100000);
-        if ( NULL == pvRctor )
-        {
-            PError("Reactor create failed!");
-            return -1;
-        }
-        
-        if( VOS_ERR == VRCT_API_Start(pvRctor) )
-        {
-            PError("Reactor start failed!");
-            return -1;
-        }
+    config_init(&stCfg);
 
-        
-        
-        //PEvent("system-time=%s", VOS_GetSysTimeNowStr());
-        VOS_Sleep(300);
-        
-        VRCT_API_Release(&pvRctor);
-    }
+    printf("Test End!\n");
     return 0;
 }
 

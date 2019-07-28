@@ -43,17 +43,20 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/examplevque/
 
 all : prepare $(BIN_DIR)/examplevque
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/examplevque 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/examplevque/config 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/examplevque :  $(OBJ_DIR)/examplevque/main.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/examplevque/main.o $(LDFLAGS)
+$(BIN_DIR)/examplevque :  $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/main.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/main.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
+
+$(OBJ_DIR)/examplevque/config/config.o : $(ROOT_DIR)/examplevque/config/config.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/config/config.cpp
 
 $(OBJ_DIR)/examplevque/main.o : $(ROOT_DIR)/examplevque/main.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/main.cpp
