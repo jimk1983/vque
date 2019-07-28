@@ -296,7 +296,7 @@ INT32_T VOS_SM_P(VOS_SM_T *pstSem, UINT32_T ulTimeOutMiliSec)
         {
             //OK
             pthread_mutex_unlock(pstMutex);
-            return VOS_SYS_TIMEOUT;
+            return VOS_ERR_TIMEOUT;
         }
 
     }

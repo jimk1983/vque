@@ -274,7 +274,7 @@ CHAR* VOS_GetSysTimeNowStr()
     vtm.uiDayOfWeek = st.wDayOfWeek;
 #endif
 
-    ret = sprintf((char *)g_th_timebuf, "%d-%02d-%02d %02d:%02d:%02d.%03d",
+    ret = sprintf((char *)g_th_timebuf, "[%d-%02d-%02d %02d:%02d:%02d.%03d]",
                       vtm.uiYear, vtm.uiMoth, vtm.uiDay, vtm.uiHour,
                       vtm.uiMinute, vtm.uiSecond, vtm.uiMiliSec);
     

@@ -145,7 +145,7 @@ INT32_T VOS_ThreadEvent_Waitfor(VOS_EVT_T *pstEvent, UINT32_T uiMillTimeout)
         {
             //OK
             pthread_mutex_unlock(pstMutex);
-            return VOS_SYS_TIMEOUT;
+            return VOS_ERR_TIMEOUT;
         }
     }
 #elif VOS_PLAT_WIN

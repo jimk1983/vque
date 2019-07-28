@@ -47,19 +47,19 @@
 /*系统错误*/
 #define VOS_SYS_ERR                         (VOS_ERRMASK | 1) /** fail */
 /*参数错误*/
-#define VOS_SYS_PARAM_INVALID               (VOS_ERRMASK | 2)
+#define VOS_ERR_PARAM                       (VOS_ERRMASK | 2)
 /*超时错误*/
-#define VOS_SYS_TIMEOUT                     (VOS_ERRMASK | 3)
+#define VOS_ERR_TIMEOUT                     (VOS_ERRMASK | 3)
 /*阻塞*/
-#define VOS_SYS_EAGAIN                      (VOS_ERRMASK | 4)
+#define VOS_ERR_EAGAIN                      (VOS_ERRMASK | 4)
 /*已经存在*/
-#define VOS_SYS_EXIST                       (VOS_ERRMASK | 5)
+#define VOS_ERR_EXIST                       (VOS_ERRMASK | 5)
 /*已经存在*/
-#define VOS_SYS_NOTEXIST                    (VOS_ERRMASK | 6)
+#define VOS_ERR_NOTEXIST                    (VOS_ERRMASK | 6)
 /*写错误*/
-#define VOS_SYS_WERR                        (VOS_ERRMASK | 7)
+#define VOS_ERR_WERR                        (VOS_ERRMASK | 7)
 /*队列满*/
-#define VOS_SYS_QUEFULL                     (VOS_ERRMASK | 8)
+#define VOS_ERR_QUEFULL                     (VOS_ERRMASK | 8)
 
 
 
@@ -68,11 +68,11 @@
 /**************************************************/
 
 #ifndef SYS_OK
-#define SYS_OK              VOS_OK
+#define SYS_OK                              VOS_OK
 #endif
 
 #ifndef SYS_ERR
-#define SYS_ERR             VOS_ERR
+#define SYS_ERR                             VOS_ERR
 #endif
 
 
@@ -85,27 +85,27 @@
 #endif
 
 #ifndef SYS_ERR_PARAM
-#define SYS_ERR_PARAM                       VOS_SYS_PARAM_INVALID
+#define SYS_ERR_PARAM                       VOS_ERR_PARAM
 #endif
 
 #ifndef SYS_ERR_TIMEOUT
-#define SYS_ERR_TIMEOUT                     VOS_SYS_TIMEOUT
+#define SYS_ERR_TIMEOUT                     VOS_ERR_TIMEOUT
 #endif
 
 #ifndef SYS_ERR_EWOULDBLOCK                
-#define SYS_ERR_EWOULDBLOCK                 VOS_SYS_EWOULDBLOCK
+#define SYS_ERR_EWOULDBLOCK                 VOS_ERR_EAGAIN
 #endif
 
 #ifndef SYS_ERR_EXIST
-#define SYS_ERR_EXIST                       VOS_SYS_EXIST
+#define SYS_ERR_EXIST                       VOS_ERR_EXIST
 #endif
 
 #ifndef SYS_ERR_NOTEXIST
-#define SYS_ERR_NOTEXIST                    VOS_SYS_NOTEXIST
+#define SYS_ERR_NOTEXIST                    VOS_ERR_NOTEXIST
 #endif
 
 #ifndef SYS_ERR_WERR
-#define SYS_ERR_WERR                        VOS_SYS_WERR
+#define SYS_ERR_WERR                        VOS_ERR_WERR
 #endif
 
 #ifndef MAX_PATH

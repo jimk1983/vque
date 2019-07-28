@@ -348,6 +348,16 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 #define PEvent(EvtMsg, ...)
 #endif
 
+#if VOS_PLAT_DBG
+#define PDEBUG_FORMAT " [FILE=%s,FUNC=%s,LINE=%d]"
+#define PDebug(DbgMsg, ...)\
+{\
+  (void)printf(("%s [DBG] " DbgMsg PDEBUG_FORMAT "\n"),VOS_GetSysTimeNowStr(),##__VA_ARGS__,__FILE__,__FUNCTION__,__LINE__);\
+}
+#else
+#define PDebug(EvtMsg, ...)
+#endif
+
 
 
 #ifndef MAX_PATH

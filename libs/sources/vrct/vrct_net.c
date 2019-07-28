@@ -131,6 +131,11 @@ INT32_T  VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NE
                  pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpt->fd, errno, strerror(errno));
         return SYS_ERR;
     }
+    else
+    {
+        PDebug("[TKD:%02d EID:%02d]=>network register success!fd=%d,Mask=%08x",
+            pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, pstNetOpt->fd, pstNetOpt->EventMask);
+    }
     
     pstRctor->stMgrNet.apstEpollEvtOps[pstNetOpt->fd] = pstNetOpt;
     

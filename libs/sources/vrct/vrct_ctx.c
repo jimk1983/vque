@@ -60,11 +60,14 @@
                  errno, strerror(errno));
          return VOS_ERR;
      }
- 
+     
+     PEvent("[TKD:%02d EID:%02d]=>epoll wait for event!",
+                                 pstRctor->stInfo.TaskID, 
+                                 pstRctor->stInfo.Epollfd);
      while(!pstRctor->stInfo.Stop)
      {
          nums = epoll_wait(iEpollFd, event, VRCT_EVTMAX, -1);
-         PEvent("[TKD:%02d EID:%02d]=>epoll_wait nums=%d!",
+         PDebug("[TKD:%02d EID:%02d]=>epoll_wait nums=%d!",
                                  pstRctor->stInfo.TaskID, 
                                  pstRctor->stInfo.Epollfd, 
                                  nums);

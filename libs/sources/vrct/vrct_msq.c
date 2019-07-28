@@ -27,9 +27,6 @@
 #include <vrct/vrct_priv.h>
 
 
-VOID    VRCT_MsgQueManagerUnInit(PVRCT_REACTOR_S          pstRctor);
-
-
 /**
  * @brief register the message queue option
  * @param pstRctor  [in]    vos reactor
@@ -37,7 +34,7 @@ VOID    VRCT_MsgQueManagerUnInit(PVRCT_REACTOR_S          pstRctor);
  */
 INT32_T VRCT_MsgQueOptsRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S pstMsqOpt)
 {
-    INT32_T     FliterID = 0;
+    UINT32_T     FliterID = 0;
     
     if ( NULL == pstRctor
         || NULL == pstMsqOpt )
@@ -46,24 +43,20 @@ INT32_T VRCT_MsgQueOptsRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_
         return VOS_ERR;
     }
     
-    for (; FliterID < VRCT_MSQPF_NUMS ; FliterID++)
+    FliterID = pstMsqOpt->PipeFliterID;
+        
+    if ( FliterID >= VRCT_MSQPF_NUMS )
     {
-        if ( NULL == pstRctor->stMgrMsQue.apstMsgOpts[FliterID] )
-        {
-            pstMsqOpt->PipeFliterID = FliterID;
-            pstRctor->stMgrMsQue.apstMsgOpts[FliterID] = pstMsqOpt;
-            break;
-        }
+        return VOS_ERR_PARAM;
     }
     
-    if ( FliterID >= VRCT_MSQPF_NUMS-1 )
+    if ( NULL != pstRctor->stMgrMsQue.apstMsgOpts[FliterID] )
     {
-        pstMsqOpt->PipeFliterID= VOS_INVALID_VAL;
-        PError("[TKD:%02d EID:%02d]=>Not enough idle fliter id!",
-                pstRctor->stInfo.TaskID, 
-                pstRctor->stInfo.Epollfd);
-        return VOS_ERR;
+        return VOS_ERR_EXIST;
     }
+    
+    pstMsqOpt->PipeFliterID                     = FliterID;
+    pstRctor->stMgrMsQue.apstMsgOpts[FliterID]  = pstMsqOpt;
     
     return VOS_OK;
 }
@@ -113,7 +106,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
         
         pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
         
-        PEvent("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
+        PDebug("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 pstMsgNode->PipeFliterID, 
@@ -127,7 +120,8 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                 if ( pstMsgNode->PipeFliterID < VRCT_MSQPF_NUMS
                     && NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID] )
                 {
-                    ((PFVRCT_MSGCTL_CB)pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvcbFunc)(pstMsgNode->pvMsgData,
+                    ((PFVRCT_MSGCTL_CB)pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvcbFunc)(pstMsgNode->Value,
+                                                                                                                        pstMsgNode->pvMsgData,
                                                                                                                         pstMsgNode->MsgSize,
                                                                                                                         pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvData);
                 }
@@ -170,6 +164,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
 INT32_T VRCT_MsgQueManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T MaxSize)
 {
     UINT32_T            uiIndex         = 0; 
+    UINT32_T            uiMaxSize       = 0;
     PVRCT_MSQ_ENTRY_S   pstEntry        = NULL;
     INT32_T             lnonBlockflag   = 1;
     INT32_T             lRet            = 0;
@@ -238,12 +233,21 @@ INT32_T VRCT_MsgQueManagerInit(PVRCT_REACTOR_S          pstRctor, UINT32_T MaxSi
         close(Eventfd);
         return VOS_ERR;
     }
-    
+    pstRctor->stMgrMsQue.Eventfd  = Eventfd;
     pstRctor->stMgrMsQue.pstRctor = pstRctor;
-    pstRctor->stMgrMsQue.MaxSize = MaxSize;
+    if ( MaxSize == 0 )
+    {
+        uiMaxSize = 10000 + 100;
+    }
+    else
+    {
+        uiMaxSize = MaxSize + 100;
+    }
+    
+    pstRctor->stMgrMsQue.MaxSize = uiMaxSize;
     
     /*开始新建消息节点, 预留并发100用于消息溢出*/
-    for ( uiIndex=0; uiIndex < MaxSize + 100; uiIndex++ )
+    for ( uiIndex=0; uiIndex < uiMaxSize; uiIndex++ )
     {
         pstEntry = (PVRCT_MSQ_ENTRY_S)malloc(sizeof(VRCT_MSQ_ENTRY_S));
         if ( NULL == pstEntry )

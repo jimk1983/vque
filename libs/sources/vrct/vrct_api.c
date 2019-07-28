@@ -80,7 +80,7 @@ VOID    VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
  * @param pcData [in] message data
  * @param iDataLen [in] message data length
  */
-INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, UINT32_T DataLen)
+INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value, CHAR *pcData, UINT32_T DataLen)
 {
     PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
@@ -108,6 +108,7 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, 
     pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
     
     pstMsgNode->MsgCode   = VRCT_MSQCODE_USER;
+    pstMsgNode->Value     = Value;
     pstMsgNode->pvMsgData = pcData;
     pstMsgNode->MsgSize   = DataLen;
     
@@ -124,9 +125,16 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, 
                 pstRctor->stInfo.Epollfd,
                 errno,
                 strerror(errno));
-        return VOS_SYS_QUEFULL;
+        return VOS_ERR_QUEFULL;
     }
-    
+    else
+    {
+        PDebug("[TKD:%02d EID:%02d]=>Event write success, EventFd=%d,Value=%d",
+                pstRctor->stInfo.TaskID,
+                pstRctor->stInfo.Epollfd, 
+                pstRctor->stMgrMsQue.Eventfd,
+                Value);
+    }
     return VOS_OK;
 }
 
@@ -221,55 +229,6 @@ VOID    VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpt
 
 
 /**
- * @brief notify the pthread task exit
- * @param pstRctor [inout] Vos reactor
- */
-VOID VRCT_API_Stop(PVOID pvRctor)
-{
-    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
-    PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
-    PVOS_DLIST_S            pstEntry    = NULL;
-    int                     uiVal       = 1;
-    int                     iRet        = 0;
-    
-    if ( NULL == pstRctor )
-    {
-        return;
-    }
-    
-    if ( 0 == pstRctor->stMgrMsQue.iIdleNums )
-    {
-        return;
-    }
-    
-    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stIdleLock);
-    pstEntry=VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stIdleList);
-    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
-    pstRctor->stMgrMsQue.iIdleNums--;
-    
-    pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
-    
-    pstMsgNode->MsgCode   = VRCT_MSQCODE_EXIT;
-    
-    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stUsedLock);
-    VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stUsedList, &pstMsgNode->stNode);
-    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
-    pstRctor->stMgrMsQue.iUsedNums++;
-    
-    /*通过eventfd告知*/
-    iRet = eventfd_write(pstRctor->stMgrMsQue.Eventfd, uiVal);
-    if ( iRet < 0 )
-    {
-        PError("[TKD:%02d EID:%02d]=>Event write error,errno=%d:%s",
-                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,
-                errno, strerror(errno));
-    }
-    
-    return;
-}
-
-
-/**
  * @brief create a new pthread vos reactor task
  * @param TaskID [in] task ID
  * @param MaxSize [in] the message queue max size
@@ -332,7 +291,7 @@ VOID    *VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize)
     
     pvRctor = (VOID *)pstRctor;
     
-    PEvent("[TKD:%02d EID:%02d]=>Epoll create success!", pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+    PEvent("[TKD:%02d EID:%02d]=>vos reactor create success!", pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
     
     return pvRctor;
     
@@ -355,6 +314,50 @@ ErrorExit:
     
     return NULL;
 }
+
+/**
+ * @brief release the pthread vos reactor task
+ * @param pvRctor [inout] vos reactor
+ */
+VOID VRCT_API_Release(PVOID *ppvRctor)
+{
+    PVRCT_REACTOR_S*    ppstRctor= (PVRCT_REACTOR_S *)ppvRctor;
+    PVRCT_REACTOR_S     pstRctor = NULL;    
+    
+    if ( NULL != ppvRctor )
+    {
+        pstRctor = (PVRCT_REACTOR_S)*ppstRctor;
+        
+        if ( NULL == pstRctor )
+        {
+            return;
+        }
+        
+        VRCT_API_Stop(pstRctor);
+        
+        /*等待线程退出*/
+        (void)VOS_ThreadEvent_Waitfor(&pstRctor->hWaitForExit, 100);
+        
+        VOS_ThreadEvent_Destroy(&pstRctor->hWaitForStart);
+        VOS_ThreadEvent_Destroy(&pstRctor->hWaitForExit);
+        VRCT_MsgQueManagerUnInit(pstRctor);
+        VRCT_TimerCtrlManagerUnInit(pstRctor);
+        VRCT_NetworkEvtManagerUnInit(pstRctor);
+        
+        if ( 0 <  pstRctor->stInfo.Epollfd  )
+        {
+            close(pstRctor->stInfo.Epollfd);
+        }
+
+        if ( NULL != pstRctor )
+        {
+            free(pstRctor);
+        }
+        
+        *ppstRctor = NULL;
+    }
+}
+
 
 /**
  * @brief start the vos reactor task
@@ -421,49 +424,54 @@ INT32_T VRCT_API_Start(PVOID      pvRctor)
 }
 
 
+
 /**
- * @brief release the pthread vos reactor task
- * @param pvRctor [inout] vos reactor
+ * @brief notify the pthread task exit
+ * @param pstRctor [inout] Vos reactor
  */
-VOID VRCT_API_Release(PVOID *ppvRctor)
+VOID VRCT_API_Stop(PVOID pvRctor)
 {
-    PVRCT_REACTOR_S*    ppstRctor= (PVRCT_REACTOR_S *)ppvRctor;
-    PVRCT_REACTOR_S     pstRctor = NULL;    
+    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
+    PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
+    PVOS_DLIST_S            pstEntry    = NULL;
+    int                     uiVal       = 1;
+    int                     iRet        = 0;
     
-    if ( NULL != ppvRctor )
+    if ( NULL == pstRctor )
     {
-        pstRctor = (PVRCT_REACTOR_S)*ppstRctor;
-        
-        if ( NULL == pstRctor )
-        {
-            return;
-        }
-        
-        VRCT_API_Stop(pstRctor);
-        
-        /*等待线程退出*/
-        (void)VOS_ThreadEvent_Waitfor(&pstRctor->hWaitForExit, 100);
-        
-        VOS_ThreadEvent_Destroy(&pstRctor->hWaitForStart);
-        VOS_ThreadEvent_Destroy(&pstRctor->hWaitForExit);
-        VRCT_MsgQueManagerUnInit(pstRctor);
-        VRCT_TimerCtrlManagerUnInit(pstRctor);
-        VRCT_NetworkEvtManagerUnInit(pstRctor);
-        
-        if ( 0 <  pstRctor->stInfo.Epollfd  )
-        {
-            close(pstRctor->stInfo.Epollfd);
-        }
-
-        if ( NULL != pstRctor )
-        {
-            free(pstRctor);
-        }
-        
-        *ppstRctor = NULL;
+        return;
     }
+    
+    if ( 0 == pstRctor->stMgrMsQue.iIdleNums )
+    {
+        return;
+    }
+    
+    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stIdleLock);
+    pstEntry=VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stIdleList);
+    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
+    pstRctor->stMgrMsQue.iIdleNums--;
+    
+    pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
+    
+    pstMsgNode->MsgCode   = VRCT_MSQCODE_EXIT;
+    
+    VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stUsedLock);
+    VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stUsedList, &pstMsgNode->stNode);
+    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
+    pstRctor->stMgrMsQue.iUsedNums++;
+    
+    /*通过eventfd告知*/
+    iRet = eventfd_write(pstRctor->stMgrMsQue.Eventfd, uiVal);
+    if ( iRet < 0 )
+    {
+        PError("[TKD:%02d EID:%02d]=>Event write error,errno=%d:%s",
+                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,
+                errno, strerror(errno));
+    }
+    
+    return;
 }
-
 
 
 

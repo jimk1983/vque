@@ -39,7 +39,7 @@ typedef struct tagVosReactorSetPacketInfo
 
 typedef VOID    (*PFVRCT_COMM_CB)(VOID *pvCtx);
 typedef VOID    (*PFVRCT_NETEVT_CB)(INT32_T fd, VOID *pvConn);
-typedef VOID    (*PFVRCT_MSGCTL_CB)(VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx);
+typedef VOID    (*PFVRCT_MSGCTL_CB)(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx);
 
 typedef struct tagVRctCommCallback
 {
@@ -77,6 +77,16 @@ typedef enum
 #define VRCT_POLL_MOD           EPOLL_CTL_MOD
 #define VRCT_POLL_DEL           EPOLL_CTL_DEL
 
+
+#define VRCT_NETOPT_INIT(pstNetOpts_, fd_, iotype_, EventMask_, pfRecv_, pfSend_, pvConner_) do{\
+    VOS_DLIST_INIT(&(pstNetOpts_)->stNode);\
+    (pstNetOpts_)->fd = (fd_);\
+    (pstNetOpts_)->IoType = (iotype_);\
+    (pstNetOpts_)->EventMask = (EventMask_);\
+    VRCT_CALLBACK_INIT(&(pstNetOpts_)->stRecv, pfRecv_, pvConner_);\
+    VRCT_CALLBACK_INIT(&(pstNetOpts_)->stSend, pfSend_, pvConner_);\
+}while(0);
+
 typedef struct tagVosReactorNetEvtOption
 {
     VOS_DLIST_S                 stNode;
@@ -95,6 +105,14 @@ typedef enum
     
     VRCT_TMTYPE_NUMS
 }VRCT_TMTYPE_E;
+    
+#define VRCT_TIMEROPT_INIT(pstTimerOpts_, TimerType_, TimerOut_, pfTimer_, pvConner_) do{\
+    VOS_DLIST_INIT(&(pstTimerOpts_)->stNode);\
+    (pstTimerOpts_)->TimerType = (TimerType_);\
+    (pstTimerOpts_)->TimeOut = (TimerOut_);\
+    (pstTimerOpts_)->TimeStamp = 0;\
+    VRCT_CALLBACK_INIT(&(pstTimerOpts_)->stTimercb, pfTimer_, pvConner_);\
+}while(0);
 
 typedef struct tagVosReactorTimerOption
 {
@@ -105,6 +123,12 @@ typedef struct tagVosReactorTimerOption
     VRCT_CALLBACK_S             stTimercb;                  /** 发送的事件处理回调函数和节点指针*/
 }VRCT_TIMER_OPT_S,*PVRCT_TIMER_OPT_S;
 
+
+#define VRCT_MSQOPT_INIT(pstMsqOpts_, PipeFliterID_, pfMsqHandler_, pvConner_) do{\
+    VOS_DLIST_INIT(&(pstMsqOpts_)->stNode);\
+    (pstMsqOpts_)->PipeFliterID = (PipeFliterID_);\
+    VRCT_CALLBACK_INIT(&(pstMsqOpts_)->stMsgQueCB, pfMsqHandler_, pvConner_);\
+}while(0);
 
 typedef struct tagVosReactorMessageQueueOption
 {
@@ -127,7 +151,7 @@ VOID        VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTime
 
 INT32_T     VRCT_API_MsqOptRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts);
 VOID        VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts);
-INT32_T     VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, CHAR *pcData, UINT32_T DataLen);
+INT32_T     VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID,UINT32_T Value, CHAR *pcData, UINT32_T DataLen);
 
 
 #endif
