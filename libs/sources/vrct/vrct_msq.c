@@ -101,19 +101,19 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
     {   
         VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stUsedLock);
         pstEntry =VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stUsedList);
-        VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
         pstRctor->stMgrMsQue.iUsedNums--;
+        VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
         
         pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
         
-        PDebug("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
+        PEvent("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 pstMsgNode->PipeFliterID, 
                 pstMsgNode->MsgCode,
                 pstMsgNode->pvMsgData, 
                 pstMsgNode->MsgSize);
-        
+        VOS_ASSERT(pstMsgNode->PipeFliterID == 0);
         switch(pstMsgNode->MsgCode)
         {
             case VRCT_MSQCODE_USER:
@@ -131,7 +131,15 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                                 pstRctor->stInfo.TaskID, 
                                 pstRctor->stInfo.Epollfd,
                                 pstMsgNode->PipeFliterID);
+                    PError("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
+                        pstRctor->stInfo.TaskID, 
+                        pstRctor->stInfo.Epollfd, 
+                        pstMsgNode->PipeFliterID, 
+                        pstMsgNode->MsgCode,
+                        pstMsgNode->pvMsgData, 
+                        pstMsgNode->MsgSize);
                 }
+                
                 break;
            case VRCT_MSQCODE_EXIT:
                 pstRctor->stInfo.Stop = VOS_TRUE;
@@ -140,7 +148,9 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                 break;
         }
         
-        
+        free(pstMsgNode);
+        pstMsgNode = NULL;
+        #if 0
         pstMsgNode->pvMsgData = NULL;
         pstMsgNode->MsgCode = 0;
         pstMsgNode->MsgSize = 0;
@@ -149,6 +159,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
         VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stIdleList, &pstMsgNode->stNode);
         VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
         pstRctor->stMgrMsQue.iIdleNums++;
+        #endif
    }
     
    return;

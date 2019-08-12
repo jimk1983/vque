@@ -84,7 +84,6 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
 {
     PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
-    PVOS_DLIST_S            pstEntry    = NULL;
     INT32_T                 Val         = 1;
     
     if ( NULL == pstRctor )
@@ -99,41 +98,56 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
                 pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
         return VOS_ERR;
     }
-    
+
+    VOS_ASSERT(PipeFilterID == 0);
+    #if 0
+    PVOS_DLIST_S            pstEntry    = NULL;
     VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stIdleLock);
     pstEntry=VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stIdleList);
     VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
     pstRctor->stMgrMsQue.iIdleNums--;
-    
     pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
+
+    #else
+    pstMsgNode = (PVRCT_MSQ_ENTRY_S)malloc(sizeof(VRCT_MSQ_ENTRY_S));
+    VOS_DLIST_INIT(&pstMsgNode->stNode);
+    #endif
     
     pstMsgNode->MsgCode   = VRCT_MSQCODE_USER;
+    pstMsgNode->PipeFliterID =PipeFilterID;
     pstMsgNode->Value     = Value;
     pstMsgNode->pvMsgData = pcData;
     pstMsgNode->MsgSize   = DataLen;
     
     VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stUsedLock);
     VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stUsedList, &pstMsgNode->stNode);
-    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
     pstRctor->stMgrMsQue.iUsedNums++;
-    
-    /*通过eventfd告知*/
-    if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
+    VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
+    /*测试: 批量刷新和单个通知，256-512-1024都差不多的，所以256就可以了
+      */
+    //if( (pstRctor->stMgrMsQue.iUsedNums & 256) == 256)
+    if( (pstRctor->stMgrMsQue.iUsedNums & 256) == 256)
     {
-        PError("[TKD:%02d EID:%02d]=>Event write error,errno=%d:%s",
-                pstRctor->stInfo.TaskID,
-                pstRctor->stInfo.Epollfd,
-                errno,
-                strerror(errno));
-        return VOS_ERR_QUEFULL;
-    }
-    else
-    {
-        PDebug("[TKD:%02d EID:%02d]=>Event write success, EventFd=%d,Value=%d",
-                pstRctor->stInfo.TaskID,
-                pstRctor->stInfo.Epollfd, 
-                pstRctor->stMgrMsQue.Eventfd,
-                Value);
+        /*通过eventfd告知*/
+        if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
+        {
+            PError("[TKD:%02d EID:%02d]=>Event write error,errno=%d:%s",
+                    pstRctor->stInfo.TaskID,
+                    pstRctor->stInfo.Epollfd,
+                    errno,
+                    strerror(errno));
+            return VOS_ERR_QUEFULL;
+        }
+        else
+        {
+            //PDebug("[TKD:%02d EID:%02d]=>Event write success, EventFd=%d,Value=%d",
+            //        pstRctor->stInfo.TaskID,
+            //        pstRctor->stInfo.Epollfd, 
+            //        pstRctor->stMgrMsQue.Eventfd,
+            //        Value);
+        }
+
+        
     }
     return VOS_OK;
 }
@@ -182,6 +196,36 @@ VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOp
     VRCT_NetworkEvtOptsUnRegister(pstRctor, pstNetOpts);
 }
 
+/**
+ * @brief ctrl the netowrk ctrl event option 
+ * @param EpollFd [in] vos reactor epoll fd 
+ * @param fd [in] fd
+ * @param OptCtrl [in] OptCtrl
+ */
+INT32_T   VRCT_API_NetworkOptCtrl(INT32_T EpollFd, INT32_T fd, INT32_T OptCtrl)
+{
+    struct epoll_event      stEvent     = {0};
+        
+    if ( 0 >= fd
+     || fd >= VRCT_FDMAX-1 )
+    {
+        PError("Param error! fd=%d", fd);
+        return SYS_ERR_PARAM;
+    }
+
+    stEvent.data.fd     = fd;
+    stEvent.events      = OptCtrl;
+    
+    if ( 0 > epoll_ctl(EpollFd, EPOLL_CTL_MOD, fd, &stEvent))
+    {
+        PError("[EID:%02d]=>EPoll-Ctrl:(MOD) error! SockFd=%d, errno=%d:%s",  
+                    EpollFd, fd, errno, strerror(errno));
+        
+        return SYS_ERR;
+    }
+     
+     return SYS_OK;
+}
 
 /**
  * @brief register the timer event optiion 

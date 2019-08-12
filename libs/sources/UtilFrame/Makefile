@@ -53,7 +53,7 @@ postpare:
 	@cp -fr $(BIN_DIR)/libUtilFrame.a $(LIBS_BIN) 
 	@rm -fr $(BIN_DIR)/libUtilFrame.a 
 
-$(BIN_DIR)/libUtilFrame.a :  $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinystr.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxml.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxmlerror.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxmlparser.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolJson.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolStd.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolXml.o
+$(BIN_DIR)/libUtilFrame.a :  $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinystr.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxml.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxmlerror.o $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxmlparser.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolJson.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolMap.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolStd.o $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolXml.o
 	$(AR) cr $@ $^
 	@ranlib  $@
 
@@ -71,6 +71,9 @@ $(OBJ_DIR)/libs/sources/UtilFrame/opensrc/tinyxml/tinyxmlparser.o : $(ROOT_DIR)/
 
 $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolJson.o : $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolJson.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolJson.cpp
+
+$(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolMap.o : $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolMap.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolMap.cpp
 
 $(OBJ_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolStd.o : $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolStd.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/UtilFrame/UtilsFrame/UtilsToolStd.cpp

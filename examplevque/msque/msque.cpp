@@ -14,8 +14,11 @@ typedef struct tagMsgQueConn
 
 void *TMSQ_WorkCustomter(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
 {
-    
-    printf("Value:%d\n", Value);
+    if ( (Value & 0x7FFFFF) == 0x7FFFFF )
+        {
+        printf("POP Value:%d,time=%s\n", Value, VOS_GetSysTimeNowStr());
+            
+        }
     
     return NULL;
 }
@@ -29,9 +32,11 @@ void *TMSQ_WorkProducer(void *pvArgv)
     while(1)
     {
         Value++;
-        printf("push value=%d\n", Value);
-        VRCT_API_MsqOptPush(pstMsqConn->pvRctor, 0, Value, NULL, 0);
-        VOS_Sleep(1);
+        if ( (Value & 0x7FFFFF) == 0x7FFFFF )
+                printf("PUSH value=%d,time=%s\n", Value, VOS_GetSysTimeNowStr());
+        
+        VRCT_API_MsqOptPush(pstMsqConn->pvRctor, 0, Value, NULL, Value);
+        //VOS_Sleep(1);
     }
     
     return NULL;
@@ -68,7 +73,7 @@ VOID TMain_MsQueue(PTEST_MSQ_CFG_S pstCfg)
         PError("vos reactor message queue register!");
         goto ErrorExit;
     }
-
+    
     if ( VOS_ERR == VRCT_API_Start(pstMsqConn->pvRctor)  )
     {
         PError("vos reactor start failed!");
