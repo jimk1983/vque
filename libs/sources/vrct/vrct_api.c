@@ -72,7 +72,6 @@ VOID    VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
     VRCT_MsgQueOptsUnRegister(pstRctor, pstMsqOpts);
 }
 
-
 /**
  * @brief register the message queue optiion 
  * @param pvRctor [in] vos reactor 
@@ -92,26 +91,26 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
         return VOS_ERR;
     }
     
+    #if 0
     if ( 0 == pstRctor->stMgrMsQue.iIdleNums )
     {
         PError("[TKD:%02d EID:%02d]=>Message queue idle node has zero!",
                 pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
         return VOS_ERR;
     }
-
+    
     VOS_ASSERT(PipeFilterID == 0);
-    #if 0
+    
     PVOS_DLIST_S            pstEntry    = NULL;
     VOS_MTX_LOCK(&pstRctor->stMgrMsQue.stIdleLock);
     pstEntry=VOS_DList_RemoveHead(&pstRctor->stMgrMsQue.stIdleList);
     VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stIdleLock);
     pstRctor->stMgrMsQue.iIdleNums--;
     pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
-
-    #else
+    #endif
+    
     pstMsgNode = (PVRCT_MSQ_ENTRY_S)malloc(sizeof(VRCT_MSQ_ENTRY_S));
     VOS_DLIST_INIT(&pstMsgNode->stNode);
-    #endif
     
     pstMsgNode->MsgCode   = VRCT_MSQCODE_USER;
     pstMsgNode->PipeFliterID =PipeFilterID;
@@ -123,10 +122,10 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
     VOS_DLIST_ADD_TAIL(&pstRctor->stMgrMsQue.stUsedList, &pstMsgNode->stNode);
     pstRctor->stMgrMsQue.iUsedNums++;
     VOS_MTX_UNLOCK(&pstRctor->stMgrMsQue.stUsedLock);
-    /*测试: 批量刷新和单个通知，256-512-1024都差不多的，所以256就可以了
-      */
-    //if( (pstRctor->stMgrMsQue.iUsedNums & 256) == 256)
-    if( (pstRctor->stMgrMsQue.iUsedNums & 256) == 256)
+
+    //测试时:发现Used Nums=1的时候,从3s下降到6s,但是每个包的实时性就保证了
+    //单核另外考虑
+    //if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
     {
         /*通过eventfd告知*/
         if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
@@ -140,15 +139,15 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
         }
         else
         {
+            //printf("Event write success!g_test_cout=%lu\n", g_test_cout);
             //PDebug("[TKD:%02d EID:%02d]=>Event write success, EventFd=%d,Value=%d",
             //        pstRctor->stInfo.TaskID,
             //        pstRctor->stInfo.Epollfd, 
             //        pstRctor->stMgrMsQue.Eventfd,
             //        Value);
         }
-
-        
     }
+    
     return VOS_OK;
 }
 

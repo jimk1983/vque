@@ -44,7 +44,7 @@
      struct epoll_event*     event       = NULL;
      struct                  sockaddr_in stCliaddr;
      socklen_t               len         =sizeof(struct sockaddr_in);
- 
+     
      if ( NULL == pvArgv )
      {
          return VOS_ERR;
@@ -109,9 +109,7 @@
                                  fd, errno, strerror(errno));
                              return VOS_ERR;
                          }
-                         
-                         ((PFVRCT_NETEVT_CB)(pstRctor->stMgrMsQue.stMsqNetOpt.stRecv.pvcbFunc))(fd, pstRctor->stMgrMsQue.stMsqNetOpt.stRecv.pvData);
-                         
+                        ((PFVRCT_NETEVT_CB)(pstRctor->stMgrMsQue.stMsqNetOpt.stRecv.pvcbFunc))(fd, pstRctor->stMgrMsQue.stMsqNetOpt.stRecv.pvData);
                          break;
                      case VRCT_IOTYPE_SPAIR:
                          

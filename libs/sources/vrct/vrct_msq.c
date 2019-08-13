@@ -81,6 +81,7 @@ VOID VRCT_MsgQueOptsUnRegister(PVRCT_REACTOR_S         pstRctor, PVRCT_MSQ_OPT_S
     }
 }
 
+
 /**
  * @brief init the message queue event manager
  * @param fd [in] eventfd
@@ -91,7 +92,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
     PVOS_DLIST_S            pstEntry    = NULL;
     PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvCtx;
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
-
+    
     if ( 0 == pstRctor->stMgrMsQue.iUsedNums )
     {
         return;
@@ -114,6 +115,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
                 pstMsgNode->pvMsgData, 
                 pstMsgNode->MsgSize);
         VOS_ASSERT(pstMsgNode->PipeFliterID == 0);
+        
         switch(pstMsgNode->MsgCode)
         {
             case VRCT_MSQCODE_USER:
