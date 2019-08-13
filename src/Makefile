@@ -10,7 +10,7 @@ else
 	CFLAG+=-g -O0
 endif
 
-CFLAG+=-Wall -Werror  
+CFLAG+=-Wall -Werror -std=c++11  
 
 #CFLAG+=-fgnu89-inline 
 

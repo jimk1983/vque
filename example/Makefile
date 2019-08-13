@@ -10,7 +10,7 @@ else
 	CFLAG+=-g -O0
 endif
 
-CFLAG+=-Wall -Werror  
+CFLAG+=-Wall -Werror -std=c++11  
 
 #CFLAG+=-fgnu89-inline 
 
@@ -43,18 +43,30 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/
 
 all : prepare $(BIN_DIR)/example
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/client 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/main $(OBJ_DIR)/example/client $(OBJ_DIR)/example/msque $(OBJ_DIR)/example/server $(OBJ_DIR)/example/timer 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/example :  $(OBJ_DIR)/example/client/test_vos.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/client/test_vos.o $(LDFLAGS)
+$(BIN_DIR)/example :  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
 
-$(OBJ_DIR)/example/client/test_vos.o : $(ROOT_DIR)/example/client/test_vos.cpp
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/client/test_vos.cpp
+$(OBJ_DIR)/example/main/main.o : $(ROOT_DIR)/example/main/main.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/main/main.cpp
+
+$(OBJ_DIR)/example/client/client.o : $(ROOT_DIR)/example/client/client.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/client/client.cpp
+
+$(OBJ_DIR)/example/msque/msque.o : $(ROOT_DIR)/example/msque/msque.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/msque/msque.cpp
+
+$(OBJ_DIR)/example/server/server.o : $(ROOT_DIR)/example/server/server.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/server/server.cpp
+
+$(OBJ_DIR)/example/timer/timer.o : $(ROOT_DIR)/example/timer/timer.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/timer/timer.cpp
 

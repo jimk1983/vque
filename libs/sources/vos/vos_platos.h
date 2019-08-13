@@ -50,7 +50,7 @@
 /*定义的明确大小端:默认小端*/
 #define     VOS_PLAT_BIGENDIAN          0
 /*定义是否需要C++11支持*/
-#define     VOS_PLAT_SUPPORT_Class11    0
+#define     VOS_PLAT_SUPPORT_Class11    1
 /*定义是否开启DBG*/
 #define     VOS_PLAT_DBG                0
 
