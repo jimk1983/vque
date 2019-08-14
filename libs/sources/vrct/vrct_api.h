@@ -145,6 +145,7 @@ VOID        VRCT_API_Stop(PVOID pvRctor);
 
 INT32_T     VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts);
 VOID        VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts);
+INT32_T     VRCT_API_NetworkOptCtrl(PVOID pvRctor,  INT32_T fd, INT32_T EvtMask);
 
 INT32_T     VRCT_API_TimerOptRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts);
 VOID        VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpts);

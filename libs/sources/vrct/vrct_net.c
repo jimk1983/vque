@@ -305,7 +305,7 @@ VOID   VRCT_NetworkEvtUnRegister(PVRCT_REACTOR_S             pstRctor,INT32_T fd
 * @param ctrlopt [in] the socket
 * @author jimk 
 */
- INT32_T   VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor,INT32_T fd, INT32_T OptCtrl)
+ INT32_T   VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor, INT32_T fd, INT32_T OptMask)
  {
     struct epoll_event      stEvent     = {0};
     
@@ -315,9 +315,9 @@ VOID   VRCT_NetworkEvtUnRegister(PVRCT_REACTOR_S             pstRctor,INT32_T fd
         PError("Param error! fd=%d", fd);
         return SYS_ERR_PARAM;
     }
-
+    
     stEvent.data.fd     = fd;
-    stEvent.events      = OptCtrl;
+    stEvent.events      = OptMask;
     
     if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_MOD, fd, &stEvent))
     {

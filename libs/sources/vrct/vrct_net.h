@@ -60,7 +60,7 @@ INT32_T     VRCT_NetworkEvtRegister(PVRCT_REACTOR_S pstRctor,
 VOID        VRCT_NetworkEvtUnRegister(PVRCT_REACTOR_S          pstRctor, INT32_T fd);
 INT32_T     VRCT_NetworkEvtOptsRegister(     PVRCT_REACTOR_S pstRctor,     PVRCT_NETEVT_OPT_S pstNetOpt);
 VOID        VRCT_NetworkEvtOptsUnRegister(PVRCT_REACTOR_S             pstRctor,PVRCT_NETEVT_OPT_S pstNetOpt);
-INT32_T     VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor,INT32_T fd, INT32_T OptCtrl);
+INT32_T     VRCT_NetworkEvtCtrl(PVRCT_REACTOR_S         pstRctor,INT32_T fd, INT32_T OptMask);
 
 
 

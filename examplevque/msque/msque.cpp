@@ -57,7 +57,7 @@ void *TMSQ_WorkProducer(void *pvArgv)
         if ( (Value & 0x7FFFFF) == 0x7FFFFF )
                 printf("[Producer]: PUSH value=%d,time=%s, msgConn=%p,nextptr=%p\n", 
                         Value, VOS_GetSysTimeNowStr(), pstMsqConn, pstMsqConn->pstNextConn);
-
+        
         Ret = VRCT_API_MsqOptPush(pstMsqConn->pvRctor, 0, Value, NULL, 0);
         if( Ret < 0)
         {

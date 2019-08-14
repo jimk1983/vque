@@ -125,7 +125,7 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
 
     //测试时:发现Used Nums=1的时候,从3s下降到6s,但是每个包的实时性就保证了
     //单核另外考虑
-    //if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
+    if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
     {
         /*通过eventfd告知*/
         if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
@@ -159,23 +159,21 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
 INT32_T VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts)
 {
     PVRCT_REACTOR_S     pstRctor     = (PVRCT_REACTOR_S)pvRctor;
-
-    if ( NULL == pstNetOpts 
-        || NULL == pvRctor )
+    
+    if ( NULL == pvRctor )
     {
         PError("Param error!");
         return VOS_ERR;
     }
-
-    if ( VOS_ERR == VRCT_NetworkEvtOptsRegister(pstRctor, pstNetOpts) )
+    
+    if ( VOS_ERR == VRCT_NetworkEvtCtrl(pstRctor, pstNetOpts->fd, pstNetOpts->EventMask) )
     {
         PError("Vos reactor register the network option error!");
         return VOS_ERR;
     }
-
+    
     return VOS_OK;
 }
-
 
 /**
  * @brief register the network event optiion 
@@ -190,8 +188,8 @@ VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOp
         || NULL == pvRctor )
     {
         return;
-    }    
-
+    }
+    
     VRCT_NetworkEvtOptsUnRegister(pstRctor, pstNetOpts);
 }
 
@@ -201,29 +199,30 @@ VOID    VRCT_API_NetworkOptUnRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOp
  * @param fd [in] fd
  * @param OptCtrl [in] OptCtrl
  */
-INT32_T   VRCT_API_NetworkOptCtrl(INT32_T EpollFd, INT32_T fd, INT32_T OptCtrl)
+INT32_T   VRCT_API_NetworkOptCtrl(PVOID pvRctor,  INT32_T fd, INT32_T EvtMask)
 {
     struct epoll_event      stEvent     = {0};
-        
-    if ( 0 >= fd
-     || fd >= VRCT_FDMAX-1 )
+    PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvRctor;
+    
+    if ( NULL == pvRctor
+        || 0 >= fd
+        || fd >= VRCT_FDMAX-1 )
     {
         PError("Param error! fd=%d", fd);
         return SYS_ERR_PARAM;
     }
-
-    stEvent.data.fd     = fd;
-    stEvent.events      = OptCtrl;
     
-    if ( 0 > epoll_ctl(EpollFd, EPOLL_CTL_MOD, fd, &stEvent))
+    stEvent.data.fd     = fd;
+    stEvent.events      = EvtMask;
+    
+    if ( 0 > epoll_ctl(pstRctor->stInfo.Epollfd, EPOLL_CTL_MOD, fd, &stEvent))
     {
         PError("[EID:%02d]=>EPoll-Ctrl:(MOD) error! SockFd=%d, errno=%d:%s",  
-                    EpollFd, fd, errno, strerror(errno));
-        
+                    pstRctor->stInfo.Epollfd, fd, errno, strerror(errno));
         return SYS_ERR;
     }
-     
-     return SYS_OK;
+    
+    return SYS_OK;
 }
 
 /**
