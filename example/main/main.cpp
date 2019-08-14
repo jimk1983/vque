@@ -4,10 +4,21 @@
 #include <UtilFrame/UtilsFrame.h>
 #include <crct/CEvtRctor.h>
 
+using namespace CVEvtFrame;
 
 int main(int argc, char *argv[])
 {
-	printf("hello world!\n");
-	
-	return 0;
+    CEvtRctor *pEvtRctor = new CEvtRctor(10000);
+    
+    printf("hello world!\n");
+
+    delete pEvtRctor;
+
+    {
+	CEvtRctor a(111);
+        printf("a=%p\n",&a);
+    }
+
+
+    return 0;
 }

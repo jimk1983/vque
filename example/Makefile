@@ -43,14 +43,14 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/
 
 all : prepare $(BIN_DIR)/example
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/main $(OBJ_DIR)/example/client $(OBJ_DIR)/example/msque $(OBJ_DIR)/example/server $(OBJ_DIR)/example/timer 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/main $(OBJ_DIR)/example/client $(OBJ_DIR)/example/msque $(OBJ_DIR)/example/server $(OBJ_DIR)/example/timer $(OBJ_DIR)/example/crct 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/example :  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(LDFLAGS)
+$(BIN_DIR)/example :  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/CEvtRctor.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/CEvtRctor.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
@@ -69,4 +69,7 @@ $(OBJ_DIR)/example/server/server.o : $(ROOT_DIR)/example/server/server.cpp
 
 $(OBJ_DIR)/example/timer/timer.o : $(ROOT_DIR)/example/timer/timer.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/timer/timer.cpp
+
+$(OBJ_DIR)/example/crct/CEvtRctor.o : $(ROOT_DIR)/example/crct/CEvtRctor.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/crct/CEvtRctor.cpp
 
