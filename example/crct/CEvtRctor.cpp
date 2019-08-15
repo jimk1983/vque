@@ -47,6 +47,7 @@
 
 int     CEvtRctor::Init(int MsqSize)
 {
+    m_msqSize = MsqSize;
     std::cout << "CEvent Init! msqSize="<< m_msqSize << std::endl;
     return 0;
 }
