@@ -16,7 +16,7 @@ typedef enum
     EVTRCT_SEVLB_NUMS
 }EVTRCT_SEVLB_E;
 
-class CEvtRctor
+class CEvtRctor 
 {
 public:
     int     Init(int MsqSize);
@@ -27,8 +27,10 @@ private:
     int     m_msqSize;
     
 public:
-    CEvtRctor(){};
-    ~CEvtRctor(){};
+    explicit CEvtRctor(){std::cout << "CEvtRctor entry!" << std::endl;};
+    explicit CEvtRctor(int MsqSize)  :m_msqSize(MsqSize){std::cout << "CEvtRctor entry!" << std::endl;};
+    ~CEvtRctor(){std::cout << "CEvtRctor Leave!" << std::endl;};
+    CEvtRctor& operator=(const CEvtRctor&) = delete;
 };
 
 #endif

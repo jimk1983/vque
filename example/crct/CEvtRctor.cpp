@@ -47,13 +47,13 @@
 
 int     CEvtRctor::Init(int MsqSize)
 {
-    
-    
+    std::cout << "CEvent Init! msqSize="<< m_msqSize << std::endl;
+    return 0;
 }
 
 void    CEvtRctor::UnInit()
 {
-    
+    std::cout << "CEvent UnInit!" << std::endl;
     
 }
     

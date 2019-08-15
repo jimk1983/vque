@@ -25,6 +25,7 @@
 /*需要C++11支持*/
 #if VOS_PLAT_SUPPORT_Class11
 #include <array>
+#include <memory>
 #endif
 
 
