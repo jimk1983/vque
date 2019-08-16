@@ -45,29 +45,21 @@
 #include <vrct/vrct_api.h>
 #include "CEvtRctor.h"
 
-namespace CVEvtFrame{
-    
-    void     CEvtRctor::EvtRctor_Init()
-    {
-        std::cout << "EvtRctor_Init() Entry" << std::endl;
-        
-    }
-    
-    void    CEvtRctor::EvtRctor_UnInit()
-    {
-        std::cout << "EvtRctor_UnInit() Entry" << std::endl;
-    }
-    
-    CEvtRctor::CEvtRctor(int MsqSize)
-    {
-        m_msqSize = MsqSize;
-        EvtRctor_Init();
-        
-    }
-    
-    CEvtRctor::~CEvtRctor()
-    {
-        EvtRctor_UnInit();
-    }
+int     CEvtRctor::Init(int MsqSize)
+{
+    m_msqSize = MsqSize;
+    std::cout << "CEvent Init! msqSize="<< m_msqSize << std::endl;
+    return 0;
 }
+
+void    CEvtRctor::UnInit()
+{
+    std::cout << "CEvent UnInit!" << std::endl;
+    
+}
+    
+
+
+
+
 
