@@ -45,14 +45,14 @@
 #include <vrct/vrct_api.h>
 #include "CEvtRctor.h"
 
-int     CEvtRctor::Init(int MsqSize)
+int     CEvtRctor::EvtRctor_Init(int MsqSize)
 {
     m_msqSize = MsqSize;
     std::cout << "CEvent Init! msqSize="<< m_msqSize << std::endl;
     return 0;
 }
 
-void    CEvtRctor::UnInit()
+void    CEvtRctor::EvtRctor_UnInit()
 {
     std::cout << "CEvent UnInit!" << std::endl;
     

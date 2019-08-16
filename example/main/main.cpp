@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
     printf("hello world!\n");
 
     delete pEvtRctor;
-
+    
     {
-	CEvtRctor a(111);
+        CEvtRctor a(111);
         printf("a=%p\n",&a);
     }
 
