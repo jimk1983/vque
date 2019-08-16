@@ -45,21 +45,40 @@
 #include <vrct/vrct_api.h>
 #include "CEvtRctor.h"
 
-int     CEvtRctor::EvtRctor_Init(int MsqSize)
+int     CEvtRctor::Init(int MsqSize)
 {
-    m_msqSize = MsqSize;
-    std::cout << "CEvent Init! msqSize="<< m_msqSize << std::endl;
+    m_msqSize_ = MsqSize;
+    std::cout << "CEvent Init! msqSize="<< m_msqSize_ << std::endl;
     return 0;
 }
 
-void    CEvtRctor::EvtRctor_UnInit()
+void    CEvtRctor::UnInit()
 {
     std::cout << "CEvent UnInit!" << std::endl;
     
 }
-    
+
+std::shared_ptr<CEvtRctor> CEvtRctor::GetSharedPtr()
+{
+    return shared_from_this();
+}
+
+int     CEvtRctor::GetMsqSize()
+{
+    return m_msqSize_;
+}
 
 
+CEvtRctor::CEvtRctor(int MsqSize):
+        m_msqSize_(MsqSize)
+{
+    std::cout << "CEvtRctor Entry!" << std::endl;
+}
+
+CEvtRctor::~CEvtRctor()
+{
+    std::cout << "CEvtRctor Leave!" << std::endl;
+}
 
 
 
