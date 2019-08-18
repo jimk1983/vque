@@ -33,6 +33,8 @@
 #include <vos/vos_shm.h>
 #include <vos/vos_utils.h>
 
+#include <vos/network/vos_sock.h>
+#include <vos/network/vos_route.h>
 
 
 #endif

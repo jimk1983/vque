@@ -52,7 +52,7 @@
 /*定义是否需要C++11支持*/
 #define     VOS_PLAT_SUPPORT_Class11    1
 /*定义是否开启DBG*/
-#define     VOS_PLAT_DBG                0
+#define     VOS_PLAT_DBG                1
 
 
 
@@ -173,6 +173,10 @@ typedef volatile unsigned long long  VUINT64_T, *PVUINT64_T;
 
 #define VOS_INVALID_VAL   0xFFFFFFFFFFFFFFFF
 
+#endif
+
+#ifndef VOS_IPADDR_T
+typedef UINT32_T        VOS_IPADDR_T;
 #endif
 
 /*将DULONG 转为ULONG64*/

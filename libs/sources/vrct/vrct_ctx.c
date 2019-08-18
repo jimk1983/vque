@@ -96,8 +96,12 @@
                              return VOS_ERR;
                          }
                          
-                         ((PFVRCT_NETEVT_CB)(pstRctor->stMgrTimer.stSlowOpts.stRecv.pvcbFunc))(fd, pstRctor->stMgrTimer.stSlowOpts.stRecv.pvData);
-                         ((PFVRCT_NETEVT_CB)(pstRctor->stMgrTimer.stQuickOpts.stRecv.pvcbFunc))(fd, pstRctor->stMgrTimer.stQuickOpts.stRecv.pvData);
+                         if ( fd == pstRctor->stMgrTimer.stSlowOpts.fd )
+                         {
+                             ((PFVRCT_NETEVT_CB)(pstRctor->stMgrTimer.stSlowOpts.stRecv.pvcbFunc))(fd, pstRctor->stMgrTimer.stSlowOpts.stRecv.pvData);
+                         }
+                         else
+                            ((PFVRCT_NETEVT_CB)(pstRctor->stMgrTimer.stQuickOpts.stRecv.pvcbFunc))(fd, pstRctor->stMgrTimer.stQuickOpts.stRecv.pvData);
                          
                          break;
                      case VRCT_IOTYPE_MSG:
@@ -171,12 +175,6 @@
      //semaphore mutex=1;
      //nice(10);
     
-    if ( VOS_ERR == VRCT_TimerCtrlManagerInit(pstRctor) )
-    {
-       PError("[TKD:%02d EID:%02d]=>timer manager init success!tid=%d", 
-                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,Tid);
-       return NULL;
-    }
     
     PEvent("[TKD:%02d EID:%02d]=>EPoll [TID=%08x] Start to work!",
                 pstRctor->stInfo.TaskID, 

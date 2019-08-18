@@ -1,0 +1,87 @@
+#ifndef _CEVENT_REACTOR_H_
+#define _CEVENT_REACTOR_H_
+
+
+/*严格型*/
+#define     CEVTRCT_STYPE_STRICT       1
+/*容错型*/
+#define     CEVTRCT_STYPE_AFAULT       2
+
+/*服务器负载均衡算法*/
+typedef enum
+{
+    EVTRCT_SEVLB_MINFD=0,           /*最小连接数*/
+    EVTRCT_SEVLB_HASHFD,            /*简单FD的Hash求余算法*/
+
+    EVTRCT_SEVLB_NUMS
+}EVTRCT_SEVLB_E;
+
+typedef struct tagEvtAnyData
+{
+    char*           pcData;         /*数据*/
+    unsigned int    DataSize;       /*数据大小*/
+}EVT_ANYDATA_S, *PEVT_ANYDATA_S;
+
+typedef struct tagNettyEvtAnyData
+{
+    int             fd;             /*该数据所属的socketfd*/
+    char*           pcData;         /*数据*/
+    unsigned int    DataSize;       /*数据大小*/
+}NETTY_ANYDATA_S, *PNETTY_ANYDATA_S;
+
+typedef struct tagNettySetFormat
+{   
+    unsigned int    MagicA;         /*设定2个魔法数字*/
+    unsigned int    MagicB;         
+    unsigned int    SizeOfst;       /*大小偏移: 大小规定是32字节*/
+}NETTY_SFMT_S, *PNETTY_SFMT_S;
+
+#define NETMASK_LTIN          (EPOLLIN)
+#define NETMASK_LTOUT         (EPOLLOUT)
+#define NETMASK_LTINOUT       (EPOLLOUT | EPOLLIN)
+
+#define NETMASK_ADD           EPOLL_CTL_ADD
+#define NETMASK_MOD           EPOLL_CTL_MOD
+#define NETMASK_DEL           EPOLL_CTL_DEL
+
+
+class CEvtRctor : public std::enable_shared_from_this<CEvtRctor> {
+    
+typedef std::function<void (int fd, void* ctx)> pf_netio_cb;
+typedef std::function<void (int,  int, std::shared_ptr<EVT_ANYDATA_S>, void* ctx)> pf_msqio_cb;
+typedef std::function<void (void* ctx)> pf_timerio_cb;
+
+typedef std::function<void (int fd, std::shared_ptr<NETTY_ANYDATA_S> NetData, void* ctx)> pf_nettyio_recvcb;
+
+public:
+    int     Network_Register(const int fd, pf_netio_cb func_net_recvcb, pf_netio_cb func_net_sendcb, int netmask, void* ctx);
+    int     Network_UnRegister(const int fd);
+    int     Network_IoSendPost(const int fd, std::shared_ptr<EVT_ANYDATA_S> IoData);
+    int     Network_MaskCtrl(const int fd, const int mask);
+    int     MessageQue_Register(const int fliterid, pf_msqio_cb func_msq_handler, void* ctx);
+    int     MessageQue_UnRegister(const int fliterid);
+    int     MessageQue_Post(const int fliterid, const int value, std::shared_ptr<EVT_ANYDATA_S> MsgData);
+    int     Timer_Register(int &Timerid,      pf_timerio_cb func_tm_handler, void* ctx);
+    int     Timer_UnRegister(const int Timerid);
+    int     MainDispatch();
+public:
+    int     Network_NettySever(const NETTY_SFMT_S &NettyFmt, pf_nettyio_recvcb func_netty_recvcb);
+public:                             
+    std::shared_ptr<CEvtRctor>      GetSharedPtr();
+    int                             GetMsqSize();
+private:
+    pf_timerio_cb                   func_timer_callback;
+    
+private:
+    int                             m_msqSize_;
+    void*                           m_pvEvtRctor_;
+public:
+    CEvtRctor(int TaskID, int MsqSize);
+    CEvtRctor() = delete;
+    CEvtRctor(const CEvtRctor&) = delete;
+    CEvtRctor& operator=(const CEvtRctor&) = delete;
+    ~CEvtRctor();
+};
+
+#endif
+

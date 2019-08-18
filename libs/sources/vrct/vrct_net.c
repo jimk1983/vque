@@ -79,13 +79,13 @@ VOID VRCT_NetworkEvtManagerUnInit(PVRCT_REACTOR_S          pstRctor)
         {
             if ( NULL != pstRctor->stMgrNet.apstEpollEvtOps[iIndex] )
             {
-                PEvent("[TKD:%02d EID:%02d]=>network memory free! index= %d",
-                        pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, iIndex);
+                //PEvent("[TKD:%02d EID:%02d]=>network memory free! index= %d",
+                //        pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, iIndex);
                 
                 /*网络的资源是需要自己释放的*/
                 if ( pstRctor->stMgrNet.apstEpollEvtOps[iIndex]->IoType == VRCT_IOTYPE_NET )
                 {
-                    free(pstRctor->stMgrNet.apstEpollEvtOps[iIndex]);
+                    //free(pstRctor->stMgrNet.apstEpollEvtOps[iIndex]);
                     pstRctor->stMgrNet.apstEpollEvtOps[iIndex] =NULL;
                 }
             }

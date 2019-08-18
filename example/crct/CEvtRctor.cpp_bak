@@ -1,0 +1,139 @@
+/******************************************************************************
+
+                  版权所有 (C), 2001-2011, 网络有限公司
+
+ ******************************************************************************
+  文 件 名   : main.cpp
+  版 本 号   : 初稿
+  作    者   : jimk
+  生成日期   : 2019年7月25日 星期四
+  最近修改   :
+  功能描述   : vque的测试代码
+  函数列表   :
+  修改历史   :
+  1.日    期   : 2019年7月25日 星期四
+    作    者   : jimk
+    修改内容   : 创建文件
+
+******************************************************************************/
+#include <vos/vos_platos.h>
+
+#include <iostream>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <list>
+#include <queue>
+#include <stack>
+#include <set>
+#include <map>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <typeinfo>
+#include <algorithm>
+#include <complex>
+#include <limits>
+
+/*需要C++11支持*/
+#if VOS_PLAT_SUPPORT_Class11
+#include <array>
+#include <memory>
+#endif
+
+#include <vos/vos_pub.h>
+#include <vrct/vrct_api.h>
+#include "CEvtRctor.h"
+
+int     CEvtRctor::Network_Register(const int fd, pf_netio_cb func_net_recvcb, pf_netio_cb func_net_sendcb, int netmask, void* ctx)
+{
+
+    return 0;
+}
+int     CEvtRctor::Network_UnRegister(const int fd)
+{
+
+    return 0;
+}
+
+int     CEvtRctor::Network_IoSendPost(const int fd, std::shared_ptr<EVT_ANYDATA_S> IoData)
+{
+
+    return 0;
+}
+
+int     CEvtRctor::Network_MaskCtrl(const int fd, const int mask)
+{
+
+    return 0;
+}
+
+int     CEvtRctor::MessageQue_Register(const int fliterid, pf_msqio_cb func_msq_handler, void* ctx)
+{
+    return 0;
+}
+int     CEvtRctor::MessageQue_UnRegister(const int fliterid)
+{
+    return 0;
+}
+int     CEvtRctor::MessageQue_Post(const int fliterid, const int value, std::shared_ptr<EVT_ANYDATA_S> MsgData)
+{
+    return 0;
+}
+int     CEvtRctor::Timer_Register(int &Timerid,      pf_timerio_cb func_tm_handler, void* ctx)
+{
+    func_timer_callback = func_tm_handler;
+    
+    return 0;
+}
+
+int     CEvtRctor::Timer_UnRegister(const int Timerid)
+{
+    return 0;
+}
+
+int     CEvtRctor::MainDispatch()
+{
+    return 0;
+}
+
+int     CEvtRctor::Network_NettySever(const NETTY_SFMT_S &NettyFmt, pf_nettyio_recvcb func_netty_recvcb)
+{
+    return 0;
+}
+
+std::shared_ptr<CEvtRctor> CEvtRctor::GetSharedPtr()
+{
+    return shared_from_this();
+}
+
+int     CEvtRctor::GetMsqSize()
+{
+    return m_msqSize_;
+}
+
+CEvtRctor::CEvtRctor(int TaskID, int MsqSize):
+        m_msqSize_(MsqSize),
+        m_pvEvtRctor_(NULL)
+{
+    m_pvEvtRctor_ = VRCT_API_Create(TaskID, MsqSize);
+    if ( NULL == m_pvEvtRctor_ )
+    {
+        return;
+    }
+    
+    std::cout << "CEvtRctor Entry!" << std::endl;
+}
+
+CEvtRctor::~CEvtRctor()
+{
+    if ( NULL != m_pvEvtRctor_ )
+    {
+        VRCT_API_Release(&m_pvEvtRctor_);
+    }
+    std::cout << "CEvtRctor Leave!" << std::endl;
+}
+
+
+

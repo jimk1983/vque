@@ -78,10 +78,10 @@ typedef enum
 #define VRCT_POLL_DEL           EPOLL_CTL_DEL
 
 
-#define VRCT_NETOPT_INIT(pstNetOpts_, fd_, iotype_, EventMask_, pfRecv_, pfSend_, pvConner_) do{\
+#define VRCT_NETOPT_INIT(pstNetOpts_, fd_, EventMask_, pfRecv_, pfSend_, pvConner_) do{\
     VOS_DLIST_INIT(&(pstNetOpts_)->stNode);\
     (pstNetOpts_)->fd = (fd_);\
-    (pstNetOpts_)->IoType = (iotype_);\
+    (pstNetOpts_)->IoType = VRCT_IOTYPE_NET;\
     (pstNetOpts_)->EventMask = (EventMask_);\
     VRCT_CALLBACK_INIT(&(pstNetOpts_)->stRecv, pfRecv_, pvConner_);\
     VRCT_CALLBACK_INIT(&(pstNetOpts_)->stSend, pfSend_, pvConner_);\

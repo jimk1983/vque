@@ -44,7 +44,7 @@ INT32_T VRCT_API_MsqOptRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
         PError("Param error!");
         return VOS_ERR;
     }
-
+    
     if ( VOS_ERR == VRCT_MsgQueOptsRegister(pstRctor, pstMsqOpts) )
     {
         PError("Vos reactor register the message queue option error!");
@@ -125,7 +125,8 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
 
     //测试时:发现Used Nums=1的时候,从3s下降到6s,但是每个包的实时性就保证了
     //单核另外考虑
-    if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
+    //if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
+    if( (pstRctor->stMgrMsQue.iUsedNums & 0x3) == 0x3)
     {
         /*通过eventfd告知*/
         if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
@@ -165,8 +166,9 @@ INT32_T VRCT_API_NetworkOptRegister(PVOID pvRctor, PVRCT_NETEVT_OPT_S pstNetOpts
         PError("Param error!");
         return VOS_ERR;
     }
+    pstNetOpts->IoType = VRCT_IOTYPE_NET;
     
-    if ( VOS_ERR == VRCT_NetworkEvtCtrl(pstRctor, pstNetOpts->fd, pstNetOpts->EventMask) )
+    if ( VOS_ERR == VRCT_NetworkEvtOptsRegister(pstRctor, pstNetOpts) )
     {
         PError("Vos reactor register the network option error!");
         return VOS_ERR;
@@ -269,7 +271,6 @@ VOID    VRCT_API_TImerOptUnRegister(PVOID pvRctor, PVRCT_TIMER_OPT_S pstTimerOpt
     VRCT_TimerEvtOptsUnRegister(pstRctor, pstTimerOpts);
 }
 
-
 /**
  * @brief create a new pthread vos reactor task
  * @param TaskID [in] task ID
@@ -329,6 +330,13 @@ VOID    *VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize)
         goto ErrorExit; 
     }
     
+    if ( VOS_ERR == VRCT_TimerCtrlManagerInit(pstRctor) )
+    {
+       PError("[TKD:%02d EID:%02d]=>timer manager init success!", 
+                pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd);
+       goto ErrorExit;
+    }
+    
     pstRctor->pstVRctor = pstRctor;
     
     pvRctor = (VOID *)pstRctor;
@@ -339,7 +347,7 @@ VOID    *VRCT_API_Create(INT32_T TaskID, UINT32_T MaxSize)
     
 ErrorExit:
     VOS_ThreadEvent_Destroy(&pstRctor->hWaitForStart);
-    VOS_ThreadEvent_Destroy(&pstRctor->hWaitForStart);
+    VOS_ThreadEvent_Destroy(&pstRctor->hWaitForExit);
     
     VRCT_MsgQueManagerUnInit(pstRctor);
     VRCT_NetworkEvtManagerUnInit(pstRctor);
@@ -375,6 +383,8 @@ VOID VRCT_API_Release(PVOID *ppvRctor)
             return;
         }
         
+        pstRctor->stInfo.Stop = 1;
+        
         VRCT_API_Stop(pstRctor);
         
         /*等待线程退出*/
@@ -390,13 +400,15 @@ VOID VRCT_API_Release(PVOID *ppvRctor)
         {
             close(pstRctor->stInfo.Epollfd);
         }
-
+        
         if ( NULL != pstRctor )
         {
             free(pstRctor);
         }
         
         *ppstRctor = NULL;
+        
+        PEvent("vos reactor release success!");
     }
 }
 
