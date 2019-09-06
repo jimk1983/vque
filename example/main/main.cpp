@@ -17,8 +17,12 @@ int main(int argc, char *argv[])
     rctor_sptr->start(aa);
 
     while(1)
-        VOS_Sleep(200);
-    
+        {
+        
+    char *ptr=  (char *)malloc(1024*1024*500);
+    printf("ptr=%p\n", ptr);
+        VOS_Sleep(1);
+        }
     rctor_sptr->stop();
     
     getchar();

@@ -52,7 +52,7 @@
 /*定义是否需要C++11支持*/
 #define     VOS_PLAT_SUPPORT_Class11    1
 /*定义是否开启DBG*/
-#define     VOS_PLAT_DBG                1
+#define     VOS_PLAT_DBG                0
 
 
 

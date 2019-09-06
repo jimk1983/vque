@@ -165,7 +165,6 @@
  VOID *VRCT_MainWorkerCb(VOID *pvArgv)
  {
     PVRCT_REACTOR_S         pstRctor    = (PVRCT_REACTOR_S)pvArgv;
-    UINT32_T                Tid         = VOS_GetSelfTId();
     
     if ( NULL == pvArgv )
     {
@@ -175,11 +174,10 @@
      //semaphore mutex=1;
      //nice(10);
     
-    
     PEvent("[TKD:%02d EID:%02d]=>EPoll [TID=%08x] Start to work!",
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
-                Tid);
+                VOS_GetSelfTId(););
     
     VOS_ThreadEvent_Notify(&pstRctor->hWaitForStart);
     if ( SYS_ERR == VRCT_MainDispatch(pstRctor) )
