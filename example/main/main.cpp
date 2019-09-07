@@ -8,10 +8,11 @@
 #include <memory>
 #include <mcheck.h>
 #include <getopt.h>
+#include "config/config.h"
 
 //no_argument£º0,required_argument:1,optional_argument:2
 static const struct option long_options[] = { 
-    {"start   ",    no_argument,        NULL, 'b'}, 
+    {"start   ",    required_argument,  NULL, 'b'}, 
     {"stop    ",    optional_argument,  NULL, 'q'}, 
     {"restart ",    optional_argument,  NULL, 'r'},
     {"version ",    optional_argument,  NULL, 'v'},
@@ -31,10 +32,10 @@ do {                                \
 
 void option_usage() {
     printf("Usage:\n");
-    print_opt_help(0,  "action start\n");
-    print_opt_help(1,  "action stop\n");
-    print_opt_help(2,  "action restart\n");
-    print_opt_help(3,  "action version\n");
+    print_opt_help(0,  "action start with config_*.json, example: -s 0(0:monitor,1:client,2:server,3:proxy)\n");
+    print_opt_help(1,  "action stop \n");
+    print_opt_help(2,  "action restart with config_*.json\n");
+    print_opt_help(3,  "action version \n");
     print_opt_help(4,  "server mode.     example:    --server \n");
     print_opt_help(5,  "client mode.     example:    --client \n");
     print_opt_help(6,  "tcpproxy mode.   example:    --tcpproxy \n");
@@ -61,17 +62,31 @@ enum
 typedef struct tag_argv_action_Info
 {
     int32_t     mode;
+    int32_t     cfgtype;
     char        addr[32];
     int32_t     port;
     char        pxy_addr[32];
     int32_t     pxy_port;
 }argv_actinfo_s,*pargv_actinfo_s;
 
-static char optstring[] = "bqrvscta:p:h";
+static char optstring[] = "b:qrvscta:p:h";
 
-void        start()
+void        start(pargv_actinfo_s pstinfo)
 {
-    
+    switch(pstinfo->cfgtype)
+    {
+        case EXM_CFGTYPE_MONTOR:
+            
+            break;
+        case EXM_CFGTYPE_CLNT:
+            break;
+        case EXM_CFGTYPE_SEVR:
+            break;
+        case EXM_CFGTYPE_PRXY:
+            break;
+        default:
+            break;
+    }
 }
 
 void        stop()
@@ -79,9 +94,22 @@ void        stop()
     
 }
 
-void        restart()
+void        restart(pargv_actinfo_s pstinfo)
 {
-    
+    switch(pstinfo->cfgtype)
+    {
+        case EXM_CFGTYPE_MONTOR:
+            
+            break;
+        case EXM_CFGTYPE_CLNT:
+            break;
+        case EXM_CFGTYPE_SEVR:
+            break;
+        case EXM_CFGTYPE_PRXY:
+            break;
+        default:
+            break;
+    }
 }
 
 void        version()
@@ -109,16 +137,19 @@ int main(int argc, char *argv[])
 {
     int opt_c                   = 0;
     argv_actinfo_s  stactinfo   = {0};
+    
     while ((opt_c = getopt_long(argc, argv, optstring, long_options, NULL)) != EOF) {
         switch (opt_c) {
             case 'b':
                 stactinfo.mode = ARGV_MODE_CFGFILE;
-                start();
+                stactinfo.cfgtype = std::atoi(optarg);
+                start(&stactinfo);
             case 'q':
                 stop();
             case 'r':
                 stactinfo.mode = ARGV_MODE_CFGFILE;
-                restart();
+                stactinfo.cfgtype = std::atoi(optarg);
+                restart(&stactinfo);
                 break;
             case 'v':
                 version();
@@ -140,10 +171,10 @@ int main(int argc, char *argv[])
                 {
                     case ARGV_MODE_CLIENT:
                     case ARGV_MODE_SERVER:
-                        strcpy(stactinfo.addr, optarg);
+                        strcpy(stactinfo.addr,      optarg);
                         break;
                     case ARGV_MODE_TCPPROXY:
-                        strcpy(stactinfo.pxy_addr, optarg);
+                        strcpy(stactinfo.pxy_addr,  optarg);
                         break;
                     default:
                         break;
@@ -154,10 +185,10 @@ int main(int argc, char *argv[])
                 {
                     case ARGV_MODE_CLIENT:
                     case ARGV_MODE_SERVER:
-                        stactinfo.port      = atoi(optarg);
+                        stactinfo.port      = std::atoi(optarg);
                         break;
                     case ARGV_MODE_TCPPROXY:
-                        stactinfo.pxy_port  = atoi(optarg);
+                        stactinfo.pxy_port  = std::atoi(optarg);
                         break;
                     default:
                         break;
@@ -171,8 +202,9 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
-
-    printf("end\n");
+    
+    
+    
     return 0;
 }
 

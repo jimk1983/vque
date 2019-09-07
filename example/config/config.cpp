@@ -22,46 +22,62 @@
 #include "config.h"
 
 
-#define     TEST_CFGSEVR_PATHNAME       "config_server.json"
+#define     EXAMPLE_CFGMONR_PATHNAME       "config_montor.json"
+#define     EXAMPLE_CFGCLNT_PATHNAME       "config_client.json"
+#define     EXAMPLE_CFGSEVR_PATHNAME       "config_server.json"
 
-VOID config_init(PTEST_CONF_S      pstCfg)
+VOID config_monitor_init(pexm_eth_monitor_s        pstCfg)
 {
     char buffer[2048] = {0};
     
-    UtilsFrame::JsonReadFile(TEST_CFGSEVR_PATHNAME, buffer, sizeof(buffer));
+    UtilsFrame::JsonReadFile(EXAMPLE_CFGMONR_PATHNAME, buffer, sizeof(buffer));
     
-    strcpy((char *)pstCfg->acEthName, UtilsFrame::JsonGetStringByName(buffer, "ethname").c_str());
-    pstCfg->CurrTypeCode            = UtilsFrame::JsonGetIntByName(buffer, "tcode");
-    
-    /**1. Client mode*/
-    pstCfg->stClntCfg.TypeCode      = UtilsFrame::JsonGetIntByName(buffer, "client", "tcode");
-    pstCfg->stClntCfg.HeadOffset    = UtilsFrame::JsonGetIntByName(buffer, "client", "headoffset");
-    pstCfg->stClntCfg.BodySize      = UtilsFrame::JsonGetIntByName(buffer, "client", "body");
-    pstCfg->stClntCfg.ServerPort    = UtilsFrame::JsonGetIntByName(buffer, "client", "port");
-    pstCfg->stClntCfg.PthNums       = UtilsFrame::JsonGetIntByName(buffer, "client", "pthnums");
-    pstCfg->stClntCfg.PthPerConns   = UtilsFrame::JsonGetIntByName(buffer, "client", "pthperconns");
-    strcpy((char *)pstCfg->stClntCfg.acServerAddr, UtilsFrame::JsonGetStringByName(buffer, "client", "addr").c_str());
-    
-    /**2. Server mode*/
-    pstCfg->stServCfg.TypeCode      = UtilsFrame::JsonGetIntByName(buffer, "server", "tcode");
-    pstCfg->stServCfg.HeadOffset    = UtilsFrame::JsonGetIntByName(buffer, "server", "headoffset");
-    pstCfg->stServCfg.ServerPort    = UtilsFrame::JsonGetIntByName(buffer, "server", "port");
-    pstCfg->stServCfg.DirectEcho    = UtilsFrame::JsonGetIntByName(buffer, "server", "dctecho");
-    pstCfg->stServCfg.ForwardEnable = UtilsFrame::JsonGetIntByName(buffer, "server", "fwenable");
-    pstCfg->stServCfg.ForwardPort   = UtilsFrame::JsonGetIntByName(buffer, "server", "fwport");
-    strcpy((char *)pstCfg->stServCfg.acServerAddr, UtilsFrame::JsonGetStringByName(buffer, "server", "addr").c_str());
-    strcpy((char *)pstCfg->stServCfg.acForwardAddr, UtilsFrame::JsonGetStringByName(buffer, "server", "fwaddr").c_str());
-    
-    /**3. Message Queue mode*/
-    pstCfg->stMsqCfg.TypeCode       = UtilsFrame::JsonGetIntByName(buffer, "msgque", "tcode");
-    pstCfg->stMsqCfg.ProducerPths   = UtilsFrame::JsonGetIntByName(buffer, "msgque", "producer");
-    pstCfg->stMsqCfg.ConsumerPths   = UtilsFrame::JsonGetIntByName(buffer, "msgque", "consumer");
-    pstCfg->stMsqCfg.PthFreqUs      = UtilsFrame::JsonGetIntByName(buffer, "msgque", "pfreq-us");
-    pstCfg->stMsqCfg.PthBatchs      = UtilsFrame::JsonGetIntByName(buffer, "msgque", "pfreq-batch");
-    
-    std::cout << "ethname=" << pstCfg->acEthName << std::endl;
-    std::cout << "typecode=" << pstCfg->CurrTypeCode << std::endl;
+    strcpy((char *)pstCfg->ethname, UtilsFrame::JsonGetStringByName(buffer, "ethname").c_str());
+    pstCfg->TimerSec                = UtilsFrame::JsonGetIntByName(buffer, "MonitorSecond");
 }
 
+VOID config_clent_init(pexm_clnt_cfg_s       pstCfg)
+{
+    char buffer[2048] = {0};
+    
+    UtilsFrame::JsonReadFile(EXAMPLE_CFGCLNT_PATHNAME, buffer, sizeof(buffer));
+    
+    pstCfg->HeadMagic               = UtilsFrame::JsonGetIntByName(buffer, "HeadMagic");
+    pstCfg->HeadOffset              = UtilsFrame::JsonGetIntByName(buffer, "HeadOffset");
+    pstCfg->BodySize                = UtilsFrame::JsonGetIntByName(buffer, "BodySize");
+    strcpy((char *)pstCfg->acAddr, UtilsFrame::JsonGetStringByName(buffer, "Address").c_str());
+    pstCfg->Port                    = UtilsFrame::JsonGetIntByName(buffer, "Port");
+    pstCfg->PthNums                 = UtilsFrame::JsonGetIntByName(buffer, "PthreadNums");
+    pstCfg->PthPerConns             = UtilsFrame::JsonGetIntByName(buffer, "PthreadConnNums");
+}
+
+VOID config_server_init(pexm_serv_cfg_s       pstCfg)
+{
+    char buffer[2048] = {0};
+    
+    UtilsFrame::JsonReadFile(EXAMPLE_CFGCLNT_PATHNAME, buffer, sizeof(buffer));
+    
+    pstCfg->HeadMagic               = UtilsFrame::JsonGetIntByName(buffer, "HeadMagic");
+    pstCfg->HeadOffset              = UtilsFrame::JsonGetIntByName(buffer, "HeadOffset");
+    strcpy((char *)pstCfg->acAddr, UtilsFrame::JsonGetStringByName(buffer, "Address").c_str());
+    pstCfg->Port                    = UtilsFrame::JsonGetIntByName(buffer, "Port");
+    pstCfg->EchoEnalbe                 = UtilsFrame::JsonGetIntByName(buffer, "EchoEnable");
+}
+
+
+VOID config_proxy_init(pexm_proxy_cfg_s       pstCfg)
+{
+    char buffer[2048] = {0};
+    
+    UtilsFrame::JsonReadFile(EXAMPLE_CFGCLNT_PATHNAME, buffer, sizeof(buffer));
+    
+    pstCfg->HeadMagic               = UtilsFrame::JsonGetIntByName(buffer, "HeadMagic");
+    pstCfg->HeadOffset              = UtilsFrame::JsonGetIntByName(buffer, "HeadOffset");
+    strcpy((char *)pstCfg->acLocalAddr, UtilsFrame::JsonGetStringByName(buffer, "LocalAddr").c_str());
+    pstCfg->LocalPort                    = UtilsFrame::JsonGetIntByName(buffer, "LocalPort");
+    pstCfg->ProxyPthNums                 = UtilsFrame::JsonGetIntByName(buffer, "ProxyPthNums");
+    strcpy((char *)pstCfg->acProxyAddr, UtilsFrame::JsonGetStringByName(buffer, "ProxyAddr").c_str());
+    pstCfg->ProxyPort                    = UtilsFrame::JsonGetIntByName(buffer, "ProxyPort");
+}
 
 

@@ -1,63 +1,57 @@
 
-typedef enum
+
+typedef struct tagExampleEthMonitor
 {
-    TCODE_CLIENT    = 0,   /*客户端*/
-    TCODE_SERVER    = 1,   /*服务器端*/
-    TCODE_MSQ       = 2,   /*消息队列*/
-    
-    TCODE_NUMS
-}TEST_TCODE_E;
+    char        ethname[MAX_PATH];
+    UINT32_T    TimerSec;
+}exm_eth_monitor_s,*pexm_eth_monitor_s;
 
 typedef struct tagExampleClient
 {
-    UINT32_T    TypeCode;
+    UINT32_T    HeadMagic;
     UINT32_T    HeadOffset;
     UINT32_T    BodySize;
-    CHAR        acServerAddr[SYS_IPV4LEN];
-    UINT32_T    ServerPort;
+    CHAR        acAddr[SYS_IPV4LEN];
+    UINT32_T    Port;
     UINT32_T    PthNums;
     UINT32_T    PthPerConns;
-}TEST_CLNT_CFG_S,*PTEST_CLNT_CFG_S;
+}exm_clnt_cfg_s,*pexm_clnt_cfg_s;
 
 
 typedef struct tagExampleServer
 {
-    UINT32_T    TypeCode;
+    UINT32_T    HeadMagic;
     UINT32_T    HeadOffset;
-    CHAR        acServerAddr[SYS_IPV4LEN];
-    UINT32_T    ServerPort;
-    UINT32_T    DirectEcho;
-
-    UINT32_T    ForwardEnable;
-    CHAR        acForwardAddr[SYS_IPV4LEN];
-    UINT32_T    ForwardPort;
-    
-}TEST_SEVR_CFG_S,*PTEST_SEVR_CFG_S;
+    CHAR        acAddr[SYS_IPV4LEN];
+    UINT32_T    Port;
+    UINT32_T    EchoEnalbe;
+}exm_serv_cfg_s,*pexm_serv_cfg_s;
 
 
-typedef struct tagMessageQueue
+typedef struct tagExampleProxy
 {
-    UINT32_T    TypeCode;
-    UINT32_T    ProducerPths;
-    UINT32_T    ConsumerPths;
-    UINT32_T    PthFreqUs;
-    UINT32_T    PthBatchs;
-}TEST_MSQ_CFG_S, *PTEST_MSQ_CFG_S;
+    UINT32_T    HeadMagic;
+    UINT32_T    HeadOffset;
+    
+    CHAR        acLocalAddr[SYS_IPV4LEN];
+    UINT32_T    LocalPort;
+    UINT32_T    ProxyPthNums;
+    CHAR        acProxyAddr[SYS_IPV4LEN];
+    UINT32_T    ProxyPort;
+}exm_proxy_cfg_s,*pexm_proxy_cfg_s;
 
-
-typedef struct tagExampleConfig
+typedef enum
 {
-    CHAR        acEthName[SYS_MAXID_LEN];
-    UINT32_T    CurrTypeCode;
+    EXM_CFGTYPE_MONTOR= 0,
+    EXM_CFGTYPE_CLNT,
+    EXM_CFGTYPE_SEVR,
+    EXM_CFGTYPE_PRXY,
     
-    /**1. Client mode*/
-    TEST_CLNT_CFG_S     stClntCfg;
-    /**2. Server mode*/
-    TEST_SEVR_CFG_S     stServCfg;
-    /**3. Message Queue mode*/
-    TEST_MSQ_CFG_S      stMsqCfg;
-    
-}TEST_CONF_S,*PTEST_CONF_S;
+    EXM_CFGTYPE_NUMS
+}EXMPLE_CFGTYPE_E;
 
-VOID config_init(PTEST_CONF_S      pstCfg);
+VOID config_clent_init(pexm_clnt_cfg_s       pstCfg);
+VOID config_server_init(pexm_serv_cfg_s       pstCfg);
+VOID config_proxy_init(pexm_proxy_cfg_s       pstCfg);
+
 
