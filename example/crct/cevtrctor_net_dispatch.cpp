@@ -11,7 +11,7 @@ static void accept_cb(int fd, void *pvArgv)
 {
     CEvtrctNetDispatch* net_dispatch = (CEvtrctNetDispatch*)pvArgv;
     
-    printf("accept_cb entry!\n");
+    //printf("accept_cb entry!\n");
     
     net_dispatch->dispatch();
 }
@@ -20,7 +20,7 @@ static void timer_cb(void *pvArgv)
 {
     CEvtrctNetDispatch* net_dispatch = (CEvtrctNetDispatch*)pvArgv;
     
-    printf("timer_cb entry!\n");
+    //printf("timer_cb entry!\n");
     
     net_dispatch->messagepost(0, 222 ,NULL, 0);
     
@@ -30,7 +30,7 @@ static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx
 {
     CEvtrctNetDispatch* net_dispatch = (CEvtrctNetDispatch*)pvCtx;
     
-    printf("msqctrl_cb entry! Value=%d\n", Value);
+    //printf("msqctrl_cb entry! Value=%d\n", Value);
     
     net_dispatch->dispatch();
 }
