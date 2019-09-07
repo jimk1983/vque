@@ -18,11 +18,10 @@
 ******************************************************************************/
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
-    
 #include <UtilFrame/UtilsFrame.h>
-
 #include "config.h"
-    
+
+
 #define     TEST_CFGSEVR_PATHNAME       "config_server.json"
 
 VOID config_init(PTEST_CONF_S      pstCfg)

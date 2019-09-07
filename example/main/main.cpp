@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <mcheck.h>
-#include<getopt.h>
+#include <getopt.h>
 
 //no_argument£º0,required_argument:1,optional_argument:2
 static const struct option long_options[] = { 
