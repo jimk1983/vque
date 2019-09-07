@@ -2,13 +2,9 @@
 #include <vrct/vrct_api.h>
 #include <UtilFrame/UtilsFrame.h>
 
-#include <crct/cevtrctor_cfg.h>
-#include <crct/cevtrctor_net_dispatch.h>
-
-#include <memory>
-#include <mcheck.h>
 #include <getopt.h>
 #include "config/config.h"
+#include "server/server.h"
 
 //no_argument£º0,required_argument:1,optional_argument:2
 static const struct option long_options[] = { 
@@ -91,6 +87,7 @@ void        start(pargv_actinfo_s pstinfo)
             {
                 exm_serv_cfg_s      stcfg;
                 config_server_init(&stcfg);
+                server_main(&stcfg);
             }
             break;
         case EXM_CFGTYPE_PRXY:

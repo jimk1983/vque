@@ -2,11 +2,13 @@
 #define _CEVTRCTOR_CFG_H_
 
 
+#include <memory>
 
 typedef struct tagCEvtRctorConfig
 {
     std::string         addr;
     std::string         port;
+    uint32_t            echo_enable;
     
 }CERCT_SEVER_CFG_S, *PCERCT_SEVER_CFG_S;
 
@@ -24,6 +26,7 @@ public:
 
 };
 
+typedef std::shared_ptr<CEvtRctorCfg>  cevtor_cfg_sptr;
 
 
 #endif

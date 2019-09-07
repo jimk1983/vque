@@ -75,7 +75,7 @@ VOID config_server_init(pexm_serv_cfg_s       pstCfg)
     pstCfg->HeadOffset              = UtilsFrame::JsonGetIntByName(buffer, "HeadOffset");
     strcpy((char *)pstCfg->acAddr, UtilsFrame::JsonGetStringByName(buffer, "Address").c_str());
     pstCfg->Port                    = UtilsFrame::JsonGetIntByName(buffer, "Port");
-    pstCfg->EchoEnalbe                 = UtilsFrame::JsonGetIntByName(buffer, "EchoEnable");
+    pstCfg->EchoEnalbe              = UtilsFrame::JsonGetIntByName(buffer, "EchoEnable");
 
     std::cout << "configure init server: " << std::endl;
     printf("    : HeadMagic=0x%08x\n",pstCfg->HeadMagic);

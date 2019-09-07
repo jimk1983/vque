@@ -1,5 +1,5 @@
-#ifndef _CEVTRCTOR_NET_DISPATCH_H_
-#define _CEVTRCTOR_NET_DISPATCH_H_
+#ifndef _CEVTRCTOR_NET_SERVER_H_
+#define _CEVTRCTOR_NET_SERVER_H_
 
 #include <crct/cevtrctor_def.h>
 #include <crct/cevtrctor_cfg.h>
