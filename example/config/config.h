@@ -50,6 +50,7 @@ typedef enum
     EXM_CFGTYPE_NUMS
 }EXMPLE_CFGTYPE_E;
 
+VOID config_monitor_init(pexm_eth_monitor_s        pstCfg);
 VOID config_clent_init(pexm_clnt_cfg_s       pstCfg);
 VOID config_server_init(pexm_serv_cfg_s       pstCfg);
 VOID config_proxy_init(pexm_proxy_cfg_s       pstCfg);

@@ -14,7 +14,7 @@
 static const struct option long_options[] = { 
     {"start   ",    required_argument,  NULL, 'b'}, 
     {"stop    ",    optional_argument,  NULL, 'q'}, 
-    {"restart ",    optional_argument,  NULL, 'r'},
+    {"restart ",    required_argument,  NULL, 'r'},
     {"version ",    optional_argument,  NULL, 'v'},
     {"server  ",    optional_argument,  NULL, 's'},
     {"client  ",    optional_argument,  NULL, 'c'},
@@ -69,20 +69,35 @@ typedef struct tag_argv_action_Info
     int32_t     pxy_port;
 }argv_actinfo_s,*pargv_actinfo_s;
 
-static char optstring[] = "b:qrvscta:p:h";
+static char optstring[] = "b:qr:vscta:p:h";
 
 void        start(pargv_actinfo_s pstinfo)
 {
     switch(pstinfo->cfgtype)
     {
         case EXM_CFGTYPE_MONTOR:
-            
+            {
+                exm_eth_monitor_s   stcfg;
+                config_monitor_init(&stcfg);
+            }
             break;
         case EXM_CFGTYPE_CLNT:
+            {
+                exm_clnt_cfg_s      stcfg;
+                config_clent_init(&stcfg);
+            }
             break;
         case EXM_CFGTYPE_SEVR:
+            {
+                exm_serv_cfg_s      stcfg;
+                config_server_init(&stcfg);
+            }
             break;
         case EXM_CFGTYPE_PRXY:
+            {
+                exm_proxy_cfg_s     stcfg;
+                config_proxy_init(&stcfg);
+            }
             break;
         default:
             break;
@@ -96,20 +111,8 @@ void        stop()
 
 void        restart(pargv_actinfo_s pstinfo)
 {
-    switch(pstinfo->cfgtype)
-    {
-        case EXM_CFGTYPE_MONTOR:
-            
-            break;
-        case EXM_CFGTYPE_CLNT:
-            break;
-        case EXM_CFGTYPE_SEVR:
-            break;
-        case EXM_CFGTYPE_PRXY:
-            break;
-        default:
-            break;
-    }
+    stop();
+    start(pstinfo);
 }
 
 void        version()

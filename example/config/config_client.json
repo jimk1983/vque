@@ -1,0 +1,7 @@
+{     
+	"HeadMagic":0xAABBCCDD,
+	"HeadOffset":32,
+	"Address":"192.168.0.105",
+	"Port":9000,
+	"EchoEnable":1
+}

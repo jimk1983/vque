@@ -1,0 +1,9 @@
+{     
+	"HeadMagic":0xAABBCCDD,
+	"HeadOffset":32,
+	"LocalAddr":"0.0.0.0",
+	"LocalPort":9000,
+	"ProxyPthNums":1,
+	"ProxyAddr":"10.10.10.1",
+	"ProxyPort":9000
+}

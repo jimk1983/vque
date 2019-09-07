@@ -1,34 +1,9 @@
-{       
-	"ethname":"eth0",
-	"tcode":2,
-	"client":
-	{
-		"tcode":0,
-		"headoffset":32,
-		"body":512,
-		"addr":"192.168.0.105",
-		"port":9000,
-		"pthnums":1,
-		"pthperconns":10
-	},
-	"server":
-	{
-		"tcode":1,
-		"headoffset":32,
-		"addr":"192.168.0.105",
-		"port":9000,
-		"dctecho":1,
-		"fwenable":1,
-		"fwaddr":"192.168.0.106",
-		"fwport":9888
-	},
-	"msgque":
-	{
-		"tcode":2,
-		"producer":1,
-		"consumer":1,
-		"pfreq-us":1,
-		"pfreq-batch":1
-	}
+{     
+	"HeadMagic":0xAABBCCDD,
+	"HeadOffset":32,
+	"BodySize":512,
+	"Address":"0.0.0.0",
+	"Port":9000,
+	"PthreadNums":1,
+	"PthreadConnNums":10
 }
-
