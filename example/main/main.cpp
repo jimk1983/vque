@@ -147,8 +147,10 @@ int main(int argc, char *argv[])
                 stactinfo.mode = ARGV_MODE_CFGFILE;
                 stactinfo.cfgtype = std::atoi(optarg);
                 start(&stactinfo);
+                break;
             case 'q':
                 stop();
+                break;
             case 'r':
                 stactinfo.mode = ARGV_MODE_CFGFILE;
                 stactinfo.cfgtype = std::atoi(optarg);
