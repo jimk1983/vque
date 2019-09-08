@@ -85,7 +85,8 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
     PVRCT_MSQ_ENTRY_S       pstMsgNode  = NULL;
     INT32_T                 Val         = 1;
     
-    if ( NULL == pstRctor )
+    if ( NULL == pstRctor
+        || PipeFilterID >= VRCT_MSQPF_NUMS )
     {
         PError("Param error!");
         return VOS_ERR;

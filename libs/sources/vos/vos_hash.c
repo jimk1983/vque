@@ -86,7 +86,7 @@ UINT32_T VOS_HashTbl_Prime(IN UINT32_T ulSize)
  * @param pstHashTbl [in] the hash tables
  * @retval return the gain or new create hash node.
  */
-VOS_HASHNODE_S *VOS_HashNode_Gain( IN PCORE_HASH_TABLE_S pstHashTbl)
+VOS_HASHNODE_S *VOS_HashNode_Gain( IN PVOS_HASH_TABLE_S pstHashTbl)
 {
     VOS_HASHNODE_S*     pstHashNode = NULL;
     VOS_DLIST_S*        pstListNode = NULL;
@@ -131,7 +131,7 @@ VOS_HASHNODE_S *VOS_HashNode_Gain( IN PCORE_HASH_TABLE_S pstHashTbl)
  * @param pstHashTbl [in] the hash tables
  * @retval return none
  */
-VOID VOS_HashNode_Back(PCORE_HASH_TABLE_S pstHashTbl, VOS_HASHNODE_S *pstNode)
+VOID VOS_HashNode_Back(PVOS_HASH_TABLE_S pstHashTbl, VOS_HASHNODE_S *pstNode)
 {
     if ( NULL != pstNode->pvKeyData )
     {
@@ -232,13 +232,13 @@ INT32_T VOS_HashStr_Cmp(IN const CHAR *pvArgv1,IN const CHAR *pvArgv2)
  * @param pfHashCalc [in] hash table caculate function
  * @retval return the hash value
  */
-CORE_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb pfHashCmp, IN pfcore_hash_calc_cb pfHashCalc)
+VOS_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb pfHashCmp, IN pfcore_hash_calc_cb pfHashCalc)
 {
-    CORE_HASH_TABLE_S*      pstHashTbl  = NULL;
+    PVOS_HASH_TABLE_S       pstHashTbl  = NULL;
     UINT32_T                ulIndex     = 0;
     
     /*因为Hash表不会经常创建和释放，所以直接使用系统的, 确保内存使用安全*/
-    pstHashTbl = (CORE_HASH_TABLE_S *)malloc(sizeof(CORE_HASH_TABLE_S));
+    pstHashTbl = (VOS_HASH_TABLE_S *)malloc(sizeof(VOS_HASH_TABLE_S));
     if ( NULL == pstHashTbl )
     {
         PError("malloc hash table error,%d:%s", errno, strerror(errno));
@@ -246,7 +246,7 @@ CORE_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb
     }
     
     /*内存申请之后基本上就不再释放*/
-    memset(pstHashTbl, 0 , sizeof(CORE_HASH_TABLE_S));
+    memset(pstHashTbl, 0 , sizeof(VOS_HASH_TABLE_S));
     
     /*选取合适的素数*/
     pstHashTbl->ulprime = VOS_HashTbl_Prime(ulSize);
@@ -287,9 +287,9 @@ CORE_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb
  * @param ppstHashTbl [inout] hash table double ptr
  * @retval return the hash value
  */
-void    VOS_HashTbl_Release(INOUT PCORE_HASH_TABLE_S* ppstHashTbl)
+void    VOS_HashTbl_Release(INOUT PVOS_HASH_TABLE_S* ppstHashTbl)
 {
-    PCORE_HASH_TABLE_S  pstHashTbl  = NULL;
+    PVOS_HASH_TABLE_S   pstHashTbl  = NULL;
     PVOS_HASHNODE_S     pstHashTmp  = NULL;
     PVOS_DLIST_S        pthisEntry  =NULL, pNextEntry=NULL, plistHead=NULL;
     
@@ -343,7 +343,7 @@ void    VOS_HashTbl_Release(INOUT PCORE_HASH_TABLE_S* ppstHashTbl)
  * @param pcKeyStr [inout] hash key string
  * @retval return the hash value
  */
-PVOID VOS_HashTbl_Find(IN PCORE_HASH_TABLE_S pstHashTbl, IN const CHAR *pcKeyStr)
+PVOID VOS_HashTbl_Find(IN PVOS_HASH_TABLE_S pstHashTbl, IN const CHAR *pcKeyStr)
 {
     UINT32_T        ulHashIndex = 0;
     UINT32_T        ulKeyValue  = 0;
@@ -411,7 +411,7 @@ PVOID VOS_HashTbl_Find(IN PCORE_HASH_TABLE_S pstHashTbl, IN const CHAR *pcKeyStr
  * @param pvData [in] hash key string
  * @retval return the hash value
  */
-INT32_T    VOS_HashTbl_Insert(IN PCORE_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr, IN VOID *pvData)
+INT32_T    VOS_HashTbl_Insert(IN PVOS_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr, IN VOID *pvData)
 {
     UINT32_T ulHashIndex  = 0;
     UINT32_T ulKeyValue   = 0;
@@ -506,7 +506,7 @@ INT32_T    VOS_HashTbl_Insert(IN PCORE_HASH_TABLE_S pstHashTbl, IN      const CH
  * @param pcKeyStr [inout] hash key string
  * @retval return the hash value
  */
-void    VOS_HashTbl_Remove(IN PCORE_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr)
+void    VOS_HashTbl_Remove(IN PVOS_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr)
 {
     UINT32_T ulHashIndex   = 0;
     UINT32_T ulKeyValue    = 0;

@@ -119,8 +119,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
         switch(pstMsgNode->MsgCode)
         {
             case VRCT_MSQCODE_USER:
-                if ( pstMsgNode->PipeFliterID < VRCT_MSQPF_NUMS
-                    && NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID] )
+                if ( NULL != pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID] )
                 {
                     ((PFVRCT_MSGCTL_CB)pstRctor->stMgrMsQue.apstMsgOpts[pstMsgNode->PipeFliterID]->stMsgQueCB.pvcbFunc)(pstMsgNode->Value,
                                                                                                                         pstMsgNode->pvMsgData,

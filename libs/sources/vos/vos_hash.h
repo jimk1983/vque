@@ -65,18 +65,18 @@ typedef struct tagVosHashTable
     pfcore_hash_comp_cb         pfHashKeyCmp;
     /*Hash表的值计算函数*/
     pfcore_hash_calc_cb         pfHashKeyCalc;
-}CORE_HASH_TABLE_S, *PCORE_HASH_TABLE_S;
+}VOS_HASH_TABLE_S, *PVOS_HASH_TABLE_S;
 
 
-CORE_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb pfHashCmp, IN pfcore_hash_calc_cb pfHashCalc);
+VOS_HASH_TABLE_S *VOS_HashTbl_Create(IN UINT32_T ulSize, IN pfcore_hash_comp_cb pfHashCmp, IN pfcore_hash_calc_cb pfHashCalc);
 
-VOID        VOS_HashTbl_Release(INOUT PCORE_HASH_TABLE_S* ppstHashTbl);
+VOID        VOS_HashTbl_Release(INOUT PVOS_HASH_TABLE_S* ppstHashTbl);
 
-INT32_T     VOS_HashTbl_Insert(IN PCORE_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr, IN VOID *pvData);
+INT32_T     VOS_HashTbl_Insert(IN PVOS_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr, IN VOID *pvData);
 
-VOID        VOS_HashTbl_Remove(IN PCORE_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr);
+VOID        VOS_HashTbl_Remove(IN PVOS_HASH_TABLE_S pstHashTbl, IN      const CHAR *pcKeyStr);
 
-PVOID       VOS_HashTbl_Find(IN PCORE_HASH_TABLE_S pstHashTbl, IN const CHAR *pcKeyStr);
+PVOID       VOS_HashTbl_Find(IN PVOS_HASH_TABLE_S pstHashTbl, IN const CHAR *pcKeyStr);
 
 UINT32_T    VOS_HashStr_Dbj(IN const CHAR *str);
 

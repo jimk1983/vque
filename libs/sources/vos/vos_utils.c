@@ -165,6 +165,39 @@ UINT32_T VOS_GetSelfPId()
 }
 
 
+UINT32_T VOS_GetCpuCoreNum()
+{
+#if VOS_PLAT_WIN
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
+#elif VOS_PLAT_LINUX
+    return sysconf(_SC_NPROCESSORS_ONLN);
+#elif VOS_PLAT_MAC
+    int nm[2];
+    size_t len = 4;
+    uint32_t count;
+
+    nm[0] = CTL_HW;
+    nm[1] = HW_AVAILCPU;
+
+    sysctl(nm, 2, &count, &len, NULL, 0);
+
+    if (count < 1)
+    {
+        nm[1] = HW_NCPU;
+        sysctl(nm, 2, &count, &len, NULL, 0);
+
+        if (count < 1)
+            count = 1;
+    }
+
+    return count;
+#endif
+}
+
+
+
 
 /*返回一个16字节的随机数*/
 UINT16_T VOS_Random16()

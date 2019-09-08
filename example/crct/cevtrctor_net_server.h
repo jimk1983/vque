@@ -3,9 +3,11 @@
 
 #include <crct/cevtrctor_def.h>
 #include <crct/cevtrctor_cfg.h>
+#include <crct/cevtrctor_net_conn.h>
 #include <memory>
 #include <thread>
 #include <chrono>
+
 
 class CEvtrctNetServer : public std::enable_shared_from_this<CEvtrctNetServer>
 {
@@ -22,7 +24,11 @@ private:
         int                 timer_init();
         void                timer_uninit();
 private:
-        
+        void                slave_task_init();
+        void                slave_task_uninit();
+        evt_slave_sptr      m_arry_slaver[32];
+        uint32_t            m_arry_slave_nums_;
+private:
         int                 m_taskid_;
         int                 m_fliterid_;
         unsigned int        m_msqsize_;

@@ -155,5 +155,18 @@ VOID        VRCT_API_MsqOptUnRegister(PVOID pvRctor, PVRCT_MSQ_OPT_S pstMsqOpts)
 INT32_T     VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID,UINT32_T Value, CHAR *pcData, UINT32_T DataLen);
 
 
+typedef struct tagVRctIobuf
+{
+    VOS_DLIST_S             stNode;           /*挂链用的节点*/
+    uint32_t                ulMagic;          /*本节点最大的数据长度*/
+    uint32_t                ulMaxLen;         /*接收包的数据最大的长度*/  
+    uint32_t                ulPreDataLen;     /*预先获取的要接收的包的大小*/
+    uint32_t                ulDataLen;        /*本次的接收到的包的大小或者待发送的大小*/
+    uint32_t                ulValidLen;       /*有效业务数据*/
+    uint32_t                ulOffset;         /*数据偏移*/
+    uint32_t                lLeftLen;         /*剩余未有使用的缓存长度*/
+    char                    pcData[0];        /*数据起始地址*/
+}VRCT_IOBUF_S, *PVRCT_IOBUF_S;
+
 #endif
 

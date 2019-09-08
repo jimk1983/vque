@@ -4,8 +4,10 @@
 
 #include "config/config.h"
 #include "cevtrctor_def.h"
+#include "cevtrctor_net_conn.h"
 #include "cevtrctor_net_server.h"
 
+#define     SLAVE_START_TASKID          100
 
 static void accept_cb(int fd, void *pvArgv)
 {
@@ -49,11 +51,9 @@ static void accept_cb(int fd, void *pvArgv)
 
 static void timer_cb(void *pvArgv)
 {
-    CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvArgv;
+    //CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvArgv;
     
-    printf("timer_cb entry!\n");
-    
-    net_dispatch->messagepost(0, 222 ,NULL, 0);
+    //net_dispatch->messagepost(0, 222 ,NULL, 0);
     
 }
     
@@ -61,14 +61,12 @@ static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx
 {
     //CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvCtx;
     
-    printf("msqctrl_cb entry! Value=%d\n", Value);
-    
     //net_dispatch->dispatch();
 }
 
+
 void    CEvtrctNetServer::dispatch()
 {
-    
     //std::this_thread::sleep_for(std::chrono::seconds(1)); 
 }
 
@@ -152,6 +150,37 @@ int     CEvtrctNetServer::timer_init()
     return 0;
 }
 
+
+void    CEvtrctNetServer::slave_task_init()
+{
+    m_arry_slave_nums_ = VOS_GetCpuCoreNum()*2;
+    
+    std::cout << "slave task init()" << std::endl;
+    
+    for (uint32_t i = 0; i < m_arry_slave_nums_; i++)
+    {
+        m_arry_slaver[i] =std::make_shared<CEvtrctNetSlave>();
+        m_arry_slaver[i]->m_taskid = SLAVE_START_TASKID + i;
+        m_arry_slaver[i]->m_msqsize=1000;
+        m_arry_slaver[i]->init();
+        //std::cout << "1 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+        //m_arry_slaver[i]->uninit();
+        //m_arry_slaver[i] = nullptr;
+        //std::cout << "2 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+    }
+}
+
+void    CEvtrctNetServer::slave_task_uninit()
+{
+    for (uint32_t i = 0; i < m_arry_slave_nums_; i++)
+    {
+        m_arry_slaver[i]->uninit();
+        m_arry_slaver[i] = nullptr;
+        //std::cout << "rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+    }
+    
+}
+
 void     CEvtrctNetServer::timer_uninit()
 {
     VRCT_API_TImerOptUnRegister(m_rctor_, &m_timeropts_);
@@ -170,6 +199,8 @@ int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
     std::cout << "head_magic=" << m_head_magic_ << std::endl;
     std::cout << "head_offset=" << m_head_offset_ << std::endl;
     std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
+    
+    slave_task_init();
     
     m_rctor_ = VRCT_API_Create(m_taskid_, m_msqsize_);
     if ( NULL == m_rctor_ )
@@ -224,6 +255,8 @@ void    CEvtrctNetServer::stop()
     {
         VRCT_API_Release(&m_rctor_);
     }
+    
+    slave_task_uninit();
     
     if ( -1 != m_listenfd_ )
     {

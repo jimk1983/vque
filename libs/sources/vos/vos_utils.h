@@ -46,5 +46,6 @@ UINT32_T    VOS_Random32();
 VOID        VOS_GenRandom64(DULONG *pstRand64);
 VOID        VOS_GenUUid(CHAR *pcUUid, INT32_T ulLen );
 VOID        VOS_PrintHex(CHAR *pcBuf, UINT32_T BufLen, CHAR *pcData, UINT32_T DataLen);
+UINT32_T    VOS_GetCpuCoreNum();
 
 
