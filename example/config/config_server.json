@@ -1,0 +1,7 @@
+{
+	"HeadMagic":123456789,
+	"HeadOffset":32,
+	"Address":"0.0.0.0",
+	"Port":9888,
+	"EchoEnable":1
+}

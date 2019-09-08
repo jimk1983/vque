@@ -1,4 +1,4 @@
-cd examplevque/ && make clean && make && cp config/configs.json ../../outs/debug/ && cd -
+cd example/ && make clean && make && cp example/config/*.json ../../outs/debug/ && cd -
 
 
 

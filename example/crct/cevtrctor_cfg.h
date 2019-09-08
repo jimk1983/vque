@@ -7,7 +7,7 @@
 typedef struct tagCEvtRctorConfig
 {
     std::string         addr;
-    std::string         port;
+    uint32_t            port;
     uint32_t            echo_enable;
     
 }CERCT_SEVER_CFG_S, *PCERCT_SEVER_CFG_S;

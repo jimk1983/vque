@@ -1,0 +1,9 @@
+{
+	"HeadMagic":12345678,
+	"HeadOffset":32,
+	"BodySize":512,
+	"Address":"10.10.10.1",
+	"Port":9888,
+	"PthreadNums":5,
+	"PthreadConnNums":100
+}

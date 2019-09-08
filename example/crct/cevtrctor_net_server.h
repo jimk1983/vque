@@ -10,16 +10,16 @@
 class CEvtrctNetServer : public std::enable_shared_from_this<CEvtrctNetServer>
 {
 public:
-        int                 start(const CEvtRctorCfg& cfg);
+        int                 start(const pexm_serv_cfg_s cfg);
         void                stop();
         void                dispatch();
         int                 messagepost(const int PipeFilterID, const    int Value, const void* Data,const int DataLen);
 private:
-        int                 network_init(const CEvtRctorCfg& cfg);
+        int                 network_init();
         void                network_uninit();
-        int                 msque_init(const CEvtRctorCfg& cfg);
+        int                 msque_init();
         void                msque_uninit();
-        int                 timer_init(const CEvtRctorCfg& cfg);
+        int                 timer_init();
         void                timer_uninit();
 private:
         void*               m_rctor_;
@@ -27,7 +27,7 @@ private:
         int                 m_fliterid_;
         unsigned int        m_msqsize_;
         int                 m_listenfd_;
-        int                 m_listenport_;
+        uint32_t            m_listenport_;
         std::string         m_listenaddr_;
         uint32_t            m_echo_enable_;
         

@@ -38,7 +38,7 @@ void    CEvtrctNetProxy::dispatch()
 
 int     CEvtrctNetProxy::network_init(const CEvtRctorCfg& cfg)
 {
-    m_listenport_ = std::atoi(cfg.stSeverCfg.port.c_str());
+    m_listenport_ = cfg.stSeverCfg.port;//std::atoi(cfg.stSeverCfg.port.c_str());
     m_listenaddr_ = cfg.stSeverCfg.addr;
     m_listenfd_   = VOS_SOCK_ServCreate(NULL, m_listenport_);
     if ( SYS_ERR == m_listenfd_ )

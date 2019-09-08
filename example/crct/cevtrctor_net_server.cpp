@@ -2,8 +2,8 @@
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
 
+#include "config/config.h"
 #include "cevtrctor_def.h"
-#include "cevtrctor_cfg.h"
 #include "cevtrctor_net_server.h"
 
 
@@ -41,10 +41,8 @@ void    CEvtrctNetServer::dispatch()
     //std::this_thread::sleep_for(std::chrono::seconds(1)); 
 }
 
-int     CEvtrctNetServer::network_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetServer::network_init()
 {
-    m_listenport_ = std::atoi(cfg.stSeverCfg.port.c_str());
-    m_listenaddr_ = cfg.stSeverCfg.addr;
     m_listenfd_   = VOS_SOCK_ServCreate(NULL, m_listenport_);
     if ( SYS_ERR == m_listenfd_ )
     {
@@ -80,7 +78,7 @@ void     CEvtrctNetServer::network_uninit()
     }
 }
 
-int     CEvtrctNetServer::msque_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetServer::msque_init()
 {
     VRCT_MSQOPT_INIT(&m_msqopts_,
                      m_fliterid_,
@@ -107,7 +105,7 @@ int      CEvtrctNetServer::messagepost(const int PipeFilterID, const    int Valu
 }
 
 
-int     CEvtrctNetServer::timer_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetServer::timer_init()
 {
     VRCT_TIMEROPT_INIT(&m_timeropts_,
                     VRCT_TMTYPE_RECYLE,
@@ -128,8 +126,11 @@ void     CEvtrctNetServer::timer_uninit()
     VRCT_API_TImerOptUnRegister(m_rctor_, &m_timeropts_);
 }
     
-int     CEvtrctNetServer::start(const CEvtRctorCfg& cfg)
+int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
 {
+    m_listenport_ = cfg->Port;
+    m_listenaddr_ = (char *)cfg->acAddr;
+    
     m_rctor_ = VRCT_API_Create(m_taskid_, m_msqsize_);
     if ( NULL == m_rctor_ )
     {
@@ -137,14 +138,14 @@ int     CEvtrctNetServer::start(const CEvtRctorCfg& cfg)
         return -1;
     }
     
-    if ( 0 != network_init(cfg) )
+    if ( 0 != network_init() )
     {
         std::cout <<"[LISTN] network init error!" << std::endl;
         VRCT_API_Release(&m_rctor_);
         return -1;
     }
     
-    if ( 0 != timer_init(cfg) )
+    if ( 0 != timer_init() )
     {
         std::cout <<"[LISTN] timer init error!" << std::endl;
         network_uninit();
@@ -152,7 +153,7 @@ int     CEvtrctNetServer::start(const CEvtRctorCfg& cfg)
         return -1;
     }
     
-    if ( 0 != msque_init(cfg) )
+    if ( 0 != msque_init() )
     {
         std::cout <<"[LISTN] message init error!" << std::endl;
         timer_uninit();
