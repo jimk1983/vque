@@ -78,7 +78,8 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
     }
     
     /*快定时器堆*/
-    if ( VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stQuickList) )
+    if ( fd == pstRctor->stMgrTimer.stQuickOpts.fd
+        && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stQuickList) )
     {
         PDebug("[TKD:%02d EID:%02d]=>Quickly Timer Heap! fd=%d", pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, fd);
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stQuickList, VRCT_TIMER_OPT_S, stNode)
@@ -116,9 +117,9 @@ VOID VRCT_TimerCtrlMainCB(INT32_T fd, PVOID          pvRctor)
     }
     
     /*慢定时器堆*/
-    if ( VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stSlowList) )
+    if ( fd == pstRctor->stMgrTimer.stSlowOpts.fd
+        && VOS_TRUE != VOS_DList_IsEmpty(&pstRctor->stMgrTimer.stSlowList) )
     {
-        
         PDebug("[TKD:%02d EID:%02d]=>Slowly Timer Heap! fd=%d", 
             pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd, fd);
         VOS_DLIST_FOR_EACH_ENTRY(pstTimeNodeTmp, &pstRctor->stMgrTimer.stSlowList, VRCT_TIMER_OPT_S, stNode)

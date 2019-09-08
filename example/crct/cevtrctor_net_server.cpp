@@ -9,18 +9,49 @@
 
 static void accept_cb(int fd, void *pvArgv)
 {
-    CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvArgv;
+    CEvtrctNetServer*   net_sev         = (CEvtrctNetServer*)pvArgv;
+    struct sockaddr_in  stClientAddr    = {0};
+    socklen_t           stSerLen        = sizeof(stClientAddr);
+    int32_t             lClientFd       = 0;
+    unsigned short      usClientPort    = 0;
+    char                acClientAddr[32]={0};
     
-    //printf("accept_cb entry!\n");
+    if ( NULL == pvArgv )
+    {
+        return;
+    }
     
-    net_dispatch->dispatch();
+    lClientFd = accept(fd, (struct sockaddr *)&stClientAddr, &stSerLen);
+    if( lClientFd < 0 )
+    {
+        if ( errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR )
+        {
+            return;
+        }
+        else
+        {
+            VRCT_API_NetworkOptUnRegister(net_sev->m_rctor_, &net_sev->m_netopts_);
+            printf("[ESEVR] Terminal accept socket error=%d\n", errno);
+            return;
+        }
+    }
+    usClientPort = ntohs(stClientAddr.sin_port);
+    
+    memcpy(acClientAddr,inet_ntoa(stClientAddr.sin_addr), strlen(inet_ntoa(stClientAddr.sin_addr)));
+    printf("Terminal accept a new client: %s:%d,fd=%d\n", 
+        acClientAddr, 
+        usClientPort, 
+        lClientFd);
+    
+    close(lClientFd);
+    //net_dispatch->dispatch();
 }
 
 static void timer_cb(void *pvArgv)
 {
     CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvArgv;
     
-    //printf("timer_cb entry!\n");
+    printf("timer_cb entry!\n");
     
     net_dispatch->messagepost(0, 222 ,NULL, 0);
     
@@ -28,11 +59,11 @@ static void timer_cb(void *pvArgv)
     
 static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
 {
-    CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvCtx;
+    //CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvCtx;
     
-    //printf("msqctrl_cb entry! Value=%d\n", Value);
+    printf("msqctrl_cb entry! Value=%d\n", Value);
     
-    net_dispatch->dispatch();
+    //net_dispatch->dispatch();
 }
 
 void    CEvtrctNetServer::dispatch()
@@ -128,13 +159,22 @@ void     CEvtrctNetServer::timer_uninit()
     
 int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
 {
-    m_listenport_ = cfg->Port;
-    m_listenaddr_ = (char *)cfg->acAddr;
+    m_listenport_       = cfg->Port;
+    m_listenaddr_       = (char *)cfg->acAddr;
+    m_echo_enable_      = cfg->EchoEnalbe;
+    m_head_magic_       = cfg->HeadMagic;
+    m_head_offset_      = cfg->HeadOffset;
+    
+    std::cout << "listenaddr=" << m_listenaddr_ << std::endl;
+    std::cout << "listenport=" << m_listenport_ << std::endl;
+    std::cout << "head_magic=" << m_head_magic_ << std::endl;
+    std::cout << "head_offset=" << m_head_offset_ << std::endl;
+    std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
     
     m_rctor_ = VRCT_API_Create(m_taskid_, m_msqsize_);
     if ( NULL == m_rctor_ )
     {
-        std::cout <<"[LISTN] VRCT create error!" << std::endl;
+        std::cout <<"[LISTN] vrct create error!" << std::endl;
         return -1;
     }
     
@@ -193,12 +233,12 @@ void    CEvtrctNetServer::stop()
 }
     
 CEvtrctNetServer::CEvtrctNetServer():
-        m_rctor_(NULL),
         m_taskid_(0),
         m_fliterid_(0),
         m_msqsize_(1000),
         m_listenfd_(-1),
-        m_listenport_(9527)
+        m_listenport_(9527),
+        m_rctor_(NULL)
 {
     std::cout << "net server entry!" << std::endl;
 }

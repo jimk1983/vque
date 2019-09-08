@@ -1,4 +1,6 @@
-cd example/ && make clean && make && cp example/config/*.json ../../outs/debug/ && cd -
+cd example/ && make clean && make 
+#cp -rf /mnt/hgfs/vmshare/vque/example/config/*.json /mnt/hgfs/vmshare/vque/outs/debug/* 
+cd -
 
 
 

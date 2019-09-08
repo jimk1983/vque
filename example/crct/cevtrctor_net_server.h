@@ -22,15 +22,18 @@ private:
         int                 timer_init();
         void                timer_uninit();
 private:
-        void*               m_rctor_;
+        
         int                 m_taskid_;
         int                 m_fliterid_;
         unsigned int        m_msqsize_;
         int                 m_listenfd_;
         uint32_t            m_listenport_;
         std::string         m_listenaddr_;
+        uint32_t            m_head_magic_;
+        uint32_t            m_head_offset_;
         uint32_t            m_echo_enable_;
-        
+public:
+        void*               m_rctor_;
         VRCT_NETEVT_OPT_S   m_netopts_;
         VRCT_MSQ_OPT_S      m_msqopts_;
         VRCT_TIMER_OPT_S    m_timeropts_;

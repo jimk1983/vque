@@ -126,7 +126,7 @@ INT32_T VRCT_API_MsqOptPush(PVOID pvRctor, UINT32_T PipeFilterID, UINT32_T Value
     //测试时:发现Used Nums=1的时候,从3s下降到6s,但是每个包的实时性就保证了
     //单核另外考虑
     //if( (pstRctor->stMgrMsQue.iUsedNums & 0x1F) == 0x1F)
-    if( (pstRctor->stMgrMsQue.iUsedNums & 0x3) == 0x3)
+    if( (pstRctor->stMgrMsQue.iUsedNums & 0xFF)  > 0 )
     {
         /*通过eventfd告知*/
         if ( 0 > eventfd_write(pstRctor->stMgrMsQue.Eventfd, Val) )
@@ -423,7 +423,6 @@ INT32_T VRCT_API_Start(PVOID      pvRctor)
     PVRCT_REACTOR_S     pstRctor = (PVRCT_REACTOR_S)pvRctor;
     int                 iRet     = 0;
     pthread_t           handle   = 0;
-    
     
     if ( NULL == pvRctor )
     {
