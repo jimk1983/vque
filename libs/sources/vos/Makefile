@@ -53,7 +53,7 @@ postpare:
 	@cp -fr $(BIN_DIR)/libvos.a $(LIBS_BIN) 
 	@rm -fr $(BIN_DIR)/libvos.a 
 
-$(BIN_DIR)/libvos.a :  $(OBJ_DIR)/libs/sources/vos/vos_utils.o $(OBJ_DIR)/libs/sources/vos/vos_time.o $(OBJ_DIR)/libs/sources/vos/vos_shm.o $(OBJ_DIR)/libs/sources/vos/vos_hash.o $(OBJ_DIR)/libs/sources/vos/vos_event.o $(OBJ_DIR)/libs/sources/vos/vos_mutex.o $(OBJ_DIR)/libs/sources/vos/network/vos_route.o $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o $(OBJ_DIR)/libs/sources/vos/vos_dlist.o
+$(BIN_DIR)/libvos.a :  $(OBJ_DIR)/libs/sources/vos/vos_utils.o $(OBJ_DIR)/libs/sources/vos/vos_time.o $(OBJ_DIR)/libs/sources/vos/vos_shm.o $(OBJ_DIR)/libs/sources/vos/vos_hash.o $(OBJ_DIR)/libs/sources/vos/vos_event.o $(OBJ_DIR)/libs/sources/vos/vos_mutex.o $(OBJ_DIR)/libs/sources/vos/vos_iobuf.o $(OBJ_DIR)/libs/sources/vos/network/vos_route.o $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o $(OBJ_DIR)/libs/sources/vos/vos_dlist.o
 	$(AR) cr $@ $^
 	@ranlib  $@
 
@@ -74,6 +74,9 @@ $(OBJ_DIR)/libs/sources/vos/vos_event.o : $(ROOT_DIR)/libs/sources/vos/vos_event
 
 $(OBJ_DIR)/libs/sources/vos/vos_mutex.o : $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
+
+$(OBJ_DIR)/libs/sources/vos/vos_iobuf.o : $(ROOT_DIR)/libs/sources/vos/vos_iobuf.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_iobuf.c
 
 $(OBJ_DIR)/libs/sources/vos/network/vos_route.o : $(ROOT_DIR)/libs/sources/vos/network/vos_route.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/network/vos_route.c

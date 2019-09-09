@@ -7,6 +7,15 @@
 #include <thread>
 #include <chrono>
 
+
+typedef enum
+{
+    CONN_STATUS_INIT=0,
+    CONN_STATUS_CONNECTING,
+    CONN_STATUS_CONNECTED,
+}CONN_STATUS_E;
+
+
 #define  ULIMITD_MAXFD      40960
 
 class CEvtrctNetConn;
@@ -18,31 +27,36 @@ typedef std::shared_ptr<CEvtrctNetSlave>    evt_slave_sptr;
 class CEvtrctNetConn
 {
 public:
-    int32_t                 lFd;                        
-    //DULONG                  stRandID;                   /*唯一ID*/
-    UCHAR                   Guid[VOS_GUID_LEN];       
-    int32_t                 iConnStatus;                /*连接状态*/
-    int32_t                 lErrorCode;                 /*老化时的错误码*/
-    uint32_t                iBodySize;                  
-    VOS_DLIST_S             stRecvList;  
-    int32_t                 iRcvNums;    
-    VRCT_IOBUF_S*           pstRecvIobuf;
-    VRCT_IOBUF_S*           pstRecvOldIobuf;            /*上个的遗留IO*/
+    int32_t                 m_Fd;                        
+    //DULONG                stRandID;                   /*唯一ID*/
+    UCHAR                   m_Guid[VOS_GUID_LEN];       
+    int32_t                 m_iConnStatus;                /*连接状态*/
+    int32_t                 m_lErrorCode;                 /*老化时的错误码*/
+    uint32_t                m_iBodySize;                  
+    VOS_DLIST_S             m_stRecvList;  
+    int32_t                 m_iRcvNums;    
+    VRCT_IOBUF_S*           m_pstRecvIobuf;
+    VRCT_IOBUF_S*           m_pstRecvOldIobuf;            /*上个的遗留IO*/
     
-    VOS_DLIST_S             stSendList;
-    volatile int32_t        iSndNums;
-    VRCT_IOBUF_S*           pstSendIobuf;
-    int32_t                 uiSndBlockCount;
+    VOS_DLIST_S             m_stSendList;
+    volatile int32_t        m_iSndNums;
+    VRCT_IOBUF_S*           m_pstSendIobuf;
+    int32_t                 m_uiSndBlockCount;
+    struct sockaddr_in      m_stServAddr;                 /*服务器地址*/
+    struct timeval          m_stStartTime;                
+    struct timeval          m_stStopTime;                 
+    struct in_addr          m_ClntAddr;                   /*客户端地址*/
+    uint32_t                m_ClntPort;                   /*客户端端口*/
     
-    void*                   pvQue;                      
-    struct sockaddr_in      stServAddr;                 /*服务器地址*/
-    struct timeval          stStartTime;                
-    struct timeval          stStopTime;                 
-    struct in_addr          ClntAddr;                   /*客户端地址*/
-    uint32_t                ClntPort;                   /*客户端端口*/
+    void*                   m_rctor_;
+    VRCT_NETEVT_OPT_S       m_netopts_;
+    CEvtrctNetSlave*        m_slave_ptr;
 public:
-    int32_t netconn_create(void*pvRctor, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
-    
+    int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
+    void        netconn_release();
+public:
+    static void net_conn_sendcb(int ifd, void *pvCtx);
+    static void net_conn_recvcb(int ifd, void *pvCtx);
 public:
     CEvtrctNetConn();
     ~CEvtrctNetConn();
