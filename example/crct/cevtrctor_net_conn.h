@@ -7,6 +7,8 @@
 #include <thread>
 #include <chrono>
 
+#define  ULIMITD_MAXFD      40960
+
 class CEvtrctNetConn;
 class CEvtrctNetSlave;
 
@@ -39,7 +41,7 @@ public:
     struct in_addr          ClntAddr;                   /*客户端地址*/
     uint32_t                ClntPort;                   /*客户端端口*/
 public:
-    int32_t netconn_create(int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
+    int32_t netconn_create(void*pvRctor, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
     
 public:
     CEvtrctNetConn();
@@ -52,16 +54,17 @@ public:
     void*               m_Rctor;
     int                 m_taskid;
     uint32_t            m_msqsize;
-    
+    evt_netconn_sptr    m_arryconns[ULIMITD_MAXFD];
 private:
     VRCT_MSQ_OPT_S      m_msqopts_;
     uint32_t            m_fliterid_;
-
+    struct sockaddr_in  m_sevNAddr;
     PVOS_HASH_TABLE_S   m_conn_hashtbl;
 public:
-    void                init();
+    int32_t             init();
+    int32_t             start();
     void                uninit();
-    void                dispatch_connetion(int fd, struct in_addr ClntNAddr, uint32_t uiClntPort);
+    int32_t             dispatch_connect(int fd, struct in_addr ClntNAddr, uint32_t uiClntPort);
 public:
     CEvtrctNetSlave(){};
     ~CEvtrctNetSlave(){};

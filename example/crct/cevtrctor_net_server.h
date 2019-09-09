@@ -15,6 +15,8 @@ public:
         int                 start(const pexm_serv_cfg_s cfg);
         void                stop();
         void                dispatch();
+        uint32_t            GetSlaveNums();
+        evt_slave_sptr      GetSlaveByIndex(int32_t HashIndex);
         int                 messagepost(const int PipeFilterID, const    int Value, const void* Data,const int DataLen);
 private:
         int                 network_init();
@@ -24,7 +26,7 @@ private:
         int                 timer_init();
         void                timer_uninit();
 private:
-        void                slave_task_init();
+        int32_t             slave_task_init();
         void                slave_task_uninit();
         evt_slave_sptr      m_arry_slaver[32];
         uint32_t            m_arry_slave_nums_;

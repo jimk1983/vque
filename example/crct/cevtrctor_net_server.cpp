@@ -17,6 +17,7 @@ static void accept_cb(int fd, void *pvArgv)
     int32_t             lClientFd       = 0;
     unsigned short      usClientPort    = 0;
     char                acClientAddr[32]={0};
+    int32_t             hashIndex       = 0;
     
     if ( NULL == pvArgv )
     {
@@ -44,9 +45,20 @@ static void accept_cb(int fd, void *pvArgv)
         acClientAddr, 
         usClientPort, 
         lClientFd);
+    hashIndex = lClientFd % net_sev->GetSlaveNums();
+    if(nullptr == net_sev->GetSlaveByIndex(hashIndex))
+    {
+        printf("some slave has error!\n");
+        hashIndex = 0;
+    }
     
-    close(lClientFd);
-    //net_dispatch->dispatch();
+    if( VOS_ERR == net_sev->GetSlaveByIndex(hashIndex)->dispatch_connect(lClientFd, stClientAddr.sin_addr, usClientPort))
+    {
+        printf("slave dispatch connect failed!\n");
+        close(lClientFd);
+        return;
+    }
+    
 }
 
 static void timer_cb(void *pvArgv)
@@ -151,7 +163,17 @@ int     CEvtrctNetServer::timer_init()
 }
 
 
-void    CEvtrctNetServer::slave_task_init()
+uint32_t    CEvtrctNetServer::GetSlaveNums()
+{
+    return m_arry_slave_nums_;
+}
+
+evt_slave_sptr  CEvtrctNetServer::GetSlaveByIndex(int32_t HashIndex)
+{
+    return m_arry_slaver[HashIndex];
+}
+
+int32_t    CEvtrctNetServer::slave_task_init()
 {
     m_arry_slave_nums_ = VOS_GetCpuCoreNum()*2;
     
@@ -162,12 +184,22 @@ void    CEvtrctNetServer::slave_task_init()
         m_arry_slaver[i] =std::make_shared<CEvtrctNetSlave>();
         m_arry_slaver[i]->m_taskid = SLAVE_START_TASKID + i;
         m_arry_slaver[i]->m_msqsize=1000;
-        m_arry_slaver[i]->init();
+        if (VOS_ERR == m_arry_slaver[i]->init() )
+        {
+            printf("slave task init error!\n");
+            return VOS_ERR;
+        }
+        else
+        {
+            (void)m_arry_slaver[i]->start();
+        }
         //std::cout << "1 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
         //m_arry_slaver[i]->uninit();
         //m_arry_slaver[i] = nullptr;
         //std::cout << "2 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
     }
+
+    return VOS_OK;
 }
 
 void    CEvtrctNetServer::slave_task_uninit()
@@ -200,7 +232,11 @@ int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
     std::cout << "head_offset=" << m_head_offset_ << std::endl;
     std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
     
-    slave_task_init();
+    if( VOS_ERR == slave_task_init() )
+    {
+        std::cout <<"slave_task_init error!" << std::endl;
+        return -1;
+    }
     
     m_rctor_ = VRCT_API_Create(m_taskid_, m_msqsize_);
     if ( NULL == m_rctor_ )
