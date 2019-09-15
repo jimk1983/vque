@@ -1,0 +1,33 @@
+{
+	"ethname":"eth0",
+	"tcode":3,
+	"client":
+	{
+		"tcode":1,
+		"headoffset":32,
+		"body":512,
+		"addr":"10.10.10.100",
+		"port":9888,
+		"pthnums":1,
+		"pthperconns":100
+	},
+	"server":
+	{
+		"tcode":2,
+		"headoffset":32,
+		"addr":"10.10.10.100",
+		"port":9888,
+		"dctecho":1,
+		"fwenable":0,
+		"fwaddr":"10.10.10.200",
+		"fwport":9000
+	},
+	"msgque":
+	{
+		"tcode":3,
+		"producer":1,
+		"consumer":1,
+		"pfreq-us":1000,
+		"pfreq-batch":100
+	}
+}

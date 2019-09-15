@@ -20,7 +20,6 @@
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
 #include <UtilFrame/UtilsFrame.h>
-#include <crct/CEvtRctor.h>
 
 
 #include "public.h"
@@ -48,13 +47,13 @@ int main(int argc, char *argv[])
     {
         if ( argv[i][0] == '-' )
         {
-            if ( 0 == strcmp(argv[i], "-tcode")  )
+            if ( 0 == strcmp(argv[i], "--tcode")  )
             {
                 i++;
                 stCfg.CurrTypeCode = atoi(argv[i]);
             }
             
-            if ( 0 == strcmp(argv[i], "-ethname")  )
+            if ( 0 == strcmp(argv[i], "--ethname")  )
             {
                 i++;
                 memset(stCfg.acEthName,0, sizeof((char *)stCfg.acEthName));
@@ -80,6 +79,9 @@ int main(int argc, char *argv[])
             break;
         case TCODE_MSQ:
             TMain_MsQueue(&stCfg.stMsqCfg);
+            break;
+        case TCODE_IOBUF:
+            TMain_Iobuf();
             break;
         default:
             

@@ -53,18 +53,18 @@ postpare:
 	@cp -fr $(BIN_DIR)/libvos.a $(LIBS_BIN) 
 	@rm -fr $(BIN_DIR)/libvos.a 
 
-$(BIN_DIR)/libvos.a :  $(OBJ_DIR)/libs/sources/vos/vos_utils.o $(OBJ_DIR)/libs/sources/vos/vos_time.o $(OBJ_DIR)/libs/sources/vos/vos_shm.o $(OBJ_DIR)/libs/sources/vos/vos_hash.o $(OBJ_DIR)/libs/sources/vos/vos_event.o $(OBJ_DIR)/libs/sources/vos/vos_mutex.o $(OBJ_DIR)/libs/sources/vos/vos_iobuf.o $(OBJ_DIR)/libs/sources/vos/network/vos_route.o $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o $(OBJ_DIR)/libs/sources/vos/vos_dlist.o
+$(BIN_DIR)/libvos.a :  $(OBJ_DIR)/libs/sources/vos/vos_shm.o $(OBJ_DIR)/libs/sources/vos/vos_mutex.o $(OBJ_DIR)/libs/sources/vos/vos_time.o $(OBJ_DIR)/libs/sources/vos/vos_hash.o $(OBJ_DIR)/libs/sources/vos/vos_event.o $(OBJ_DIR)/libs/sources/vos/vos_mem.o $(OBJ_DIR)/libs/sources/vos/vos_iobuf.o $(OBJ_DIR)/libs/sources/vos/vos_mpools.o $(OBJ_DIR)/libs/sources/vos/network/vos_route.o $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o $(OBJ_DIR)/libs/sources/vos/vos_dlist.o $(OBJ_DIR)/libs/sources/vos/vos_utils.o
 	$(AR) cr $@ $^
 	@ranlib  $@
 
-$(OBJ_DIR)/libs/sources/vos/vos_utils.o : $(ROOT_DIR)/libs/sources/vos/vos_utils.c
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_utils.c
+$(OBJ_DIR)/libs/sources/vos/vos_shm.o : $(ROOT_DIR)/libs/sources/vos/vos_shm.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_shm.c
+
+$(OBJ_DIR)/libs/sources/vos/vos_mutex.o : $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
 
 $(OBJ_DIR)/libs/sources/vos/vos_time.o : $(ROOT_DIR)/libs/sources/vos/vos_time.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_time.c
-
-$(OBJ_DIR)/libs/sources/vos/vos_shm.o : $(ROOT_DIR)/libs/sources/vos/vos_shm.c
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_shm.c
 
 $(OBJ_DIR)/libs/sources/vos/vos_hash.o : $(ROOT_DIR)/libs/sources/vos/vos_hash.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_hash.c
@@ -72,11 +72,14 @@ $(OBJ_DIR)/libs/sources/vos/vos_hash.o : $(ROOT_DIR)/libs/sources/vos/vos_hash.c
 $(OBJ_DIR)/libs/sources/vos/vos_event.o : $(ROOT_DIR)/libs/sources/vos/vos_event.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_event.c
 
-$(OBJ_DIR)/libs/sources/vos/vos_mutex.o : $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
-	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_mutex.c
+$(OBJ_DIR)/libs/sources/vos/vos_mem.o : $(ROOT_DIR)/libs/sources/vos/vos_mem.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_mem.c
 
 $(OBJ_DIR)/libs/sources/vos/vos_iobuf.o : $(ROOT_DIR)/libs/sources/vos/vos_iobuf.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_iobuf.c
+
+$(OBJ_DIR)/libs/sources/vos/vos_mpools.o : $(ROOT_DIR)/libs/sources/vos/vos_mpools.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_mpools.c
 
 $(OBJ_DIR)/libs/sources/vos/network/vos_route.o : $(ROOT_DIR)/libs/sources/vos/network/vos_route.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/network/vos_route.c
@@ -86,4 +89,7 @@ $(OBJ_DIR)/libs/sources/vos/network/vos_sock.o : $(ROOT_DIR)/libs/sources/vos/ne
 
 $(OBJ_DIR)/libs/sources/vos/vos_dlist.o : $(ROOT_DIR)/libs/sources/vos/vos_dlist.c
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_dlist.c
+
+$(OBJ_DIR)/libs/sources/vos/vos_utils.o : $(ROOT_DIR)/libs/sources/vos/vos_utils.c
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/libs/sources/vos/vos_utils.c
 

@@ -4,6 +4,7 @@ typedef enum
     TCODE_CLIENT    = 0,   /*客户端*/
     TCODE_SERVER    = 1,   /*服务器端*/
     TCODE_MSQ       = 2,   /*消息队列*/
+    TCODE_IOBUF     = 3,   /*IOBUF*/
     
     TCODE_NUMS
 }TEST_TCODE_E;

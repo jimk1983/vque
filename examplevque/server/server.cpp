@@ -2,7 +2,6 @@
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
 #include <UtilFrame/UtilsFrame.h>
-#include <crct/CEvtRctor.h>
 
 #include "public.h"
 

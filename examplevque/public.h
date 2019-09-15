@@ -8,6 +8,7 @@
 #include "msque/msque.h"
 #include "client/client.h"
 #include "server/server.h"
+#include "iobuf/iobuf.h"
 
 
 #endif

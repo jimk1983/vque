@@ -43,14 +43,14 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/examplevque/
 
 all : prepare $(BIN_DIR)/examplevque
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/examplevque/client $(OBJ_DIR)/examplevque/config $(OBJ_DIR)/examplevque/msque $(OBJ_DIR)/examplevque/server 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/examplevque/client $(OBJ_DIR)/examplevque/config $(OBJ_DIR)/examplevque/iobuf $(OBJ_DIR)/examplevque/msque $(OBJ_DIR)/examplevque/server 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/examplevque :  $(OBJ_DIR)/examplevque/client/client.o $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/main.o $(OBJ_DIR)/examplevque/msque/msque.o $(OBJ_DIR)/examplevque/server/server.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/examplevque/client/client.o $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/main.o $(OBJ_DIR)/examplevque/msque/msque.o $(OBJ_DIR)/examplevque/server/server.o $(LDFLAGS)
+$(BIN_DIR)/examplevque :  $(OBJ_DIR)/examplevque/client/client.o $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/iobuf/iobuf.o $(OBJ_DIR)/examplevque/main.o $(OBJ_DIR)/examplevque/msque/msque.o $(OBJ_DIR)/examplevque/server/server.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/examplevque/client/client.o $(OBJ_DIR)/examplevque/config/config.o $(OBJ_DIR)/examplevque/iobuf/iobuf.o $(OBJ_DIR)/examplevque/main.o $(OBJ_DIR)/examplevque/msque/msque.o $(OBJ_DIR)/examplevque/server/server.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
@@ -60,6 +60,9 @@ $(OBJ_DIR)/examplevque/client/client.o : $(ROOT_DIR)/examplevque/client/client.c
 
 $(OBJ_DIR)/examplevque/config/config.o : $(ROOT_DIR)/examplevque/config/config.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/config/config.cpp
+
+$(OBJ_DIR)/examplevque/iobuf/iobuf.o : $(ROOT_DIR)/examplevque/iobuf/iobuf.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/iobuf/iobuf.cpp
 
 $(OBJ_DIR)/examplevque/main.o : $(ROOT_DIR)/examplevque/main.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/examplevque/main.cpp
