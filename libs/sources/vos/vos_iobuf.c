@@ -59,7 +59,7 @@ VOS_IOBUF_S*    VOS_IOBuf_mallocMax(uint32_t ulMid)
     VOS_DLIST_INIT(&pstIobuf->stNode);
     pstIobuf->Magic             = VOS_IOBUF_MAGIC;
     pstIobuf->OffsetStart       = sizeof(VOS_IOBUF_S) + VOS_IOBUF_MAXSIZE;
-    pstIobuf->MaxLen            = VOS_IOBUF_BUFMAX - pstIobuf->OffsetStart;
+    pstIobuf->MaxLen            = VOS_IOBUF_BUFMAX - pstIobuf->OffsetStart - 4; //4字节对齐保证
     pstIobuf->InLeftSize        = pstIobuf->MaxLen;
     pstIobuf->OffsetCurrt       = pstIobuf->OffsetStart;
     pstIobuf->DataSize          = 0;
