@@ -15,7 +15,6 @@ void    server_main(pexm_serv_cfg_s      pstCfg)
     dispatch_sptr->start(pstCfg);
     
     
-    
     while(1)
     {
         VOS_Sleep(10);

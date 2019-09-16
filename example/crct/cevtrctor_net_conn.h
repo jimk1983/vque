@@ -35,12 +35,12 @@ public:
     uint32_t                m_iBodySize;                  
     VOS_DLIST_S             m_stRecvList;  
     int32_t                 m_iRcvNums;    
-    VRCT_IOBUF_S*           m_pstRecvIobuf;
-    VRCT_IOBUF_S*           m_pstRecvOldIobuf;            /*上个的遗留IO*/
+    VOS_IOBUF_S*            m_pstRecvIobuf;
+    VOS_IOBUF_S*            m_pstRecvOldIobuf;            /*上个的遗留IO*/
     
     VOS_DLIST_S             m_stSendList;
     volatile int32_t        m_iSndNums;
-    VRCT_IOBUF_S*           m_pstSendIobuf;
+    VOS_IOBUF_S*            m_pstSendIobuf;
     int32_t                 m_uiSndBlockCount;
     struct sockaddr_in      m_stServAddr;                 /*服务器地址*/
     struct timeval          m_stStartTime;                
@@ -51,6 +51,9 @@ public:
     void*                   m_rctor_;
     VRCT_NETEVT_OPT_S       m_netopts_;
     CEvtrctNetSlave*        m_slave_ptr;
+
+    uint32_t                m_rx_flows;
+    uint32_t                m_tx_flows;
 public:
     int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
     void        netconn_release();

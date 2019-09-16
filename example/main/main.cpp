@@ -40,6 +40,7 @@ void option_usage() {
     print_opt_help(9,  "help.        \n");
     
     printf("Examples:\n");
+    printf("\t./app-test -b 2                       --- action server with config_server.json\n");
     printf("\t./app-test -s -p 9527                 --- action server listen port is 9527\n");
     printf("\t./app-test -c -a 192.168.1.1 -p 9527  --- action client connect addr is 192.168.1.1:9527\n");
 }

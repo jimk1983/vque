@@ -17,8 +17,8 @@ typedef struct tagVosIobuf
 {
     VOS_DLIST_S             stNode;             /*挂链用的节点*/
     uint32_t                Magic;              /*本节点最大的数据长度*/
-    uint32_t                MaxLen;             /*接收包的数据最大的长度*/  
-    uint32_t                InLeftSize;         /*接收剩余大小*/ 
+    int32_t                 MaxLen;             /*接收包的数据最大的长度*/  
+    int32_t                 InLeftSize;         /*接收剩余大小*/ 
     uint32_t                OutLeftSize;        /*发送剩余大小*/ 
     uint32_t                OffsetStart;        /*有效业务数据*/
     uint32_t                OffsetCurrt;        /*当前偏移*/
@@ -38,12 +38,9 @@ typedef struct tagVosIobuf
 /*设置已经接收的数据长度，并更新剩余数据空间长度*/
 #define VOS_IOBUF_RCVUPDATE_SIZE(_pstIobuf, ulInputLen) \
 do{\
-    if(ulInputLen <= (_pstIobuf)->InLeftSize)\
-    {\
-        (_pstIobuf)->DataSize   += ulInputLen;\
-        (_pstIobuf)->OffsetCurrt+=ulInputLen;\
-        (_pstIobuf)->InLeftSize = (_pstIobuf)->MaxLen-(_pstIobuf)->OffsetCurrt;\
-    }\
+    (_pstIobuf)->DataSize   += ulInputLen;\
+    (_pstIobuf)->OffsetCurrt+=ulInputLen;\
+    (_pstIobuf)->InLeftSize = (_pstIobuf)->MaxLen-(_pstIobuf)->DataSize;\
 }while(0);
 
 /*更新有效数据处理后剩余长度*/
@@ -63,5 +60,8 @@ do{\
 VOS_IOBUF_S*    VOS_IOBuf_malloc(uint32_t ulMid);
 
 void            VOS_IOBuf_free(VOS_IOBUF_S *pstIobuf);
+
+VOS_IOBUF_S*    VOS_IOBuf_mallocMax(uint32_t ulMid);
+
 
 #endif

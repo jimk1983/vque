@@ -178,11 +178,6 @@
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 VOS_GetSelfTId());
-
-    printf("[TKD:%02d EID:%02d]=>EPoll [TID=%08x] Start to work!",
-                pstRctor->stInfo.TaskID, 
-                pstRctor->stInfo.Epollfd, 
-                VOS_GetSelfTId());
     
     VOS_ThreadEvent_Notify(&pstRctor->hWaitForStart);
     if ( SYS_ERR == VRCT_MainDispatch(pstRctor) )

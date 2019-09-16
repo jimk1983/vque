@@ -57,8 +57,6 @@ VOS_IOBUF_S*    VOS_IOBuf_mallocMax(uint32_t ulMid)
 
     memset(pstIobuf,0,ulBufSize);
     VOS_DLIST_INIT(&pstIobuf->stNode);
-
-    VOS_DLIST_INIT(&pstIobuf->stNode);
     pstIobuf->Magic             = VOS_IOBUF_MAGIC;
     pstIobuf->OffsetStart       = sizeof(VOS_IOBUF_S) + VOS_IOBUF_MAXSIZE;
     pstIobuf->MaxLen            = VOS_IOBUF_BUFMAX - pstIobuf->OffsetStart;

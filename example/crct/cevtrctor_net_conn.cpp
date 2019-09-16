@@ -150,91 +150,143 @@ SendAgain:
 /*快速接收处理*/
 void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
 {
-    //CEvtrctNetConn*     pstConn         = (CEvtrctNetConn*)pvCtx;
-    //char*               pcData          = NULL;
+    CEvtrctNetConn*     pstConn         = (CEvtrctNetConn*)pvCtx;
+    char*               pcData          = NULL;
     int32_t             lError          = 0;
-    char                buffer[1024]    = {0};
     
-
-    lError = recv(ifd, buffer, 1024, 0);
-    printf("net_conn_recvcb, buffer=%s,lError=%d\n", buffer, lError);
-    #if 0
-    /*正常登录流程，直接就按照下面的方式处理即可*/
-    if ( NULL == m_pstRecvIobuf )
+    if ( NULL == pstConn->m_pstRecvIobuf )
     {    
         /*申请TCP类型的IOBUF内存*/
-        m_pstRecvIobuf = EQue_IOBuf_malloc(0);
-        if ( NULL == pstConn->pstRecvIobuf )
+        pstConn->m_pstRecvIobuf = VOS_IOBuf_mallocMax(0);
+        if ( NULL == pstConn->m_pstRecvIobuf )
         {
-            PrintError("[ECLNT] iobuf malloc error!");
-            Test_EQue_ConnRelease(pstConn);
+            PError("[ECLNT] iobuf malloc error!");
+            pstConn->netconn_release();
             return;
         }
     }
     
     for(;;)
     {
-        pcData = COM_IOBUF_GETSAPCE_DATA(pstConn->pstRecvIobuf);
+        pcData = VOS_IOBUF_GETCURT_PTR(pstConn->m_pstRecvIobuf);
         
-        lError = recv(pstConn->lFd, pcData, pstConn->pstRecvIobuf->lLeftLen, 0);
+        lError = recv(pstConn->m_Fd, pcData, pstConn->m_pstRecvIobuf->InLeftSize, 0);
         if ( lError > 0  )
         {
-            pstConn->pstMgr->iRecvPacketSize += lError;
+            printf("recv lError=%d\n",lError);
+            pstConn->m_rx_flows += lError;
             
             /*继续更新*/
-            COM_IOBUF_SETINPUTED_LEN(pstConn->pstRecvIobuf, (uint32_t)lError);
-            if ( 0 == pstConn->pstRecvIobuf->lLeftLen )
+            VOS_IOBUF_RCVUPDATE_SIZE(pstConn->m_pstRecvIobuf, (uint32_t)lError);
+            if ( 0 >= pstConn->m_pstRecvIobuf->InLeftSize )
             {
                 break;
             }
         }
         else if ( 0 == lError )
         {
-            PrintError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
-                        pstConn->lFd, errno, strerror(errno), lError);
-            Test_EQue_ConnRelease(pstConn);
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+                        pstConn->m_Fd, errno, strerror(errno), lError);
+            pstConn->netconn_release();
             return;
         }
         else
         {
             if ( errno == EAGAIN )
             {
-
-                PrintTraceDebug("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno=%d", pstConn->lFd, errno);
+                PDebug("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                            pstConn->m_Fd, errno);
                 break;
             }
             
             if ( errno == EINTR )
             {
-                PrintTraceDebug("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", pstConn->lFd, errno);
+                PDebug("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                            pstConn->m_Fd, errno);
                 continue;
             }
             
-            PrintError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n", pstConn->lFd, errno, strerror(errno), lError);
-            Test_EQue_ConnRelease(pstConn);
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+                        pstConn->m_Fd, errno, strerror(errno), lError);
+            pstConn->netconn_release();
             return;
-            
         }
     }
-    pstConn->pstMgr->iRecvPPS++;
     
-    EQue_IOBuf_free(pstConn->pstRecvIobuf);
-    pstConn->pstRecvIobuf = NULL;
-    #endif
+    printf("recv all size=%d，iobuf=%p\n",pstConn->m_rx_flows, pstConn->m_pstRecvIobuf);
+    VOS_IOBuf_free(pstConn->m_pstRecvIobuf);
+    pstConn->m_pstRecvIobuf = NULL;
+    
     return;
 }
 
 void     CEvtrctNetConn::netconn_release()
 {
+    PVOS_DLIST_S        pthisEntry  = NULL, pNextEntry=NULL, plistHead=NULL;
+    VOS_IOBUF_S*        pstIobuf    = NULL;
     
+    //PrintTraceEvent("[INNER] Inner network connetion release success! conn-info=[%d:%s]", pstConn->lFd, pstConn->stSid.acID );
+    //pstConn->pstRctCtx->iAllConnNums--;
+    /*内网管理去掉, 然后重新排序*/
+    //MUTL_InnerServerUnRegister(pstConn->pstRctCtx, pstConn);
+    
+    /*关闭网络事件*/
+    VRCT_API_NetworkOptUnRegister(m_rctor_, &m_netopts_);
+    
+    if ( NULL != m_pstRecvIobuf )
+    {
+        VOS_IOBuf_free(m_pstRecvIobuf);
+        m_pstRecvIobuf = NULL;
+    }
 
+    if ( NULL != m_pstSendIobuf )
+    {
+        VOS_IOBuf_free(m_pstSendIobuf);
+        m_pstSendIobuf = NULL;
+    }
+
+    if ( SYS_OK != VOS_DList_IsEmpty(&m_stRecvList))
+    {
+        plistHead = &m_stRecvList;
+        for (pthisEntry = plistHead->prev;
+            pthisEntry != plistHead;
+            pthisEntry = pNextEntry)
+        {
+            pNextEntry = pthisEntry->prev;
+            pstIobuf = VOS_DLIST_ENTRY(pthisEntry, VOS_IOBUF_S, stNode);
+            VOS_DLIST_DEL(&pstIobuf->stNode);
+            VOS_IOBuf_free(pstIobuf);
+            pthisEntry = plistHead->prev;
+        }
+    }
+
+    if ( SYS_OK != VOS_DList_IsEmpty(&m_stSendList))
+    {
+        plistHead = &m_stSendList;
+        for (pthisEntry = plistHead->prev;
+            pthisEntry != plistHead;
+            pthisEntry = pNextEntry)
+        {
+            pNextEntry = pthisEntry->prev;
+            pstIobuf = VOS_DLIST_ENTRY(pthisEntry, VOS_IOBUF_S, stNode);
+            VOS_DLIST_DEL(&pstIobuf->stNode);
+            VOS_IOBuf_free(pstIobuf);
+            pthisEntry = plistHead->prev;
+        }
+    }
+    
+    m_slave_ptr->m_arryconns[m_Fd]= nullptr;
+    close(m_Fd);
+    
+    printf("net connection release success,fd=%d\n", m_Fd);
 }
 
 int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort)
 {
     VOS_DLIST_INIT(&m_stRecvList);
     VOS_DLIST_INIT(&m_stSendList);
-    
+
+    m_Fd                    = iFd;
     m_slave_ptr             = slave;
     m_rctor_                = slave->m_Rctor;
     m_iConnStatus           = CONN_STATUS_INIT;

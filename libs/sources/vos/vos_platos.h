@@ -342,15 +342,11 @@ typedef UINT32_T        VOS_IPADDR_T;
 }
 
 
-#if VOS_PLAT_DBG
 #define PEVENT_FORMAT " [FILE=%s,FUNC=%s,LINE=%d]"
 #define PEvent(EvtMsg, ...)\
 {\
   (void)printf(("%s [EVT] " EvtMsg PEVENT_FORMAT "\n"),VOS_GetSysTimeNowStr(),##__VA_ARGS__,__FILE__,__FUNCTION__,__LINE__);\
 }
-#else
-#define PEvent(EvtMsg, ...)
-#endif
 
 #if VOS_PLAT_DBG
 #define PDEBUG_FORMAT " [FILE=%s,FUNC=%s,LINE=%d]"
