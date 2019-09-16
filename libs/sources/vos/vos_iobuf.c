@@ -31,8 +31,8 @@ VOS_IOBUF_S*    VOS_IOBuf_malloc(uint32_t ulMid)
     memset(pstIobuf,0,ulBufSize);
     VOS_DLIST_INIT(&pstIobuf->stNode);
     pstIobuf->Magic             = VOS_IOBUF_MAGIC;
-    pstIobuf->OffsetStart       = sizeof(VOS_IOBUF_S) + VOS_PREHEAD_SIZE;
-    pstIobuf->MaxLen            = VOS_IOBUF_MAXSIZE-pstIobuf->OffsetStart;
+    pstIobuf->OffsetStart       = VOS_PREHEAD_SIZE;
+    pstIobuf->MaxLen            = VOS_IOBUF_MAXSIZE -sizeof(VOS_IOBUF_S) - pstIobuf->OffsetStart;
     /*包的大小，不能超过InLeftSize*/
     pstIobuf->InLeftSize        = pstIobuf->MaxLen;
     pstIobuf->OffsetCurrt       = pstIobuf->OffsetStart;
@@ -58,8 +58,8 @@ VOS_IOBUF_S*    VOS_IOBuf_mallocMax(uint32_t ulMid)
     memset(pstIobuf,0,ulBufSize);
     VOS_DLIST_INIT(&pstIobuf->stNode);
     pstIobuf->Magic             = VOS_IOBUF_MAGIC;
-    pstIobuf->OffsetStart       = sizeof(VOS_IOBUF_S) + VOS_IOBUF_MAXSIZE;
-    pstIobuf->MaxLen            = VOS_IOBUF_BUFMAX - pstIobuf->OffsetStart - 4; //4字节对齐保证
+    pstIobuf->OffsetStart       = VOS_IOBUF_MAXSIZE;
+    pstIobuf->MaxLen            = VOS_IOBUF_BUFMAX - sizeof(VOS_IOBUF_S) -pstIobuf->OffsetStart; //4字节对齐保证
     pstIobuf->InLeftSize        = pstIobuf->MaxLen;
     pstIobuf->OffsetCurrt       = pstIobuf->OffsetStart;
     pstIobuf->DataSize          = 0;

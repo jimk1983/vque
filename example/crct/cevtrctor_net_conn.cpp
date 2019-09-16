@@ -173,7 +173,6 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         lError = recv(pstConn->m_Fd, pcData, pstConn->m_pstRecvIobuf->InLeftSize, 0);
         if ( lError > 0  )
         {
-            printf("recv lError=%d\n",lError);
             pstConn->m_rx_flows += lError;
             
             /*¼ÌÐø¸üÐÂ*/
@@ -213,7 +212,6 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         }
     }
     
-    printf("recv all size=%d£¬iobuf=%p\n",pstConn->m_rx_flows, pstConn->m_pstRecvIobuf);
     VOS_IOBuf_free(pstConn->m_pstRecvIobuf);
     pstConn->m_pstRecvIobuf = NULL;
     
@@ -274,9 +272,8 @@ void     CEvtrctNetConn::netconn_release()
             pthisEntry = plistHead->prev;
         }
     }
-    
-    m_slave_ptr->m_arryconns[m_Fd]= nullptr;
     close(m_Fd);
+    m_slave_ptr->m_arryconns[m_Fd]= nullptr;
     
     printf("net connection release success,fd=%d\n", m_Fd);
 }

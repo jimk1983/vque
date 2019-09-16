@@ -133,12 +133,12 @@
                      case VRCT_IOTYPE_NET:
                              if ( event[i].events & EPOLLIN )
                              {
-                                ((PFVRCT_NETEVT_CB)(pstNetOpts->stRecv.pvcbFunc))(fd, pstRctor->stMgrNet.apstEpollEvtOps[fd]->stRecv.pvData);
+                                ((PFVRCT_NETEVT_CB)(pstNetOpts->stRecv.pvcbFunc))(fd, pstNetOpts->stRecv.pvData);
                              }
                              
                              if ( event[i].events & EPOLLOUT  )
                              { 
-                                 ((PFVRCT_NETEVT_CB)(pstNetOpts->stRecv.pvcbFunc))(fd, pstRctor->stMgrNet.apstEpollEvtOps[fd]->stSend.pvData);
+                                 ((PFVRCT_NETEVT_CB)(pstNetOpts->stSend.pvcbFunc))(fd, pstNetOpts->stSend.pvData);
                              }
                          break;
                      default:
