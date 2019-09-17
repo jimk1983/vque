@@ -996,28 +996,28 @@ int32_t VOS_SOCK_SetOption(int32_t lSockfd)
     
     if( -1 == lSockfd )
     {
-        return SYS_ERR;
+        return VOS_ERR;
     }
 
     lRet = ioctl(lSockfd, FIONBIO, &lnonBlockflag);
     if ( 0 != lRet )
     {
         printf("setsockopt socket FIONBIO error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
 
     lRet = setsockopt(lSockfd, SOL_SOCKET, SO_SNDBUF,(const char *)&lSndBufsize, sizeof(int32_t) );
     if ( 0 != lRet )
     {
         printf("setsockopt socket SO_SNDBUF error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
     
     lRet = setsockopt(lSockfd, SOL_SOCKET, SO_RCVBUF,(const char *)&lRcvBufsize, sizeof(int32_t) );
     if ( 0 != lRet )
     {
         printf("setsockopt socket SO_RCVBUF error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
 
     /*πÿ±’linger*/
@@ -1025,7 +1025,7 @@ int32_t VOS_SOCK_SetOption(int32_t lSockfd)
     if ( 0 != lRet )
     {
         printf("setsockopt socket SO_LINGER error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
     
     /*ø™∆ÙKeepAlive Ù–‘*/
@@ -1033,28 +1033,28 @@ int32_t VOS_SOCK_SetOption(int32_t lSockfd)
     if ( 0 != lRet )
     {
         printf("setsockopt socket SO_KEEPALIVE error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
     
     lRet = setsockopt(lSockfd, SOL_TCP, TCP_KEEPIDLE, (void*)&iKeepIdle, sizeof(iKeepIdle));
     if ( 0 != lRet )
     {
         printf("setsockopt socket TCP_KEEPIDLE error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
     
     lRet = setsockopt(lSockfd, SOL_TCP, TCP_KEEPINTVL, (void*)&iKeepInterval, sizeof(iKeepInterval));
     if ( 0 != lRet )
     {
         printf("setsockopt socket TCP_KEEPINTVL error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
 
     lRet = setsockopt(lSockfd, SOL_TCP, TCP_KEEPCNT, (void*)&ikeepCount, sizeof(ikeepCount));
     if ( 0 != lRet )
     {
         printf("setsockopt socket TCP_KEEPCNT error!(errno=%d:%s)\n",errno, strerror(errno));
-        return SYS_ERR;
+        return VOS_ERR;
     }
     
 #if 0

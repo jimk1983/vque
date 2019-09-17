@@ -32,7 +32,7 @@ typedef struct tagVosIobuf
 /*获取剩余空闲空间地址*/
 #define VOS_IOBUF_GETCURT_PTR(_pstIobuf)      (char *)(&(_pstIobuf)->Data[0] +(_pstIobuf)->OffsetCurrt)
 /*获取有效的数据起始地址*/
-#define COM_IOBUF_GETORIG_PTR(_pstIobuf)      (char *)(&(_pstIobuf)->pcData[0] + (_pstIobuf)->OffsetStart)
+#define COM_IOBUF_GETORIG_PTR(_pstIobuf)      (char *)(&(_pstIobuf)->Data[0] + (_pstIobuf)->OffsetStart)
 /*获取剩余空闲空间长度*/
 #define VOS_IOBUF_RCVLEFT_SIZE(_pstIobuf)     ((_pstIobuf)->InLeftSize)
 /*设置已经接收的数据长度，并更新剩余数据空间长度*/
@@ -42,6 +42,9 @@ do{\
     (_pstIobuf)->OffsetCurrt+=ulInputLen;\
     (_pstIobuf)->InLeftSize = (_pstIobuf)->MaxLen-(_pstIobuf)->DataSize;\
 }while(0);
+
+/*获取剩余空闲空间长度*/
+#define VOS_IOBUF_SNDLEFT_SIZE(_pstIobuf)     ((_pstIobuf)->OutLeftSize)
 
 /*更新有效数据处理后剩余长度*/
 #define VOS_IOBUF_SNDUPDATE_SIZE(_pstIobuf, ulOutputLen) \
@@ -54,7 +57,7 @@ do{\
 #define VOS_IOBUF_OUTRESET(_pstIobuf) \
 do{\
     (_pstIobuf)->OffsetCurrt = (_pstIobuf)->OffsetStart;\
-    (_pstIobuf)->OutLeftSize = DataSize;\
+    (_pstIobuf)->OutLeftSize = (_pstIobuf)->DataSize;\
 }while(0);
 
 VOS_IOBUF_S*    VOS_IOBuf_malloc(uint32_t ulMid);

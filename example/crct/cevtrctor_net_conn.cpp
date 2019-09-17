@@ -24,21 +24,25 @@ typedef struct tagSlaveMsgDispatchConnection
 
 void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
 {
-#if 0
+    CEvtrctNetConn*         pstConn         = (CEvtrctNetConn*)pvCtx;
     PVOS_DLIST_S            pstEntry        = NULL;
     int32_t                 lRet            = 0;
     char*                   pcData          = 0;
     int32_t                 lLeftLen        = 0;
     int32_t                 ulIndex         = 0;
-    VRCT_IOBUF_S*           pstIobufTmp     = NULL;
+    VOS_IOBUF_S*            pstIobufTmp     = NULL;
+
+    printf("11 net_conn_sendcb entry! pstConn->m_pstSendIobuf=%p\n",
+            pstConn->m_pstSendIobuf);
     
-    if ( VOS_OK == VOS_DList_IsEmpty(&m_stSendList) 
-        && NULL == m_pstSendIobuf )
+    if ( VOS_TRUE == VOS_DList_IsEmpty(&pstConn->m_stSendList) 
+        && NULL == pstConn->m_pstSendIobuf )
     {   
-        if( SYS_ERR == VRCT_API_NetworkOptCtrl(m_rctor_, ifd, VRCT_POLL_LTIN) )
+        printf("22 net_conn_sendcb entry!\n");
+        if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_rctor_, ifd, VRCT_POLL_LTIN) )
         {
             printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
-            netconn_release();
+            pstConn->netconn_release();
             return;
         }
         else
@@ -48,83 +52,69 @@ void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
         }
         return;
     }
-
-    if ( NULL != m_pstSendIobuf )
+    
+    printf("33 net_conn_sendcb entry!pstConn->m_iSndNums=%d\n", pstConn->m_iSndNums);
+    if ( NULL != pstConn->m_pstSendIobuf )
     {
-        printf("[ECLNT] terminal network connection send iobuf is not empty , must be send again!\n");
+        printf("[ECLNT] terminal network connection send iobuf is not empty , must be send again!data=%d\n",pstConn->m_pstSendIobuf->DataSize);
         goto SendAgain;
     }
     
-    for(ulIndex = 0; ulIndex < m_iSndNums; ulIndex++)
+    for(ulIndex = 0; ulIndex < pstConn->m_iSndNums; ulIndex++)
     {
-        VOS_DList_HeadGet(&m_stSendList, &pstEntry);
-        m_iSndNums--;
+        VOS_DList_HeadGet(&pstConn->m_stSendList, &pstEntry);
+        pstConn->m_iSndNums--;
         
-        pstIobufTmp = VOS_DLIST_ENTRY(pstEntry, VRCT_IOBUF_S, stNode);
+        pstIobufTmp = VOS_DLIST_ENTRY(pstEntry, VOS_IOBUF_S, stNode);
         
         if ( NULL == pstIobufTmp )
         {
-            //printf("[ECLNT] Stop005: Inner POP the iobuf list error! INNER-ID=[%s],FD=[%d], Nums=[%d]", 
-            //                            pstConn->stSid.acID, 
-            //                            pstConn->lFd, 
-            //                            pstConn->iSndNums);
-            
-            netconn_release();
+            pstConn->netconn_release();
             return;
         }
         
         /*进入到发送流程*/
-        m_pstSendIobuf = pstIobufTmp;
+        pstConn->m_pstSendIobuf = pstIobufTmp;
 
 SendAgain:
-        pcData   = COM_IOBUF_GETSAVED_DATA(pstConn->pstSendIobuf);
-        lLeftLen = COM_IOBUF_GETSAVED_LEN(pstConn->pstSendIobuf);
+        pcData   = COM_IOBUF_GETORIG_PTR(pstConn->m_pstSendIobuf);
+        lLeftLen = VOS_IOBUF_SNDLEFT_SIZE(pstConn->m_pstSendIobuf);
         
         lRet = send(ifd, pcData, lLeftLen, MSG_NOSIGNAL);
         if( lRet > 0 )
         {
-            pstConn->pstMgr->iTxPacketSize += lRet;
-            
-            COM_IOBUF_SETOUTPUTED_LEN(pstConn->pstSendIobuf, lRet);
-            lLeftLen = COM_IOBUF_GETSAVED_LEN(pstConn->pstSendIobuf);
-            
+            VOS_IOBUF_SNDUPDATE_SIZE(pstConn->m_pstSendIobuf, lRet);
+            lLeftLen = VOS_IOBUF_SNDLEFT_SIZE(pstConn->m_pstSendIobuf);
             if ( lLeftLen == 0 )
             {
-                pstConn->pstMgr->iSendPPs++;
-                PrintTraceDebug("[ECLNT] Stop006: Inner-Server Send iobuf successful!INNER-ID=[%s],FD=[%d], DataSize=%d",
-                                        pstConn->stSid.acID, 
-                                        pstConn->lFd,
-                                        pstConn->pstSendIobuf->ulDataLen);
-                
-                COM_IOBUF_RESET(pstConn->pstSendIobuf);
+                printf("lLeftLen =%d\n", lLeftLen);
+                VOS_IOBuf_free(pstConn->m_pstSendIobuf);
+                pstConn->m_pstSendIobuf = NULL;
                 continue;
             }
             else if ( 0 < lLeftLen )
             {
-                PrintTraceDebug("[ECLNT] Stop007: send iobuf again! INNER-ID=[%s],FD=[%d], DataSize=%d, leftLen=%d",
-                                        pstConn->stSid.acID, 
-                                        pstConn->lFd, 
-                                        pstConn->pstSendIobuf->ulDataLen, 
+                printf("[ECLNT] Stop007: send iobuf again! leftLen=%d",
                                         lLeftLen);
                 goto SendAgain;
             }
             else
             {
-                PrintError("[ECLNT] system error! INNER-Info=[%s:%d]", pstConn->stSid.acID, pstConn->lFd);
-                Test_EQue_ConnRelease(pstConn);
+                PError("[ECLNT] system error! INNER-Info=[%d]", pstConn->m_Fd);
+                pstConn->netconn_release();
                 return;
             }
         }
         else if ( lRet == 0 )
         {
-            PrintTraceInfo("[ECLNT] Inner-Send is zero! INNER-Info=[%s:%d]", pstConn->stSid.acID, pstConn->lFd);
+            PEvent("[ECLNT] Inner-Send is zero! INNER-Info=[%d]", pstConn->m_Fd);
             return;
         }
         else
         {
             if(errno == EAGAIN )
             {
-                PrintTraceWarning("[ECLNT] INNER-ID=[%s],FD=[%d], packets must send again ", pstConn->stSid.acID, pstConn->lFd);
+                PEvent("[ECLNT] FD=[%d], packets must send again ", pstConn->m_Fd);
                 return;
             }
             
@@ -133,17 +123,14 @@ SendAgain:
                goto SendAgain;
             }
             
-            PrintError("[ECLNT] Stop009: Socket send error! INNER-ID=[%s],FD=[%d], errno=%d:%s",
-                        pstConn->stSid.acID, 
-                        pstConn->lFd, 
+            PError("[ECLNT] Stop009: Socket send error! INNER-FD=[%d], errno=%d:%s", 
+                        pstConn->m_Fd, 
                         errno, 
-                        VOS_GetStrLastError());
-            pstConn->lErrorCode = errno;
-            Test_EQue_ConnRelease(pstConn);
+                        strerror(errno));
+            pstConn->netconn_release();
             return;
         }
     }
-#endif
 }
 
 
@@ -158,6 +145,7 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
     {    
         /*申请TCP类型的IOBUF内存*/
         pstConn->m_pstRecvIobuf = VOS_IOBuf_mallocMax(0);
+        //pstConn->m_pstRecvIobuf = VOS_IOBuf_malloc(0);
         if ( NULL == pstConn->m_pstRecvIobuf )
         {
             PError("[ECLNT] iobuf malloc error!");
@@ -174,7 +162,7 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         if ( lError > 0  )
         {
             pstConn->m_rx_flows += lError;
-            
+            printf("recv all flow=%d, lError=%d\n", pstConn->m_rx_flows, lError);
             /*继续更新*/
             VOS_IOBUF_RCVUPDATE_SIZE(pstConn->m_pstRecvIobuf, (uint32_t)lError);
             if ( 0 >= pstConn->m_pstRecvIobuf->InLeftSize )
@@ -212,8 +200,31 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         }
     }
     
-    VOS_IOBuf_free(pstConn->m_pstRecvIobuf);
-    pstConn->m_pstRecvIobuf = NULL;
+    printf("m_echo_enable=%d, fd=%d\n", pstConn->m_echo_enable, ifd);
+    
+    if ( 1 == pstConn->m_echo_enable )
+    {
+        VOS_IOBUF_OUTRESET(pstConn->m_pstRecvIobuf);
+        VOS_DLIST_ADD_TAIL(&pstConn->m_stSendList, (VOS_DLIST_S *)(&pstConn->m_pstRecvIobuf->stNode));
+        pstConn->m_iSndNums++;
+        pstConn->m_pstRecvIobuf = NULL;
+        
+        if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_slave_ptr->m_Rctor, ifd, VRCT_POLL_LTINOUT) )
+        {
+            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            pstConn->netconn_release();
+            return;
+        }
+    }
+    else if (1 == pstConn->m_forward_enable )
+    {
+        
+    }
+    else
+    {
+        VOS_IOBuf_free(pstConn->m_pstRecvIobuf);
+        pstConn->m_pstRecvIobuf = NULL;
+    }
     
     return;
 }
@@ -287,7 +298,15 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     m_slave_ptr             = slave;
     m_rctor_                = slave->m_Rctor;
     m_iConnStatus           = CONN_STATUS_INIT;
-    
+    m_echo_enable           = 1;
+
+    if ( SYS_ERR == VOS_SOCK_SetOption(iFd) )
+    {
+        std::cout <<"[LISTN] VRCT network VOS_SOCK_SetOption error!" << std::endl;
+        close(iFd);
+        return -1;
+    }
+
     VRCT_NETOPT_INIT(&m_netopts_,
                     iFd,
                     VRCT_POLL_LTINOUT,
@@ -298,6 +317,7 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     if ( SYS_ERR == VRCT_API_NetworkOptRegister(m_rctor_, &m_netopts_) )
     {
         std::cout <<"[LISTN] VRCT network register error!" << std::endl;
+        close(iFd);
         return -1;
     }
                                                     

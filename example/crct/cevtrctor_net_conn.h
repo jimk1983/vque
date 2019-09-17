@@ -51,9 +51,12 @@ public:
     void*                   m_rctor_;
     VRCT_NETEVT_OPT_S       m_netopts_;
     CEvtrctNetSlave*        m_slave_ptr;
-
+    
     uint32_t                m_rx_flows;
     uint32_t                m_tx_flows;
+
+    int32_t                 m_echo_enable;
+    int32_t                 m_forward_enable;
 public:
     int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
     void        netconn_release();
@@ -72,6 +75,8 @@ public:
     int                 m_taskid;
     uint32_t            m_msqsize;
     evt_netconn_sptr    m_arryconns[ULIMITD_MAXFD];
+    int32_t             m_echo_enable;
+    int32_t             m_forward_enable;
 private:
     VRCT_MSQ_OPT_S      m_msqopts_;
     uint32_t            m_fliterid_;
