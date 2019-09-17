@@ -6,7 +6,7 @@
 #include <memory>
 #include <thread>
 #include <chrono>
-
+#include <list>
 
 typedef enum
 {
@@ -24,6 +24,20 @@ class CEvtrctNetSlave;
 typedef std::shared_ptr<CEvtrctNetConn>     evt_netconn_sptr;
 typedef std::shared_ptr<CEvtrctNetSlave>    evt_slave_sptr;
 
+#define     EXTERN_C_STYLE       0
+
+class CVosIobuf
+{
+public:
+    int32_t         m_size;
+    VOS_IOBUF_S*    m_pstIobuf;
+public:
+    CVosIobuf();
+    ~CVosIobuf();
+};
+
+typedef std::shared_ptr<CVosIobuf>          vos_iobuf_sptr;
+
 class CEvtrctNetConn
 {
 public:
@@ -33,15 +47,26 @@ public:
     int32_t                 m_iConnStatus;                /*连接状态*/
     int32_t                 m_lErrorCode;                 /*老化时的错误码*/
     uint32_t                m_iBodySize;                  
-    VOS_DLIST_S             m_stRecvList;  
-    int32_t                 m_iRcvNums;    
-    VOS_IOBUF_S*            m_pstRecvIobuf;
-    VOS_IOBUF_S*            m_pstRecvOldIobuf;            /*上个的遗留IO*/
+    volatile int32_t        m_iRcvNums;    
     
-    VOS_DLIST_S             m_stSendList;
-    volatile int32_t        m_iSndNums;
-    VOS_IOBUF_S*            m_pstSendIobuf;
+    #if EXTERN_C_STYLE
+    //VOS_DLIST_S           m_stRecvList;  
+    //VOS_IOBUF_S*          m_pstRecvIobuf;
+    //VOS_IOBUF_S*          m_pstRecvOldIobuf;            /*上个的遗留IO*/
+    //VOS_DLIST_S           m_stSendList;
+    //VOS_IOBUF_S*          m_pstSendIobuf;
+    #else
+    
+    std::list<vos_iobuf_sptr>   m_stRecvList;
+    vos_iobuf_sptr              m_pstRecvIobuf;
+    vos_iobuf_sptr              m_pstRecvOldIobuf;
+    
+    std::list<vos_iobuf_sptr>   m_stSendList;
+    vos_iobuf_sptr              m_pstSendIobuf;
+    #endif
+    
     int32_t                 m_uiSndBlockCount;
+    volatile int32_t        m_iSndNums;
     struct sockaddr_in      m_stServAddr;                 /*服务器地址*/
     struct timeval          m_stStartTime;                
     struct timeval          m_stStopTime;                 
