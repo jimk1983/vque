@@ -32,7 +32,7 @@ public:
     int32_t         m_size;
     VOS_IOBUF_S*    m_pstIobuf;
 public:
-    CVosIobuf();
+    CVosIobuf(int32_t buf_size);
     ~CVosIobuf();
 };
 

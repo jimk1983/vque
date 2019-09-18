@@ -21,7 +21,7 @@ typedef struct tagSlaveMsgDispatchConnection
     uint32_t            ClntPort;       /*客户端端口信息*/
 }slave_msgdpconn_s, *pslave_msgdpconn_s;
 
-
+#if 0
 void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
 {
     CEvtrctNetConn*         pstConn         = (CEvtrctNetConn*)pvCtx;
@@ -288,11 +288,234 @@ void     CEvtrctNetConn::netconn_release()
     
     printf("net connection release success,fd=%d\n", m_Fd);
 }
+#endif
+void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
+{
+    CEvtrctNetConn*         pstConn         = (CEvtrctNetConn*)pvCtx;
+    vos_iobuf_sptr          pstIobufTmp     = NULL;
+    int32_t                 lRet            = 0;
+    char*                   pcData          = 0;
+    int32_t                 lLeftLen        = 0;
+    int32_t                 ulIndex         = 0;
+
+    printf("11 net_conn_sendcb entry!\n");
+    
+    if ( true == pstConn->m_stSendList.empty()
+        && nullptr == pstConn->m_pstSendIobuf )
+    {   
+        printf("22 net_conn_sendcb entry!\n");
+        if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_rctor_, ifd, VRCT_POLL_LTIN) )
+        {
+            printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            pstConn->netconn_release();
+            return;
+        }
+        else
+        {
+            printf("[ECLNT] terminal epoll ctrl close the pollout successful!fd=%d, NETWORK_CTRL_SENDCLOSE\n",
+                ifd);
+        }
+        return;
+    }
+    
+    printf("33 net_conn_sendcb entry!pstConn->m_iSndNums=%d\n", pstConn->m_iSndNums);
+    if ( nullptr != pstConn->m_pstSendIobuf )
+    {
+        printf("[ECLNT] terminal network connection send iobuf is not empty , must be send again!\n");
+        goto SendAgain;
+    }
+    
+    for(ulIndex = 0; true != pstConn->m_stSendList.empty(); ulIndex++)
+    {
+        //VOS_DList_HeadGet(&pstConn->m_stSendList, &pstEntry);
+        pstConn->m_pstSendIobuf = pstConn->m_stSendList.front();
+        pstConn->m_stSendList.pop_front();
+        pstConn->m_iSndNums--;
+        
+SendAgain:
+        pcData   = COM_IOBUF_GETORIG_PTR(pstConn->m_pstSendIobuf->m_pstIobuf);
+        lLeftLen = VOS_IOBUF_SNDLEFT_SIZE(pstConn->m_pstSendIobuf->m_pstIobuf);
+        
+        lRet = send(ifd, pcData, lLeftLen, MSG_NOSIGNAL);
+        if( lRet > 0 )
+        {
+            VOS_IOBUF_SNDUPDATE_SIZE(pstConn->m_pstSendIobuf->m_pstIobuf, lRet);
+            lLeftLen = VOS_IOBUF_SNDLEFT_SIZE(pstConn->m_pstSendIobuf->m_pstIobuf);
+            if ( lLeftLen == 0 )
+            {
+                printf("lLeftLen =%d\n", lLeftLen);
+                pstConn->m_pstSendIobuf = nullptr;
+                continue;
+            }
+            else if ( 0 < lLeftLen )
+            {
+                printf("[ECLNT] Stop007: send iobuf again! leftLen=%d",
+                                        lLeftLen);
+                goto SendAgain;
+            }
+            else
+            {
+                PError("[ECLNT] system error! INNER-Info=[%d]", pstConn->m_Fd);
+                pstConn->netconn_release();
+                return;
+            }
+        }
+        else if ( lRet == 0 )
+        {
+            PEvent("[ECLNT] Inner-Send is zero! INNER-Info=[%d]", pstConn->m_Fd);
+            return;
+        }
+        else
+        {
+            if(errno == EAGAIN )
+            {
+                PEvent("[ECLNT] FD=[%d], packets must send again ", pstConn->m_Fd);
+                return;
+            }
+            
+            if ( errno == EINTR )
+            {
+               goto SendAgain;
+            }
+            
+            PError("[ECLNT] Stop009: Socket send error! INNER-FD=[%d], errno=%d:%s", 
+                        pstConn->m_Fd, 
+                        errno, 
+                        strerror(errno));
+            pstConn->netconn_release();
+            return;
+        }
+    }
+}
+
+
+/*快速接收处理*/
+void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
+{
+    CEvtrctNetConn*     pstConn         = (CEvtrctNetConn*)pvCtx;
+    char*               pcData          = NULL;
+    int32_t             lError          = 0;
+    
+    if ( nullptr == pstConn->m_pstRecvIobuf )
+    {    
+        /*申请TCP类型的IOBUF内存*/
+        pstConn->m_pstRecvIobuf = std::make_shared<CVosIobuf>(4096);
+        if ( nullptr == pstConn->m_pstRecvIobuf )
+        {
+            PError("[ECLNT] iobuf malloc error!");
+            pstConn->netconn_release();
+            return;
+        }
+    }
+    
+    for(;;)
+    {
+        pcData = VOS_IOBUF_GETCURT_PTR(pstConn->m_pstRecvIobuf->m_pstIobuf);
+        
+        lError = recv(pstConn->m_Fd, pcData, pstConn->m_pstRecvIobuf->m_pstIobuf->InLeftSize, 0);
+        if ( lError > 0  )
+        {
+            pstConn->m_rx_flows += lError;
+            printf("recv all flow=%d, lError=%d\n", pstConn->m_rx_flows, lError);
+            /*继续更新*/
+            VOS_IOBUF_RCVUPDATE_SIZE(pstConn->m_pstRecvIobuf->m_pstIobuf, (uint32_t)lError);
+            if ( 0 >= pstConn->m_pstRecvIobuf->m_pstIobuf->InLeftSize )
+            {
+                break;
+            }
+        }
+        else if ( 0 == lError )
+        {
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+                        pstConn->m_Fd, errno, strerror(errno), lError);
+            pstConn->netconn_release();
+            return;
+        }
+        else
+        {
+            if ( errno == EAGAIN )
+            {
+                PDebug("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                            pstConn->m_Fd, errno);
+                break;
+            }
+            
+            if ( errno == EINTR )
+            {
+                PDebug("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                            pstConn->m_Fd, errno);
+                continue;
+            }
+            
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+                        pstConn->m_Fd, errno, strerror(errno), lError);
+            pstConn->netconn_release();
+            return;
+        }
+    }
+    
+    printf("m_echo_enable=%d, fd=%d\n", pstConn->m_echo_enable, ifd);
+    
+    if ( 1 == pstConn->m_echo_enable )
+    {
+        VOS_IOBUF_OUTRESET(pstConn->m_pstRecvIobuf->m_pstIobuf);
+        pstConn->m_stSendList.push_back(pstConn->m_pstRecvIobuf);
+        pstConn->m_iSndNums++;
+        pstConn->m_pstRecvIobuf = nullptr;
+        
+        if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_slave_ptr->m_Rctor, ifd, VRCT_POLL_LTINOUT) )
+        {
+            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            pstConn->netconn_release();
+            return;
+        }
+    }
+    else if (1 == pstConn->m_forward_enable )
+    {
+        
+    }
+    else
+    {
+        pstConn->m_pstRecvIobuf = nullptr;
+    }
+    
+    return;
+}
+
+void     CEvtrctNetConn::netconn_release()
+{
+    //PrintTraceEvent("[INNER] Inner network connetion release success! conn-info=[%d:%s]", pstConn->lFd, pstConn->stSid.acID );
+    //pstConn->pstRctCtx->iAllConnNums--;
+    /*内网管理去掉, 然后重新排序*/
+    //MUTL_InnerServerUnRegister(pstConn->pstRctCtx, pstConn);
+    
+    /*关闭网络事件*/
+    VRCT_API_NetworkOptUnRegister(m_rctor_, &m_netopts_);
+    
+    if ( nullptr != m_pstRecvIobuf )
+    {
+        m_pstRecvIobuf = nullptr;
+    }
+
+    if ( nullptr != m_pstSendIobuf )
+    {
+        m_pstSendIobuf = nullptr;
+    }
+
+    m_stRecvList.clear();
+    m_stSendList.clear();
+    
+    close(m_Fd);
+    m_slave_ptr->m_arryconns[m_Fd]= nullptr;
+    
+    printf("net connection release success,fd=%d\n", m_Fd);
+}
+
 
 int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort)
 {
-    VOS_DLIST_INIT(&m_stRecvList);
-    VOS_DLIST_INIT(&m_stSendList);
+    //VOS_DLIST_INIT(&m_stRecvList);
+    //VOS_DLIST_INIT(&m_stSendList);
 
     m_Fd                    = iFd;
     m_slave_ptr             = slave;
@@ -389,7 +612,7 @@ int32_t CEvtrctNetSlave::init()
         std::cout <<"vrct create error! m_taskid="<< m_taskid << std::endl;
         return VOS_ERR;
     }
-
+    
     m_Rctor= VRCT_API_Create(m_taskid, m_msqsize);
     if ( NULL == m_Rctor )
     {
@@ -418,7 +641,7 @@ int32_t CEvtrctNetSlave::init()
 
 int32_t CEvtrctNetSlave::start()
 {
-    if ( VOS_ERR == VRCT_API_Start(m_Rctor)  )
+    if ( VOS_ERR == VRCT_API_Start(m_Rctor) )
     {
         std::cout <<"vos reactor start failed!" << std::endl;
         VOS_HashTbl_Release(&m_conn_hashtbl);
@@ -443,4 +666,29 @@ void CEvtrctNetSlave::uninit()
         VRCT_API_Release(&m_Rctor);
     }
 }
+
+CVosIobuf::CVosIobuf(int32_t buf_size)
+        :m_size(buf_size)
+{
+    if (buf_size > VOS_IOBUF_MAXSIZE)
+    {
+        m_pstIobuf = VOS_IOBuf_mallocMax(0);
+    }
+    else
+    {
+        m_pstIobuf = VOS_IOBuf_malloc(0);
+    }
+    printf("CVosIobuf entry, new this=%p\n", this);
+}
+
+CVosIobuf::~CVosIobuf()
+{
+    printf("~CVosIobuf entry, delete this=%p\n", this);
+    if (NULL != m_pstIobuf )
+    {
+        VOS_IOBuf_free(m_pstIobuf);
+        m_pstIobuf = NULL;
+    }
+}
+
 
