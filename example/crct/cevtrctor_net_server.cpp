@@ -184,7 +184,7 @@ int32_t    CEvtrctNetServer::slave_task_init()
         m_arry_slaver[i] =std::make_shared<CEvtrctNetSlave>();
         m_arry_slaver[i]->m_taskid = SLAVE_START_TASKID + i;
         m_arry_slaver[i]->m_msqsize=1000;
-        if (VOS_ERR == m_arry_slaver[i]->init() )
+        if (VOS_ERR == m_arry_slaver[i]->init(m_echo_enable_, m_forward_enable_) )
         {
             printf("slave task init error!\n");
             return VOS_ERR;

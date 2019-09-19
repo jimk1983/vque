@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <list>
+#include <iostream>
 
 typedef enum
 {
@@ -37,6 +38,8 @@ public:
 };
 
 typedef std::shared_ptr<CVosIobuf>          vos_iobuf_sptr;
+typedef std::shared_ptr<CEvtrctNetConn>     evt_netconn_sptr;
+
 
 class CEvtrctNetConn
 {
@@ -67,11 +70,12 @@ public:
     
     int32_t                 m_uiSndBlockCount;
     volatile int32_t        m_iSndNums;
-    struct sockaddr_in      m_stServAddr;                 /*服务器地址*/
     struct timeval          m_stStartTime;                
     struct timeval          m_stStopTime;                 
     struct in_addr          m_ClntAddr;                   /*客户端地址*/
     uint32_t                m_ClntPort;                   /*客户端端口*/
+    
+    
     
     void*                   m_rctor_;
     VRCT_NETEVT_OPT_S       m_netopts_;
@@ -81,9 +85,14 @@ public:
     uint32_t                m_tx_flows;
 
     int32_t                 m_echo_enable;
+    
+    struct sockaddr_in      m_serv_addr;
+    int32_t                 m_serv_port;
+    evt_netconn_sptr        m_conn_pfw_sptr;
     int32_t                 m_forward_enable;
 public:
     int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
+    int32_t     netconn_create(CEvtrctNetSlave* slave, const std::string& serv_addr, int32_t serv_port);
     void        netconn_release();
 public:
     static void net_conn_sendcb(int ifd, void *pvCtx);
@@ -101,19 +110,22 @@ public:
     uint32_t            m_msqsize;
     evt_netconn_sptr    m_arryconns[ULIMITD_MAXFD];
     int32_t             m_echo_enable;
+    
     int32_t             m_forward_enable;
+    std::string         m_serv_addr;
+    int32_t             m_serv_port;
 private:
     VRCT_MSQ_OPT_S      m_msqopts_;
     uint32_t            m_fliterid_;
-    struct sockaddr_in  m_sevNAddr;
     PVOS_HASH_TABLE_S   m_conn_hashtbl;
+    
 public:
-    int32_t             init();
+    int32_t             init(const uint32_t echo_enable, const uint32_t forward_enable);
     int32_t             start();
     void                uninit();
     int32_t             dispatch_connect(int fd, struct in_addr ClntNAddr, uint32_t uiClntPort);
 public:
-    CEvtrctNetSlave(){};
+    CEvtrctNetSlave():m_msqsize(1024),m_echo_enable(0),m_forward_enable(0){};
     ~CEvtrctNetSlave(){};
 };
 

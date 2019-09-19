@@ -521,8 +521,9 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     m_slave_ptr             = slave;
     m_rctor_                = slave->m_Rctor;
     m_iConnStatus           = CONN_STATUS_INIT;
-    m_echo_enable           = 1;
-
+    m_echo_enable           = slave->m_echo_enable;
+    m_forward_enable        = slave->m_forward_enable;
+    
     if ( SYS_ERR == VOS_SOCK_SetOption(iFd) )
     {
         std::cout <<"[LISTN] VRCT network VOS_SOCK_SetOption error!" << std::endl;
@@ -547,6 +548,36 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     return SYS_OK;
 }
 
+int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string& serv_addr, int32_t  serv_port)
+{
+    m_slave_ptr             = slave;
+    m_rctor_                = slave->m_Rctor;
+    m_iConnStatus           = CONN_STATUS_INIT;
+    m_echo_enable           = slave->m_echo_enable;
+    m_forward_enable        = slave->m_forward_enable;
+    
+
+    VRCT_NETOPT_INIT(&m_netopts_,
+                    m_Fd,
+                    VRCT_POLL_LTINOUT,
+                    net_conn_recvcb,
+                    net_conn_sendcb,
+                    (void *)this);
+    
+    if ( SYS_ERR == VRCT_API_NetworkOptRegister(m_rctor_, &m_netopts_) )
+    {
+        std::cout <<"[LISTN] VRCT network register error!" << std::endl;
+        close(m_Fd);
+        return -1;
+    }
+
+
+    return SYS_OK;
+}
+
+
+
+
 
 CEvtrctNetConn::CEvtrctNetConn()
 {
@@ -570,11 +601,16 @@ static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx
             {   
                 pslave_msgdpconn_s pstmsg = (pslave_msgdpconn_s)pvMsg;
                 printf("slave msqctrl_cb->fd=%d\n", pstmsg->fd);
+                if ( cevt_net_slave->m_forward_enable )
+                {
+                    evt_netconn_sptr new_conn_pfw_sptr = std::make_shared<CEvtrctNetConn>();
+                    new_conn_pfw_sptr->netconn_create(cevt_net_slave, cevt_net_slave->m_serv_addr, cevt_net_slave->m_serv_port);
+                }
                 
                 std::shared_ptr<CEvtrctNetConn> new_conn_sptr = std::make_shared<CEvtrctNetConn>();
-                new_conn_sptr->netconn_create(cevt_net_slave,pstmsg->fd, pstmsg->ClntNAddr, pstmsg->ClntPort);
-                cevt_net_slave->m_arryconns[pstmsg->fd]= new_conn_sptr;
+                new_conn_sptr->netconn_create(cevt_net_slave, pstmsg->fd, pstmsg->ClntNAddr, pstmsg->ClntPort);
                 
+                cevt_net_slave->m_arryconns[pstmsg->fd]= new_conn_sptr;
                 free(pstmsg);
             }
             break;
@@ -604,7 +640,7 @@ int32_t CEvtrctNetSlave::dispatch_connect(int fd, struct in_addr ClntNAddr, uint
 }
 
 
-int32_t CEvtrctNetSlave::init()
+int32_t CEvtrctNetSlave::init(const uint32_t echo_enable, const uint32_t forward_enable)
 {
     m_conn_hashtbl  = VOS_HashTbl_Create(1024, NULL, NULL);
     if ( NULL == m_conn_hashtbl )

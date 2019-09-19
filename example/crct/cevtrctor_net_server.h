@@ -40,6 +40,7 @@ private:
         uint32_t            m_head_magic_;
         uint32_t            m_head_offset_;
         uint32_t            m_echo_enable_;
+        uint32_t            m_forward_enable_;
 public:
         void*               m_rctor_;
         VRCT_NETEVT_OPT_S   m_netopts_;
