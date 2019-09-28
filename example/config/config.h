@@ -42,7 +42,8 @@ typedef struct tagExampleProxy
 
 typedef enum
 {
-    EXM_CFGTYPE_MONTOR= 0,
+    EXM_CFGTYPE_UNKNOW =0,
+    EXM_CFGTYPE_MONTOR,
     EXM_CFGTYPE_CLNT,
     EXM_CFGTYPE_SEVR,
     EXM_CFGTYPE_PRXY,

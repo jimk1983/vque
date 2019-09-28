@@ -43,14 +43,14 @@ LIBS_INC=/mnt/hgfs/vmshare/vque/libs/include/example/
 
 all : prepare $(BIN_DIR)/example
 prepare:
-	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/main $(OBJ_DIR)/example/client $(OBJ_DIR)/example/msque $(OBJ_DIR)/example/server $(OBJ_DIR)/example/timer $(OBJ_DIR)/example/crct $(OBJ_DIR)/example/config 
+	@mkdir -p $(BIN_DIR) $(OBJ_DIR)  $(OBJ_DIR)/example/main $(OBJ_DIR)/example/client $(OBJ_DIR)/example/msque $(OBJ_DIR)/example/server $(OBJ_DIR)/example/proxy $(OBJ_DIR)/example/timer $(OBJ_DIR)/example/crct $(OBJ_DIR)/example/config 
 
 .PHONY: clean
 clean:
 	@rm -fr $(BIN_DIR) $(OBJ_DIR) 
 
-$(BIN_DIR)/example :  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/cevtrctor_cfg.o $(OBJ_DIR)/example/crct/cevtrctor_net_client.o $(OBJ_DIR)/example/crct/cevtrctor_net_conn.o $(OBJ_DIR)/example/crct/cevtrctor_net_packet.o $(OBJ_DIR)/example/crct/cevtrctor_net_pairs.o $(OBJ_DIR)/example/crct/cevtrctor_net_proxy.o $(OBJ_DIR)/example/crct/cevtrctor_net_server.o $(OBJ_DIR)/example/config/config.o
-	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/cevtrctor_cfg.o $(OBJ_DIR)/example/crct/cevtrctor_net_client.o $(OBJ_DIR)/example/crct/cevtrctor_net_conn.o $(OBJ_DIR)/example/crct/cevtrctor_net_packet.o $(OBJ_DIR)/example/crct/cevtrctor_net_pairs.o $(OBJ_DIR)/example/crct/cevtrctor_net_proxy.o $(OBJ_DIR)/example/crct/cevtrctor_net_server.o $(OBJ_DIR)/example/config/config.o $(LDFLAGS)
+$(BIN_DIR)/example :  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/proxy/proxy.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/cevtrctor_cfg.o $(OBJ_DIR)/example/crct/cevtrctor_net_client.o $(OBJ_DIR)/example/crct/cevtrctor_net_conn.o $(OBJ_DIR)/example/crct/cevtrctor_net_packet.o $(OBJ_DIR)/example/crct/cevtrctor_net_pairs.o $(OBJ_DIR)/example/crct/cevtrctor_net_proxy.o $(OBJ_DIR)/example/crct/cevtrctor_net_server.o $(OBJ_DIR)/example/config/config.o
+	g++ $(OPTM) -Wl,--as-needed,--sort-common,-rpath=$(LIBS_BIN) -L$(LIBS_BIN) -o $@  $(OBJ_DIR)/example/main/main.o $(OBJ_DIR)/example/client/client.o $(OBJ_DIR)/example/msque/msque.o $(OBJ_DIR)/example/server/server.o $(OBJ_DIR)/example/proxy/proxy.o $(OBJ_DIR)/example/timer/timer.o $(OBJ_DIR)/example/crct/cevtrctor_cfg.o $(OBJ_DIR)/example/crct/cevtrctor_net_client.o $(OBJ_DIR)/example/crct/cevtrctor_net_conn.o $(OBJ_DIR)/example/crct/cevtrctor_net_packet.o $(OBJ_DIR)/example/crct/cevtrctor_net_pairs.o $(OBJ_DIR)/example/crct/cevtrctor_net_proxy.o $(OBJ_DIR)/example/crct/cevtrctor_net_server.o $(OBJ_DIR)/example/config/config.o $(LDFLAGS)
 ifeq ($(BUILDS),release)
 	@strip $@
 endif
@@ -66,6 +66,9 @@ $(OBJ_DIR)/example/msque/msque.o : $(ROOT_DIR)/example/msque/msque.cpp
 
 $(OBJ_DIR)/example/server/server.o : $(ROOT_DIR)/example/server/server.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/server/server.cpp
+
+$(OBJ_DIR)/example/proxy/proxy.o : $(ROOT_DIR)/example/proxy/proxy.cpp
+	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/proxy/proxy.cpp
 
 $(OBJ_DIR)/example/timer/timer.o : $(ROOT_DIR)/example/timer/timer.cpp
 	g++ $(COPTM) $(CFLAG) -c -o $@ $(ROOT_DIR)/example/timer/timer.cpp

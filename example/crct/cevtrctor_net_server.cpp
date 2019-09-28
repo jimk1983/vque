@@ -217,21 +217,9 @@ void     CEvtrctNetServer::timer_uninit()
 {
     VRCT_API_TImerOptUnRegister(m_rctor_, &m_timeropts_);
 }
-    
-int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
+
+int     CEvtrctNetServer::start_init()
 {
-    m_listenport_       = cfg->Port;
-    m_listenaddr_       = (char *)cfg->acAddr;
-    m_echo_enable_      = cfg->EchoEnalbe;
-    m_head_magic_       = cfg->HeadMagic;
-    m_head_offset_      = cfg->HeadOffset;
-    
-    std::cout << "listenaddr=" << m_listenaddr_ << std::endl;
-    std::cout << "listenport=" << m_listenport_ << std::endl;
-    std::cout << "head_magic=" << m_head_magic_ << std::endl;
-    std::cout << "head_offset=" << m_head_offset_ << std::endl;
-    std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
-    
     if( VOS_ERR == slave_task_init() )
     {
         std::cout <<"slave_task_init error!" << std::endl;
@@ -279,10 +267,52 @@ int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
         VRCT_API_Release(&m_rctor_);
         return -1;
     }
+
+    return 0;
+}
+
+int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
+{
+    m_listenport_       = cfg->Port;
+    m_listenaddr_       = (char *)cfg->acAddr;
+    m_echo_enable_      = cfg->EchoEnalbe;
+    m_head_magic_       = cfg->HeadMagic;
+    m_head_offset_      = cfg->HeadOffset;
     
+    std::cout << "listenaddr=" << m_listenaddr_ << std::endl;
+    std::cout << "listenport=" << m_listenport_ << std::endl;
+    std::cout << "head_magic=" << m_head_magic_ << std::endl;
+    std::cout << "head_offset=" << m_head_offset_ << std::endl;
+    std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
+    
+    start_init();
+    return 0;
+}
+
+
+int     CEvtrctNetServer::start(const pexm_proxy_cfg_s cfg)
+{
+    m_listenport_       = cfg->LocalPort;
+    m_listenaddr_       = (char *)cfg->acLocalAddr;
+    m_forward_port_     = cfg->ProxyPort;
+    m_forward_addr_     = (char *)cfg->acProxyAddr;
+    m_echo_enable_      = 0;
+    m_forward_enable_   = 1;
+    m_head_magic_       = cfg->HeadMagic;
+    m_head_offset_      = cfg->HeadOffset;
+    
+    std::cout << "listenaddr=" << m_listenaddr_ << std::endl;
+    std::cout << "listenport=" << m_listenport_ << std::endl;
+    std::cout << "forwardaddr=" << m_forward_addr_ << std::endl;
+    std::cout << "forwardport=" << m_forward_port_ << std::endl;
+    std::cout << "head_magic=" << m_head_magic_ << std::endl;
+    std::cout << "head_offset=" << m_head_offset_ << std::endl;
+    std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
+    start_init();
     return 0;
 }
     
+
 void    CEvtrctNetServer::stop()
 {
     std:: cout << "stop" << std::endl;

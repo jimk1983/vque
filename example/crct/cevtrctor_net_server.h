@@ -13,12 +13,14 @@ class CEvtrctNetServer : public std::enable_shared_from_this<CEvtrctNetServer>
 {
 public:
         int                 start(const pexm_serv_cfg_s cfg);
+        int                 start(const pexm_proxy_cfg_s cfg);
         void                stop();
         void                dispatch();
         uint32_t            GetSlaveNums();
         evt_slave_sptr      GetSlaveByIndex(int32_t HashIndex);
         int                 messagepost(const int PipeFilterID, const    int Value, const void* Data,const int DataLen);
 private:
+        int                 start_init();
         int                 network_init();
         void                network_uninit();
         int                 msque_init();
@@ -41,6 +43,8 @@ private:
         uint32_t            m_head_offset_;
         uint32_t            m_echo_enable_;
         uint32_t            m_forward_enable_;
+        uint32_t            m_forward_port_;
+        std::string         m_forward_addr_;
 public:
         void*               m_rctor_;
         VRCT_NETEVT_OPT_S   m_netopts_;
