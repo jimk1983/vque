@@ -2,44 +2,125 @@
 #include <vos/vos_pub.h>
 #include <vrct/vrct_api.h>
 
+#include <config/config.h>
 #include "cevtrctor_def.h"
-#include "cevtrctor_cfg.h"
+#include "cevtrctor_net_conn.h"
+#include "cevtrctor_net_slave.h"
 #include "cevtrctor_net_proxy.h"
+
+#define     SLAVE_PROXY_TASKID          200
 
 
 static void accept_cb(int fd, void *pvArgv)
 {
     CEvtrctNetProxy* net_dispatch = (CEvtrctNetProxy*)pvArgv;
-    printf("accept_cb entry!\n");
     net_dispatch->dispatch();
 }
 
 static void timer_cb(void *pvArgv)
 {
-    CEvtrctNetProxy* net_dispatch = (CEvtrctNetProxy*)pvArgv;
-    printf("timer_cb entry!\n");
     
-    net_dispatch->messagepost(0, 100 ,NULL, 0);
 }
 
 static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
 {
-    CEvtrctNetProxy* net_dispatch = (CEvtrctNetProxy*)pvCtx;
-    printf("msqctrl_cb entry!Value=%d\n", Value);
-    net_dispatch->dispatch();
+    
+}
+
+uint32_t    CEvtrctNetProxy::GetSlaveNums()
+{
+    return m_arry_slave_nums_;
+}
+
+cevt_net_slave_sptr  CEvtrctNetProxy::GetSlaveByIndex(int32_t HashIndex)
+{
+    return m_arry_slaver[HashIndex];
+}
+
+int32_t    CEvtrctNetProxy::slave_task_init()
+{
+    m_arry_slave_nums_ = VOS_GetCpuCoreNum()*2;
+    
+    std::cout << "slave task init()" << std::endl;
+    
+    for (uint32_t i = 0; i < m_arry_slave_nums_; i++)
+    {
+        m_arry_slaver[i] =std::make_shared<CEvtrctNetSlave>();
+        m_arry_slaver[i]->m_taskid = SLAVE_PROXY_TASKID + i;
+        m_arry_slaver[i]->m_msqsize= 1000;
+        if (VOS_ERR == m_arry_slaver[i]->init(0, 1) )
+        {
+            printf("slave task init error!\n");
+            return VOS_ERR;
+        }
+        else
+        {
+            (void)m_arry_slaver[i]->start();
+        }
+        //std::cout << "1 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+        //m_arry_slaver[i]->uninit();
+        //m_arry_slaver[i] = nullptr;
+        //std::cout << "2 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+    }
+
+    return VOS_OK;
+}
+
+void    CEvtrctNetProxy::slave_task_uninit()
+{
+    for (uint32_t i = 0; i < m_arry_slave_nums_; i++)
+    {
+        m_arry_slaver[i]->uninit();
+        m_arry_slaver[i] = nullptr;
+        //std::cout << "rctor count=" << m_arry_slaver[i].use_count() << std::endl;
+    }
     
 }
 
 void    CEvtrctNetProxy::dispatch()
 {
+    struct sockaddr_in  stClientAddr    = {0};
+    socklen_t           stSerLen        = sizeof(stClientAddr);
+    int32_t             lClientFd       = 0;
+    unsigned short      usClientPort    = 0;
+    char                acClientAddr[32]={0};
+    int32_t             hashIndex       = 0;
     
-    //std::this_thread::sleep_for(std::chrono::seconds(1)); 
+    lClientFd = accept(m_listenfd_, (struct sockaddr *)&stClientAddr, &stSerLen);
+    if( lClientFd < 0 )
+    {
+        if ( errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR )
+        {
+            return;
+        }
+        else
+        {
+            VRCT_API_NetworkOptUnRegister(m_rctor_, &m_netopts_);
+            printf("[ESEVR] Terminal accept socket error=%d\n", errno);
+            return;
+        }
+    }
+    usClientPort = ntohs(stClientAddr.sin_port);
+    
+    memcpy(acClientAddr,inet_ntoa(stClientAddr.sin_addr), strlen(inet_ntoa(stClientAddr.sin_addr)));
+    
+    hashIndex = lClientFd % GetSlaveNums();
+    if(nullptr == GetSlaveByIndex(hashIndex))
+    {
+        printf("some slave has error!\n");
+        hashIndex = 0;
+    }
+    
+    if( VOS_ERR == GetSlaveByIndex(hashIndex)->dispatch_connect(lClientFd, stClientAddr.sin_addr, usClientPort))
+    {
+        printf("slave dispatch connect failed!\n");
+        close(lClientFd);
+        return;
+    } 
 }
 
-int     CEvtrctNetProxy::network_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetProxy::network_init()
 {
-    m_listenport_ = cfg.stSeverCfg.port;//std::atoi(cfg.stSeverCfg.port.c_str());
-    m_listenaddr_ = cfg.stSeverCfg.addr;
     m_listenfd_   = VOS_SOCK_ServCreate(NULL, m_listenport_);
     if ( SYS_ERR == m_listenfd_ )
     {
@@ -75,7 +156,7 @@ void     CEvtrctNetProxy::network_uninit()
     }
 }
 
-int     CEvtrctNetProxy::msque_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetProxy::msque_init()
 {
     VRCT_MSQOPT_INIT(&m_msqopts_,
                      m_fliterid_,
@@ -101,8 +182,7 @@ int      CEvtrctNetProxy::messagepost(const int PipeFilterID, const    int Value
     return VRCT_API_MsqOptPush(m_rctor_, (UINT32_T)PipeFilterID, (UINT32_T)Value, (CHAR *)Data, (UINT32_T)DataLen);
 }
 
-
-int     CEvtrctNetProxy::timer_init(const CEvtRctorCfg& cfg)
+int     CEvtrctNetProxy::timer_init()
 {
     VRCT_TIMEROPT_INIT(&m_timeropts_,
                     VRCT_TMTYPE_RECYLE,
@@ -114,7 +194,6 @@ int     CEvtrctNetProxy::timer_init(const CEvtRctorCfg& cfg)
         std::cout <<"[LISTN] VRCT timer register error!" << std::endl;
         return -1;
     }
-    
     return 0;
 }
 
@@ -122,9 +201,30 @@ void     CEvtrctNetProxy::timer_uninit()
 {
     VRCT_API_TImerOptUnRegister(m_rctor_, &m_timeropts_);
 }
-    
-int     CEvtrctNetProxy::start(const CEvtRctorCfg& cfg)
+
+int     CEvtrctNetProxy::start(const pexm_proxy_cfg_s cfg)
 {
+    m_listenport_       = cfg->LocalPort;
+    m_listenaddr_       = (char *)cfg->acLocalAddr;
+    m_forward_port_     = cfg->ProxyPort;
+    m_forward_addr_     = (char *)cfg->acProxyAddr;
+    
+    std::cout << "listen addr=" << m_listenaddr_ << std::endl;
+    std::cout << "listen port=" << m_listenport_ << std::endl;
+    
+    init();
+    
+    return 0;
+}
+
+int     CEvtrctNetProxy::init()
+{
+    if( VOS_ERR == slave_task_init() )
+    {
+        std::cout <<"slave_task_init error!" << std::endl;
+        return -1;
+    }
+    
     m_rctor_ = VRCT_API_Create(m_taskid_, m_msqsize_);
     if ( NULL == m_rctor_ )
     {
@@ -132,14 +232,14 @@ int     CEvtrctNetProxy::start(const CEvtRctorCfg& cfg)
         return -1;
     }
 
-    if ( 0 != network_init(cfg) )
+    if ( 0 != network_init() )
     {
         std::cout <<"[LISTN] network init error!" << std::endl;
         VRCT_API_Release(&m_rctor_);
         return -1;
     }
     
-    if ( 0 != timer_init(cfg) )
+    if ( 0 != timer_init() )
     {
         std::cout <<"[LISTN] timer init error!" << std::endl;
         network_uninit();
@@ -147,7 +247,7 @@ int     CEvtrctNetProxy::start(const CEvtRctorCfg& cfg)
         return -1;
     }
 
-    if ( 0 != msque_init(cfg) )
+    if ( 0 != msque_init() )
     {
         std::cout <<"[LISTN] message init error!" << std::endl;
         timer_uninit();
@@ -156,7 +256,6 @@ int     CEvtrctNetProxy::start(const CEvtRctorCfg& cfg)
         return -1;
     }
     
-    /*start*/
     if ( VOS_ERR == VRCT_API_Start(m_rctor_)  )
     {
         std::cout <<"vos reactor start failed!" << std::endl;
@@ -166,7 +265,8 @@ int     CEvtrctNetProxy::start(const CEvtRctorCfg& cfg)
     
     return 0;
 }
-    
+
+
 void    CEvtrctNetProxy::stop()
 {
     std:: cout << "stop" << std::endl;
@@ -175,6 +275,8 @@ void    CEvtrctNetProxy::stop()
     {
         VRCT_API_Release(&m_rctor_);
     }
+    
+    slave_task_uninit();
     
     if ( -1 != m_listenfd_ )
     {
@@ -193,7 +295,7 @@ CEvtrctNetProxy::CEvtrctNetProxy():
 {
     std::cout << "net forward entry!" << std::endl;
 }
-    
+
 CEvtrctNetProxy::~CEvtrctNetProxy()
 {
     std::cout << "net forward leave!" << std::endl;

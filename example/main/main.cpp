@@ -99,7 +99,7 @@ void     start_with_config(pargv_actinfo_s pstinfo)
     }
 }
 
-/*简单测试*/
+/*简单模型*/
 void     start(pargv_actinfo_s pstinfo)
 {
     switch(pstinfo->mode)

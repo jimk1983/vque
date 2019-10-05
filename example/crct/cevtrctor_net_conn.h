@@ -1,61 +1,30 @@
 #ifndef _CEVTRCTOR_NET_CONN_H_
 #define _CEVTRCTOR_NET_CONN_H_
 
+
 #include <crct/cevtrctor_def.h>
 #include <crct/cevtrctor_cfg.h>
-#include <memory>
-#include <thread>
-#include <chrono>
-#include <list>
-#include <iostream>
+#include <crct/cevtrctor_net_iobuf.h>
 
-typedef enum
-{
-    CONN_STATUS_INIT=0,
-    CONN_STATUS_CONNECTING,
-    CONN_STATUS_CONNECTED,
-}CONN_STATUS_E;
+#define     ULIMITD_MAXFD       40960
+#define     EXTERN_C_STYLE      0
 
 
-#define  ULIMITD_MAXFD      40960
-
-class CEvtrctNetConn;
-class CEvtrctNetSlave;
-
-typedef std::shared_ptr<CEvtrctNetConn>     evt_netconn_sptr;
-typedef std::shared_ptr<CEvtrctNetSlave>    evt_slave_sptr;
-
-#define     EXTERN_C_STYLE       0
-
-class CVosIobuf
+class CEvtrctNetConn: public std::enable_shared_from_this<CEvtrctNetConn>
 {
 public:
-    int32_t         m_size;
-    VOS_IOBUF_S*    m_pstIobuf;
-public:
-    CVosIobuf(int32_t buf_size);
-    ~CVosIobuf();
-};
-
-typedef std::shared_ptr<CVosIobuf>          vos_iobuf_sptr;
-typedef std::shared_ptr<CEvtrctNetConn>     evt_netconn_sptr;
-
-
-class CEvtrctNetConn
-{
-public:
-    int32_t                 m_Fd;                        
-    //DULONG                stRandID;                   /*唯一ID*/
-    UCHAR                   m_Guid[VOS_GUID_LEN];       
-    int32_t                 m_iConnStatus;                /*连接状态*/
-    int32_t                 m_lErrorCode;                 /*老化时的错误码*/
-    uint32_t                m_iBodySize;                  
-    volatile int32_t        m_iRcvNums;    
+    int32_t                     m_Fd;                        
+    //DULONG                    stRandID;                       /*唯一ID*/
+    UCHAR                       m_Guid[VOS_GUID_LEN];       
+    int32_t                     m_lErrorCode;                   /*老化时的错误码*/
+    uint32_t                    m_iBodySize;                  
+    volatile int32_t            m_iRcvNums;                 
+    volatile int32_t            m_conn_status;              
     
     #if EXTERN_C_STYLE
     //VOS_DLIST_S           m_stRecvList;  
     //VOS_IOBUF_S*          m_pstRecvIobuf;
-    //VOS_IOBUF_S*          m_pstRecvOldIobuf;            /*上个的遗留IO*/
+    //VOS_IOBUF_S*          m_pstRecvOldIobuf;              /*上个的遗留IO*/
     //VOS_DLIST_S           m_stSendList;
     //VOS_IOBUF_S*          m_pstSendIobuf;
     #else
@@ -68,65 +37,38 @@ public:
     vos_iobuf_sptr              m_pstSendIobuf;
     #endif
     
-    int32_t                 m_uiSndBlockCount;
-    volatile int32_t        m_iSndNums;
-    struct timeval          m_stStartTime;                
-    struct timeval          m_stStopTime;                 
-    struct in_addr          m_ClntAddr;                   /*客户端地址*/
-    uint32_t                m_ClntPort;                   /*客户端端口*/
+    int32_t                     m_uiSndBlockCount;
+    volatile int32_t            m_iSndNums;
+    struct timeval              m_stStartTime;                
+    struct timeval              m_stStopTime;                 
+    struct in_addr              m_ClntAddr;                 /*客户端地址*/
+    uint32_t                    m_ClntPort;                 /*客户端端口*/
     
+    void*                       m_rctor_;
+    VRCT_NETEVT_OPT_S           m_netopts_;
+    CEvtrctNetSlave*            m_slave_ptr;
     
+    uint32_t                    m_rx_flows;
+    uint32_t                    m_tx_flows;
+    int32_t                     m_echo_enable;
     
-    void*                   m_rctor_;
-    VRCT_NETEVT_OPT_S       m_netopts_;
-    CEvtrctNetSlave*        m_slave_ptr;
-    
-    uint32_t                m_rx_flows;
-    uint32_t                m_tx_flows;
-
-    int32_t                 m_echo_enable;
-    
-    struct sockaddr_in      m_serv_addr;
-    int32_t                 m_serv_port;
-    evt_netconn_sptr        m_conn_pfw_sptr;
-    int32_t                 m_forward_enable;
+    int32_t                     m_forward_fd;
+    struct sockaddr_in          m_forward_addr;
+    int32_t                     m_forward_port;
+    int32_t                     m_forward_enable;
 public:
     int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
     int32_t     netconn_create(CEvtrctNetSlave* slave, const std::string& serv_addr, int32_t serv_port);
     void        netconn_release();
+public:
+    int32_t     netconn_clnt_create(const CEvtrctNetSlave* slave, int32_t pair_fd);
+    
 public:
     static void net_conn_sendcb(int ifd, void *pvCtx);
     static void net_conn_recvcb(int ifd, void *pvCtx);
 public:
     CEvtrctNetConn();
     ~CEvtrctNetConn();
-};
-
-class CEvtrctNetSlave
-{
-public:
-    void*               m_Rctor;
-    int                 m_taskid;
-    uint32_t            m_msqsize;
-    evt_netconn_sptr    m_arryconns[ULIMITD_MAXFD];
-    int32_t             m_echo_enable;
-    
-    int32_t             m_forward_enable;
-    std::string         m_serv_addr;
-    int32_t             m_serv_port;
-private:
-    VRCT_MSQ_OPT_S      m_msqopts_;
-    uint32_t            m_fliterid_;
-    PVOS_HASH_TABLE_S   m_conn_hashtbl;
-    
-public:
-    int32_t             init(const uint32_t echo_enable, const uint32_t forward_enable);
-    int32_t             start();
-    void                uninit();
-    int32_t             dispatch_connect(int fd, struct in_addr ClntNAddr, uint32_t uiClntPort);
-public:
-    CEvtrctNetSlave():m_msqsize(1024),m_echo_enable(0),m_forward_enable(0){};
-    ~CEvtrctNetSlave(){};
 };
 
 

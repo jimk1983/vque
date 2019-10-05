@@ -5,9 +5,10 @@
 #include "config/config.h"
 #include "cevtrctor_def.h"
 #include "cevtrctor_net_conn.h"
+#include "cevtrctor_net_slave.h"
 #include "cevtrctor_net_server.h"
 
-#define     SLAVE_START_TASKID          100
+#define     SLAVE_SERV_TASKID          100
 
 static void accept_cb(int fd, void *pvArgv)
 {
@@ -16,7 +17,7 @@ static void accept_cb(int fd, void *pvArgv)
     socklen_t           stSerLen        = sizeof(stClientAddr);
     int32_t             lClientFd       = 0;
     unsigned short      usClientPort    = 0;
-    char                acClientAddr[32]={0};
+    char                acClientAddr[32]= {0};
     int32_t             hashIndex       = 0;
     
     if ( NULL == pvArgv )
@@ -40,12 +41,16 @@ static void accept_cb(int fd, void *pvArgv)
     }
     usClientPort = ntohs(stClientAddr.sin_port);
     
-    memcpy(acClientAddr,inet_ntoa(stClientAddr.sin_addr), strlen(inet_ntoa(stClientAddr.sin_addr)));
+    memcpy( acClientAddr,
+            inet_ntoa(stClientAddr.sin_addr), 
+            strlen(inet_ntoa(stClientAddr.sin_addr)));
     printf("Terminal accept a new client: %s:%d,fd=%d\n", 
         acClientAddr, 
         usClientPort, 
         lClientFd);
+    
     hashIndex = lClientFd % net_sev->GetSlaveNums();
+    
     if(nullptr == net_sev->GetSlaveByIndex(hashIndex))
     {
         printf("some slave has error!\n");
@@ -63,23 +68,18 @@ static void accept_cb(int fd, void *pvArgv)
 
 static void timer_cb(void *pvArgv)
 {
-    //CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvArgv;
-    
-    //net_dispatch->messagepost(0, 222 ,NULL, 0);
     
 }
     
 static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
 {
-    //CEvtrctNetServer* net_dispatch = (CEvtrctNetServer*)pvCtx;
     
-    //net_dispatch->dispatch();
 }
 
 
 void    CEvtrctNetServer::dispatch()
 {
-    //std::this_thread::sleep_for(std::chrono::seconds(1)); 
+
 }
 
 int     CEvtrctNetServer::network_init()
@@ -168,7 +168,7 @@ uint32_t    CEvtrctNetServer::GetSlaveNums()
     return m_arry_slave_nums_;
 }
 
-evt_slave_sptr  CEvtrctNetServer::GetSlaveByIndex(int32_t HashIndex)
+cevt_net_slave_sptr  CEvtrctNetServer::GetSlaveByIndex(int32_t HashIndex)
 {
     return m_arry_slaver[HashIndex];
 }
@@ -182,17 +182,20 @@ int32_t    CEvtrctNetServer::slave_task_init()
     for (uint32_t i = 0; i < m_arry_slave_nums_; i++)
     {
         m_arry_slaver[i] =std::make_shared<CEvtrctNetSlave>();
-        m_arry_slaver[i]->m_taskid = SLAVE_START_TASKID + i;
+        m_arry_slaver[i]->m_taskid = SLAVE_SERV_TASKID + i;
         m_arry_slaver[i]->m_msqsize=1000;
+        
         if (VOS_ERR == m_arry_slaver[i]->init(m_echo_enable_, m_forward_enable_) )
         {
             printf("slave task init error!\n");
             return VOS_ERR;
         }
         else
-        {
+        {   
+            m_arry_slaver[i]->info_set(m_forward_addr_, m_forward_port_);
             (void)m_arry_slaver[i]->start();
         }
+        
         //std::cout << "1 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
         //m_arry_slaver[i]->uninit();
         //m_arry_slaver[i] = nullptr;
@@ -210,15 +213,14 @@ void    CEvtrctNetServer::slave_task_uninit()
         m_arry_slaver[i] = nullptr;
         //std::cout << "rctor count=" << m_arry_slaver[i].use_count() << std::endl;
     }
-    
 }
 
 void     CEvtrctNetServer::timer_uninit()
 {
     VRCT_API_TImerOptUnRegister(m_rctor_, &m_timeropts_);
 }
-
-int     CEvtrctNetServer::start_init()
+    
+int     CEvtrctNetServer::init()
 {
     if( VOS_ERR == slave_task_init() )
     {
@@ -285,34 +287,10 @@ int     CEvtrctNetServer::start(const pexm_serv_cfg_s cfg)
     std::cout << "head_offset=" << m_head_offset_ << std::endl;
     std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
     
-    start_init();
-    return 0;
-}
-
-
-int     CEvtrctNetServer::start(const pexm_proxy_cfg_s cfg)
-{
-    m_listenport_       = cfg->LocalPort;
-    m_listenaddr_       = (char *)cfg->acLocalAddr;
-    m_forward_port_     = cfg->ProxyPort;
-    m_forward_addr_     = (char *)cfg->acProxyAddr;
-    m_echo_enable_      = 0;
-    m_forward_enable_   = 1;
-    m_head_magic_       = cfg->HeadMagic;
-    m_head_offset_      = cfg->HeadOffset;
-    
-    std::cout << "listenaddr=" << m_listenaddr_ << std::endl;
-    std::cout << "listenport=" << m_listenport_ << std::endl;
-    std::cout << "forwardaddr=" << m_forward_addr_ << std::endl;
-    std::cout << "forwardport=" << m_forward_port_ << std::endl;
-    std::cout << "head_magic=" << m_head_magic_ << std::endl;
-    std::cout << "head_offset=" << m_head_offset_ << std::endl;
-    std::cout << "echo_enable=" << m_echo_enable_ << std::endl;
-    start_init();
+    init();
     return 0;
 }
     
-
 void    CEvtrctNetServer::stop()
 {
     std:: cout << "stop" << std::endl;

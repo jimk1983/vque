@@ -10,10 +10,9 @@
 
 void    server_main(pexm_serv_cfg_s      pstCfg)
 {
-    cevt_net_server_sptr    dispatch_sptr = std::make_shared<CEvtrctNetServer>();
+    cevt_net_serv_sptr    dispatch_sptr = std::make_shared<CEvtrctNetServer>();
     
     dispatch_sptr->start(pstCfg);
-    
     
     while(1)
     {

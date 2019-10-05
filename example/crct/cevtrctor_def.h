@@ -20,5 +20,26 @@
 #include <complex>
 #include <limits>
 
+#include <memory>
+#include <thread>
+#include <chrono>
+
+
+typedef enum
+{
+    CONN_STATUS_INIT        = 0,
+    CONN_STATUS_CONNECTING,
+    CONN_STATUS_CONNECTED,
+}CONN_STATUS_E;
+    
+class CEvtrctNetSlave;
+class CEvtrctNetServer;
+class CEvtrctNetProxy;
+class CEvtrctNetConn;
+    
+typedef std::shared_ptr<CEvtrctNetConn>     cevt_net_conn_sptr;
+typedef std::shared_ptr<CEvtrctNetSlave>    cevt_net_slave_sptr;
+typedef std::shared_ptr<CEvtrctNetServer>   cevt_net_serv_sptr;  
+typedef std::shared_ptr<CEvtrctNetProxy>    cevt_net_proxy_sptr;  
 
 #endif

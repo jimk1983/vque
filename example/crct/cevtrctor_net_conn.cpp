@@ -4,22 +4,9 @@
 #include "config/config.h"
 #include "cevtrctor_def.h"
 #include "cevtrctor_net_conn.h"
+#include "cevtrctor_net_slave.h"
 
 
-typedef enum
-{
-    SLAVE_MSG_UNKNOW = 0,
-    SLAVE_MSG_DISPATH_CLNT,
-    
-}SLAVE_MSG_TYPE_E;
-
-typedef struct tagSlaveMsgDispatchConnection
-{
-    int32_t             fd;             /*描述符*/
-    struct sockaddr_in  ServNAddr;      /*所属服务器地址*/
-    struct in_addr      ClntNAddr;      /*客户端地址*/
-    uint32_t            ClntPort;       /*客户端端口信息*/
-}slave_msgdpconn_s, *pslave_msgdpconn_s;
 
 #if 0
 void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
@@ -297,8 +284,38 @@ void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
     char*                   pcData          = 0;
     int32_t                 lLeftLen        = 0;
     int32_t                 ulIndex         = 0;
-
-    printf("11 net_conn_sendcb entry!\n");
+    
+    if ( pstConn->m_conn_status != CONN_STATUS_CONNECTED )
+    {
+        lRet = connect(pstConn->m_Fd, (struct sockaddr *)&pstConn->m_forward_addr, sizeof(struct sockaddr));
+        if ( lRet <=0 )
+        {
+            if ( errno == EISCONN )
+            {
+                PEvent("[ECLNT] fd=%d, connect successful!", pstConn->m_Fd);
+                pstConn->m_conn_status = CONN_STATUS_CONNECTED;
+            }
+            else if (errno == EINPROGRESS || errno == EAGAIN || errno == EINTR)
+            {
+                PEvent("[ECLNT] fd=%d, connecting!", pstConn->m_Fd);
+                pstConn->m_conn_status = CONN_STATUS_CONNECTING;
+            }
+            else
+            {
+                PError("[ECLNT] connect error=%d:%s, fd=%d, release it!", 
+                        errno, strerror(errno), pstConn->m_Fd);
+                pstConn->netconn_release();
+                pstConn = NULL;
+            }
+            
+            return;
+        }
+        else
+        {
+            pstConn->m_conn_status = CONN_STATUS_CONNECTED;
+            PEvent("[ECLNT] connect to access server successful, fd=%d", pstConn->m_Fd);
+        }
+    }
     
     if ( true == pstConn->m_stSendList.empty()
         && nullptr == pstConn->m_pstSendIobuf )
@@ -395,6 +412,38 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
     CEvtrctNetConn*     pstConn         = (CEvtrctNetConn*)pvCtx;
     char*               pcData          = NULL;
     int32_t             lError          = 0;
+
+    if ( pstConn->m_conn_status != CONN_STATUS_CONNECTED )
+    {
+        lError = connect(pstConn->m_Fd, (struct sockaddr *)&pstConn->m_forward_addr, sizeof(struct sockaddr));
+        if ( lError <=0 )
+        {
+            if ( errno == EISCONN )
+            {
+                PEvent("[ECLNT] fd=%d, connect successful!", pstConn->m_Fd);
+                pstConn->m_conn_status = CONN_STATUS_CONNECTED;
+            }
+            else if (errno == EINPROGRESS || errno == EAGAIN || errno == EINTR)
+            {
+                PEvent("[ECLNT] fd=%d, connecting!", pstConn->m_Fd);
+                pstConn->m_conn_status = CONN_STATUS_CONNECTING;
+            }
+            else
+            {
+                PError("[ECLNT] connect error=%d:%s, fd=%d, release it!", 
+                    errno, strerror(errno), pstConn->m_Fd);
+                pstConn->netconn_release();
+                pstConn = NULL;
+            }
+            
+            return;
+        }
+        else
+        {
+            pstConn->m_conn_status = CONN_STATUS_CONNECTED;
+            PEvent("[ECLNT]  connect to access server successful, fd=%d", pstConn->m_Fd);
+        }
+    }
     
     if ( nullptr == pstConn->m_pstRecvIobuf )
     {    
@@ -514,23 +563,20 @@ void     CEvtrctNetConn::netconn_release()
 
 int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort)
 {
-    //VOS_DLIST_INIT(&m_stRecvList);
-    //VOS_DLIST_INIT(&m_stSendList);
-
     m_Fd                    = iFd;
     m_slave_ptr             = slave;
     m_rctor_                = slave->m_Rctor;
-    m_iConnStatus           = CONN_STATUS_INIT;
     m_echo_enable           = slave->m_echo_enable;
     m_forward_enable        = slave->m_forward_enable;
+    m_conn_status           = CONN_STATUS_CONNECTED;
     
     if ( SYS_ERR == VOS_SOCK_SetOption(iFd) )
     {
         std::cout <<"[LISTN] VRCT network VOS_SOCK_SetOption error!" << std::endl;
         close(iFd);
-        return -1;
+        return SYS_ERR;
     }
-
+    
     VRCT_NETOPT_INIT(&m_netopts_,
                     iFd,
                     VRCT_POLL_LTINOUT,
@@ -542,9 +588,24 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     {
         std::cout <<"[LISTN] VRCT network register error!" << std::endl;
         close(iFd);
-        return -1;
+        return SYS_ERR;
     }
-                                                    
+    
+    if ( 1 == m_forward_enable )
+    {
+        cevt_net_conn_sptr new_conn_pfw_sptr = std::make_shared<CEvtrctNetConn>();
+        if( SYS_OK != new_conn_pfw_sptr->netconn_create(slave, slave->m_forward_addr, slave->m_forward_port) )
+        {
+            std::cout <<"[LISTN] VRCT network netconn_create error!" << std::endl;
+            close(iFd);
+            return SYS_ERR;
+        }
+        else
+        {
+            slave->m_arryconns[new_conn_pfw_sptr->m_Fd]= new_conn_pfw_sptr;
+        }
+    }
+    
     return SYS_OK;
 }
 
@@ -552,11 +613,15 @@ int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string
 {
     m_slave_ptr             = slave;
     m_rctor_                = slave->m_Rctor;
-    m_iConnStatus           = CONN_STATUS_INIT;
     m_echo_enable           = slave->m_echo_enable;
     m_forward_enable        = slave->m_forward_enable;
+    m_conn_status           = CONN_STATUS_INIT;
     
-
+    m_forward_port = serv_port;
+    m_forward_addr.sin_family = AF_INET;
+    m_forward_addr.sin_addr.s_addr = inet_addr((const char *)serv_addr.c_str());
+    m_forward_addr.sin_port = htons((short)m_forward_port);
+    
     VRCT_NETOPT_INIT(&m_netopts_,
                     m_Fd,
                     VRCT_POLL_LTINOUT,
@@ -568,16 +633,11 @@ int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string
     {
         std::cout <<"[LISTN] VRCT network register error!" << std::endl;
         close(m_Fd);
-        return -1;
+        return SYS_ERR;
     }
-
-
+    
     return SYS_OK;
 }
-
-
-
-
 
 CEvtrctNetConn::CEvtrctNetConn()
 {
@@ -591,140 +651,3 @@ CEvtrctNetConn::~CEvtrctNetConn()
 }
     
     
-static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
-{
-    CEvtrctNetSlave*    cevt_net_slave = (CEvtrctNetSlave*)pvCtx;
-    printf("salve msqctl_cb entry! value=%d\n", Value);
-    switch(Value)
-    {
-        case SLAVE_MSG_DISPATH_CLNT:
-            {   
-                pslave_msgdpconn_s pstmsg = (pslave_msgdpconn_s)pvMsg;
-                printf("slave msqctrl_cb->fd=%d\n", pstmsg->fd);
-                if ( cevt_net_slave->m_forward_enable )
-                {
-                    evt_netconn_sptr new_conn_pfw_sptr = std::make_shared<CEvtrctNetConn>();
-                    new_conn_pfw_sptr->netconn_create(cevt_net_slave, cevt_net_slave->m_serv_addr, cevt_net_slave->m_serv_port);
-                }
-                
-                std::shared_ptr<CEvtrctNetConn> new_conn_sptr = std::make_shared<CEvtrctNetConn>();
-                new_conn_sptr->netconn_create(cevt_net_slave, pstmsg->fd, pstmsg->ClntNAddr, pstmsg->ClntPort);
-                
-                cevt_net_slave->m_arryconns[pstmsg->fd]= new_conn_sptr;
-                free(pstmsg);
-            }
-            break;
-        default:
-            break;
-    }
-    
-}
-
-int32_t CEvtrctNetSlave::dispatch_connect(int fd, struct in_addr ClntNAddr, uint32_t ClntPort)
-{
-    pslave_msgdpconn_s      pstMsgData = NULL;
-    
-    pstMsgData = (pslave_msgdpconn_s)malloc(sizeof(slave_msgdpconn_s));
-    if(NULL == pstMsgData)
-    {
-        printf("dispatch connection message malloc failed! errno=%d\n", errno);
-        return VOS_ERR;
-    }
-    
-    memset(pstMsgData,0,sizeof(slave_msgdpconn_s));
-    pstMsgData->fd          = fd;
-    pstMsgData->ClntNAddr   = ClntNAddr;
-    pstMsgData->ClntPort    = ClntPort;
-    printf("dispatch connection fd=%d, rctor=%p\n", fd, m_Rctor);
-    return VRCT_API_MsqOptPush(m_Rctor, 0, SLAVE_MSG_DISPATH_CLNT, (CHAR *)pstMsgData, sizeof(slave_msgdpconn_s));
-}
-
-
-int32_t CEvtrctNetSlave::init(const uint32_t echo_enable, const uint32_t forward_enable)
-{
-    m_conn_hashtbl  = VOS_HashTbl_Create(1024, NULL, NULL);
-    if ( NULL == m_conn_hashtbl )
-    {
-        std::cout <<"vrct create error! m_taskid="<< m_taskid << std::endl;
-        return VOS_ERR;
-    }
-    
-    m_Rctor= VRCT_API_Create(m_taskid, m_msqsize);
-    if ( NULL == m_Rctor )
-    {
-        std::cout <<"vrct create error! m_taskid="<< m_taskid << std::endl;
-        VOS_HashTbl_Release(&m_conn_hashtbl);
-        return VOS_ERR;
-    }
-    
-    m_fliterid_ = 0;
-    /*接收消息*/
-    VRCT_MSQOPT_INIT(&m_msqopts_,
-                     m_fliterid_,
-                     msqctrl_cb,
-                    (void *)this);
-    
-    if ( VOS_ERR == VRCT_API_MsqOptRegister(m_Rctor, &m_msqopts_) )
-    {
-        std::cout <<"vrct msg queue register error!" << std::endl;
-        VOS_HashTbl_Release(&m_conn_hashtbl);
-        VRCT_API_Release(&m_Rctor);
-        return VOS_ERR;
-    }
-
-    return VOS_OK;
-}
-
-int32_t CEvtrctNetSlave::start()
-{
-    if ( VOS_ERR == VRCT_API_Start(m_Rctor) )
-    {
-        std::cout <<"vos reactor start failed!" << std::endl;
-        VOS_HashTbl_Release(&m_conn_hashtbl);
-        VRCT_API_Release(&m_Rctor);
-        return VOS_ERR;
-    }
-    
-    return VOS_OK;
-}
-
-void CEvtrctNetSlave::uninit()
-{
-    VRCT_API_MsqOptUnRegister(m_Rctor, &m_msqopts_);
-    
-    if ( NULL != m_conn_hashtbl)
-    {
-        VOS_HashTbl_Release(&m_conn_hashtbl);
-    }
-    
-    if (NULL != m_Rctor)
-    {
-        VRCT_API_Release(&m_Rctor);
-    }
-}
-
-CVosIobuf::CVosIobuf(int32_t buf_size)
-        :m_size(buf_size)
-{
-    if (buf_size > VOS_IOBUF_MAXSIZE)
-    {
-        m_pstIobuf = VOS_IOBuf_mallocMax(0);
-    }
-    else
-    {
-        m_pstIobuf = VOS_IOBuf_malloc(0);
-    }
-    printf("CVosIobuf entry, new this=%p\n", this);
-}
-
-CVosIobuf::~CVosIobuf()
-{
-    printf("~CVosIobuf entry, delete this=%p\n", this);
-    if (NULL != m_pstIobuf )
-    {
-        VOS_IOBuf_free(m_pstIobuf);
-        m_pstIobuf = NULL;
-    }
-}
-
-
