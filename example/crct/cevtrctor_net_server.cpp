@@ -192,7 +192,6 @@ int32_t    CEvtrctNetServer::slave_task_init()
         }
         else
         {   
-            m_arry_slaver[i]->info_set(m_forward_addr_, m_forward_port_);
             (void)m_arry_slaver[i]->start();
         }
         

@@ -56,6 +56,8 @@ public:
     struct sockaddr_in          m_forward_addr;
     int32_t                     m_forward_port;
     int32_t                     m_forward_enable;
+    int32_t                     m_peer_fd;
+    
 public:
     int32_t     netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort);
     int32_t     netconn_create(CEvtrctNetSlave* slave, const std::string& serv_addr, int32_t serv_port);
@@ -64,8 +66,8 @@ public:
     int32_t     netconn_clnt_create(const CEvtrctNetSlave* slave, int32_t pair_fd);
     
 public:
-    static void net_conn_sendcb(int ifd, void *pvCtx);
-    static void net_conn_recvcb(int ifd, void *pvCtx);
+    static void net_conn_send_cb(int ifd, void *pvCtx);
+    static void net_conn_recv_cb(int ifd, void *pvCtx);
 public:
     CEvtrctNetConn();
     ~CEvtrctNetConn();

@@ -9,13 +9,11 @@
 static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx)
 {
     CEvtrctNetSlave*    cevt_net_slave = (CEvtrctNetSlave*)pvCtx;
-    printf("salve msqctl_cb entry! value=%d\n", Value);
     switch(Value)
     {
         case SLAVE_MSG_DISPATH_CLNT:
             {   
                 pslave_msgdpconn_s pstmsg = (pslave_msgdpconn_s)pvMsg;
-                printf("slave msqctrl_cb->fd=%d\n", pstmsg->fd);
                 
                 std::shared_ptr<CEvtrctNetConn> new_conn_sptr = std::make_shared<CEvtrctNetConn>();
                 if(SYS_ERR == new_conn_sptr->netconn_create(cevt_net_slave, pstmsg->fd, pstmsg->ClntNAddr, pstmsg->ClntPort) )
@@ -74,6 +72,8 @@ int32_t CEvtrctNetSlave::init(const uint32_t echo_enable, const uint32_t forward
     }
     
     m_fliterid_ = 0;
+    m_echo_enable = echo_enable;
+    m_forward_enable = forward_enable;
     /*接收消息*/
     VRCT_MSQOPT_INIT(&m_msqopts_,
                      m_fliterid_,
@@ -93,8 +93,9 @@ int32_t CEvtrctNetSlave::init(const uint32_t echo_enable, const uint32_t forward
 
 void    CEvtrctNetSlave::info_set(const std::string& forward_Addr, const uint32_t& forward_Port)
 {
-    m_forward_addr = forward_Addr;
-    m_forward_port = forward_Port;
+    m_forward_addr      = forward_Addr;
+    m_forward_port      = forward_Port;
+    m_forward_enable    = 1;
 }
 
 int32_t CEvtrctNetSlave::start()

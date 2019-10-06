@@ -276,7 +276,8 @@ void     CEvtrctNetConn::netconn_release()
     printf("net connection release success,fd=%d\n", m_Fd);
 }
 #endif
-void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
+
+void CEvtrctNetConn::net_conn_send_cb(int ifd, void *pvCtx)
 {
     CEvtrctNetConn*         pstConn         = (CEvtrctNetConn*)pvCtx;
     vos_iobuf_sptr          pstIobufTmp     = NULL;
@@ -302,12 +303,13 @@ void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
             }
             else
             {
-                PError("[ECLNT] connect error=%d:%s, fd=%d, release it!", 
-                        errno, strerror(errno), pstConn->m_Fd);
+                char                acClientAddr[32]={0};
+                strcpy(acClientAddr,inet_ntoa(pstConn->m_forward_addr.sin_addr));
+                PError("[ECLNT] connect error=%d:%s, fd=%d, sev-addr=%s:%d, release it!", 
+                        errno, strerror(errno), pstConn->m_Fd, acClientAddr, pstConn->m_forward_port);
                 pstConn->netconn_release();
                 pstConn = NULL;
             }
-            
             return;
         }
         else
@@ -320,7 +322,8 @@ void CEvtrctNetConn::net_conn_sendcb(int ifd, void *pvCtx)
     if ( true == pstConn->m_stSendList.empty()
         && nullptr == pstConn->m_pstSendIobuf )
     {   
-        printf("22 net_conn_sendcb entry!\n");
+        PEvent("22 net_conn_sendcb entry!fd=%d,m_conn_status=%d, stList=%p",
+            ifd, pstConn->m_conn_status, &pstConn->m_stSendList);
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_rctor_, ifd, VRCT_POLL_LTIN) )
         {
             printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
@@ -407,12 +410,13 @@ SendAgain:
 
 
 /*快速接收处理*/
-void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
+void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
 {
     CEvtrctNetConn*     pstConn         = (CEvtrctNetConn*)pvCtx;
+    cevt_net_conn_sptr  net_conn_sptr   = nullptr;
     char*               pcData          = NULL;
     int32_t             lError          = 0;
-
+    
     if ( pstConn->m_conn_status != CONN_STATUS_CONNECTED )
     {
         lError = connect(pstConn->m_Fd, (struct sockaddr *)&pstConn->m_forward_addr, sizeof(struct sockaddr));
@@ -465,7 +469,10 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         if ( lError > 0  )
         {
             pstConn->m_rx_flows += lError;
-            printf("recv all flow=%d, lError=%d\n", pstConn->m_rx_flows, lError);
+            printf("fd=%d, peer_fd=%d, recv all flow=%d, lError=%d,buf=\n%s\n",
+                    pstConn->m_Fd,pstConn->m_peer_fd, 
+                    pstConn->m_rx_flows, lError, pcData);
+            
             /*继续更新*/
             VOS_IOBUF_RCVUPDATE_SIZE(pstConn->m_pstRecvIobuf->m_pstIobuf, (uint32_t)lError);
             if ( 0 >= pstConn->m_pstRecvIobuf->m_pstIobuf->InLeftSize )
@@ -475,7 +482,7 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         }
         else if ( 0 == lError )
         {
-            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d",
                         pstConn->m_Fd, errno, strerror(errno), lError);
             pstConn->netconn_release();
             return;
@@ -484,26 +491,29 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         {
             if ( errno == EAGAIN )
             {
-                PDebug("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
-                            pstConn->m_Fd, errno);
+                PError("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno:%s--[%d]", 
+                            pstConn->m_Fd, strerror(errno),  errno);
                 break;
             }
             
             if ( errno == EINTR )
             {
-                PDebug("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                PError("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
                             pstConn->m_Fd, errno);
                 continue;
             }
             
-            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d\n",
+            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d",
                         pstConn->m_Fd, errno, strerror(errno), lError);
             pstConn->netconn_release();
             return;
         }
     }
     
-    printf("m_echo_enable=%d, fd=%d\n", pstConn->m_echo_enable, ifd);
+    printf("m_echo_enable=%d, fd=%d,m_forward_enable=%d\n",
+            pstConn->m_echo_enable,
+            ifd, 
+            pstConn->m_forward_enable);
     
     if ( 1 == pstConn->m_echo_enable )
     {
@@ -514,14 +524,34 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
         
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_slave_ptr->m_Rctor, ifd, VRCT_POLL_LTINOUT) )
         {
-            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d", ifd, errno);
             pstConn->netconn_release();
             return;
         }
     }
     else if (1 == pstConn->m_forward_enable )
     {
+        VOS_IOBUF_OUTRESET(pstConn->m_pstRecvIobuf->m_pstIobuf);
+        if ( pstConn->m_slave_ptr->m_arryconns[pstConn->m_peer_fd] != nullptr)
+        {
+            net_conn_sptr = pstConn->m_slave_ptr->m_arryconns[pstConn->m_peer_fd];
+            net_conn_sptr->m_stSendList.push_back(pstConn->m_pstRecvIobuf);
+            net_conn_sptr->m_iSndNums++;
+        }
         
+        pstConn->m_pstRecvIobuf = nullptr;
+        
+        if( SYS_ERR == VRCT_API_NetworkOptCtrl(net_conn_sptr->m_rctor_, net_conn_sptr->m_Fd, VRCT_POLL_LTINOUT) )
+        {
+            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d", net_conn_sptr->m_Fd, errno);
+            pstConn->netconn_release();
+            return;
+        }
+        else
+        {
+            printf("forward the data to fd=%d successful! stList=%p\n", 
+                net_conn_sptr->m_Fd, &net_conn_sptr->m_stSendList);
+        }
     }
     else
     {
@@ -533,10 +563,15 @@ void CEvtrctNetConn::net_conn_recvcb(int ifd, void *pvCtx)
 
 void     CEvtrctNetConn::netconn_release()
 {
+    printf("net connection release,fd=%d\n", m_Fd);
     //PrintTraceEvent("[INNER] Inner network connetion release success! conn-info=[%d:%s]", pstConn->lFd, pstConn->stSid.acID );
     //pstConn->pstRctCtx->iAllConnNums--;
     /*内网管理去掉, 然后重新排序*/
     //MUTL_InnerServerUnRegister(pstConn->pstRctCtx, pstConn);
+    if ( 0 == m_Fd )
+    {
+        return;
+    }
     
     /*关闭网络事件*/
     VRCT_API_NetworkOptUnRegister(m_rctor_, &m_netopts_);
@@ -544,6 +579,11 @@ void     CEvtrctNetConn::netconn_release()
     if ( nullptr != m_pstRecvIobuf )
     {
         m_pstRecvIobuf = nullptr;
+    }
+
+    if ( nullptr != m_pstRecvOldIobuf )
+    {
+        m_pstRecvOldIobuf = nullptr;
     }
 
     if ( nullptr != m_pstSendIobuf )
@@ -554,14 +594,27 @@ void     CEvtrctNetConn::netconn_release()
     m_stRecvList.clear();
     m_stSendList.clear();
     
+    if (nullptr != m_slave_ptr)
+    {
+        printf("this fd=[%d].share_ptr use_count=%lu\n",
+            m_Fd, m_slave_ptr->m_arryconns[m_Fd].use_count());
+        
+        m_slave_ptr->m_arryconns[m_Fd]= nullptr;
+    }
     close(m_Fd);
-    m_slave_ptr->m_arryconns[m_Fd]= nullptr;
-    
-    printf("net connection release success,fd=%d\n", m_Fd);
+    m_Fd = 0;
+
+    if ( m_peer_fd > 0 
+         && m_peer_fd < ULIMITD_MAXFD 
+         && m_slave_ptr->m_arryconns[m_peer_fd] != nullptr )
+    {
+        m_slave_ptr->m_arryconns[m_peer_fd]->netconn_release();
+        m_peer_fd = 0;
+    }
 }
 
 
-int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t uiClntPort)
+int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, struct in_addr ClntNAddr, uint32_t ClntPort)
 {
     m_Fd                    = iFd;
     m_slave_ptr             = slave;
@@ -570,9 +623,9 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     m_forward_enable        = slave->m_forward_enable;
     m_conn_status           = CONN_STATUS_CONNECTED;
     
-    if ( SYS_ERR == VOS_SOCK_SetOption(iFd) )
+    if( SYS_ERR == VOS_SOCK_SetOption(iFd) )
     {
-        std::cout <<"[LISTN] VRCT network VOS_SOCK_SetOption error!" << std::endl;
+        PError("[ESEVR] epoll ctrl sock set option,sockfd=%d, errno=%d\n", iFd, errno);
         close(iFd);
         return SYS_ERR;
     }
@@ -580,8 +633,8 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     VRCT_NETOPT_INIT(&m_netopts_,
                     iFd,
                     VRCT_POLL_LTINOUT,
-                    net_conn_recvcb,
-                    net_conn_sendcb,
+                    net_conn_recv_cb,
+                    net_conn_send_cb,
                     (void *)this);
     
     if ( SYS_ERR == VRCT_API_NetworkOptRegister(m_rctor_, &m_netopts_) )
@@ -594,6 +647,7 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
     if ( 1 == m_forward_enable )
     {
         cevt_net_conn_sptr new_conn_pfw_sptr = std::make_shared<CEvtrctNetConn>();
+        
         if( SYS_OK != new_conn_pfw_sptr->netconn_create(slave, slave->m_forward_addr, slave->m_forward_port) )
         {
             std::cout <<"[LISTN] VRCT network netconn_create error!" << std::endl;
@@ -603,9 +657,14 @@ int32_t  CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, int32_t iFd, str
         else
         {
             slave->m_arryconns[new_conn_pfw_sptr->m_Fd]= new_conn_pfw_sptr;
+            new_conn_pfw_sptr->m_peer_fd = iFd;
+            m_peer_fd = new_conn_pfw_sptr->m_Fd;
+            PEvent("net connection create . pointer cout=%lu", new_conn_pfw_sptr.use_count());
         }
     }
-    
+    PEvent("new conntion create fd=%d,client-port=%d,forward-enable=%d", 
+            iFd, ClntPort, m_forward_enable);
+                
     return SYS_OK;
 }
 
@@ -622,11 +681,19 @@ int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string
     m_forward_addr.sin_addr.s_addr = inet_addr((const char *)serv_addr.c_str());
     m_forward_addr.sin_port = htons((short)m_forward_port);
     
+    m_Fd            = VOS_SOCK_ClntCreate();
+    if ( SYS_ERR == m_Fd )
+    {
+        PError("[ECLNT] socket create failed!");
+        close(m_Fd);
+        return SYS_ERR;
+    }
+    
     VRCT_NETOPT_INIT(&m_netopts_,
                     m_Fd,
                     VRCT_POLL_LTINOUT,
-                    net_conn_recvcb,
-                    net_conn_sendcb,
+                    net_conn_recv_cb,
+                    net_conn_send_cb,
                     (void *)this);
     
     if ( SYS_ERR == VRCT_API_NetworkOptRegister(m_rctor_, &m_netopts_) )
@@ -636,6 +703,7 @@ int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string
         return SYS_ERR;
     }
     
+    PEvent("forward new conntion create fd=%d, sev-addr=%s:%d",m_Fd, serv_addr.c_str(), serv_port);
     return SYS_OK;
 }
 
@@ -646,8 +714,7 @@ CEvtrctNetConn::CEvtrctNetConn()
 
 CEvtrctNetConn::~CEvtrctNetConn()
 {
-
-    std::cout << "~CEvtrctNetConn entry" << std::endl;
+    std::cout << "~CEvtrctNetConn entry,fd="<< m_Fd << std::endl;
 }
     
     

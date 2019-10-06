@@ -55,6 +55,7 @@ int32_t    CEvtrctNetProxy::slave_task_init()
         }
         else
         {
+            m_arry_slaver[i]->info_set(m_forward_addr_, m_forward_port_);
             (void)m_arry_slaver[i]->start();
         }
         //std::cout << "1 rctor count=" << m_arry_slaver[i].use_count() << std::endl;
@@ -209,8 +210,10 @@ int     CEvtrctNetProxy::start(const pexm_proxy_cfg_s cfg)
     m_forward_port_     = cfg->ProxyPort;
     m_forward_addr_     = (char *)cfg->acProxyAddr;
     
-    std::cout << "listen addr=" << m_listenaddr_ << std::endl;
-    std::cout << "listen port=" << m_listenport_ << std::endl;
+    std::cout << "local addr=" << m_listenaddr_ << std::endl;
+    std::cout << "local port=" << m_listenport_ << std::endl;
+    std::cout << "listen addr=" << m_forward_addr_ << std::endl;
+    std::cout << "listen port=" << m_forward_port_ << std::endl;
     
     init();
     

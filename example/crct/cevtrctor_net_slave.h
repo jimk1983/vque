@@ -20,6 +20,7 @@ typedef enum
 
 typedef struct tagSlaveMsgDispatchConnection
 {
+    int32_t             forward_enable;
     int32_t             fd;             /*描述符*/
     struct sockaddr_in  ServNAddr;      /*所属服务器地址*/
     struct in_addr      ClntNAddr;      /*客户端地址*/

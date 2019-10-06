@@ -53,6 +53,8 @@
 #define     VOS_PLAT_SUPPORT_Class11    1
 /*定义是否开启DBG*/
 #define     VOS_PLAT_DBG                0
+/*是否开启ASSERT*/
+#define     VOS_PLAT_ASSERT             1
 
 
 
@@ -195,7 +197,7 @@ typedef UINT32_T        VOS_IPADDR_T;
 
 #define VOS_COREDUMP        {char *ptr=0x00;*(ptr)=0x00;}
 
-#if VOS_PLAT_DBG
+#if VOS_PLAT_ASSERT
 #define VOS_ASSERT(expr)     if(!(expr))VOS_COREDUMP
 #else
 #define VOS_ASSERT(expr)

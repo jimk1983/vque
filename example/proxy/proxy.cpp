@@ -12,7 +12,6 @@ void    proxy_main(pexm_proxy_cfg_s      pstCfg)
 {
     cevt_net_proxy_sptr    dispatch_sptr = std::make_shared<CEvtrctNetProxy>();
     //pexm_proxy_cfg_s ptrtest  = NULL;
-    
     dispatch_sptr->start(pstCfg);
     //printf("ptrtest test=%s\n",ptrtest->acLocalAddr);
     

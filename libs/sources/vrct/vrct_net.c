@@ -181,6 +181,7 @@ VOID   VRCT_NetworkEvtOptsUnRegister(PVRCT_REACTOR_S             pstRctor,  PVRC
         PError("[TKD:%02d EID:%02d]=>EPoll-Ctrl:(DEL) error!Fd=%d, errno=%d:%s",  
                     pstRctor->stInfo.TaskID, pstRctor->stInfo.Epollfd,
                     fd, errno, strerror(errno));
+        VOS_ASSERT(0);
         return;
     }
 }
