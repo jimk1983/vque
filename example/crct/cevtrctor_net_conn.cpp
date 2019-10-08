@@ -322,26 +322,26 @@ void CEvtrctNetConn::net_conn_send_cb(int ifd, void *pvCtx)
     if ( true == pstConn->m_stSendList.empty()
         && nullptr == pstConn->m_pstSendIobuf )
     {   
-        PEvent("22 net_conn_sendcb entry!fd=%d,m_conn_status=%d, stList=%p",
-            ifd, pstConn->m_conn_status, &pstConn->m_stSendList);
+        //PEvent("22 net_conn_sendcb entry!fd=%d,m_conn_status=%d, stList=%p",
+        //    ifd, pstConn->m_conn_status, &pstConn->m_stSendList);
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_rctor_, ifd, VRCT_POLL_LTIN) )
         {
-            printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            //printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
             pstConn->netconn_release();
             return;
         }
         else
         {
-            printf("[ECLNT] terminal epoll ctrl close the pollout successful!fd=%d, NETWORK_CTRL_SENDCLOSE\n",
-                ifd);
+            //printf("[ECLNT] terminal epoll ctrl close the pollout successful!fd=%d, NETWORK_CTRL_SENDCLOSE\n",
+            //   ifd);
         }
         return;
     }
     
-    printf("33 net_conn_sendcb entry!pstConn->m_iSndNums=%d\n", pstConn->m_iSndNums);
+    //printf("33 net_conn_sendcb entry!pstConn->m_iSndNums=%d\n", pstConn->m_iSndNums);
     if ( nullptr != pstConn->m_pstSendIobuf )
     {
-        printf("[ECLNT] terminal network connection send iobuf is not empty , must be send again!\n");
+        //printf("[ECLNT] terminal network connection send iobuf is not empty , must be send again!\n");
         goto SendAgain;
     }
     
@@ -363,14 +363,16 @@ SendAgain:
             lLeftLen = VOS_IOBUF_SNDLEFT_SIZE(pstConn->m_pstSendIobuf->m_pstIobuf);
             if ( lLeftLen == 0 )
             {
-                printf("lLeftLen =%d\n", lLeftLen);
+                pstConn->m_tx_flows +=lLeftLen;
+                //printf("send flows=%d\n", pstConn->m_tx_flows);
+                //printf("lLeftLen =%d\n", lLeftLen);
                 pstConn->m_pstSendIobuf = nullptr;
                 continue;
             }
             else if ( 0 < lLeftLen )
             {
-                printf("[ECLNT] Stop007: send iobuf again! leftLen=%d",
-                                        lLeftLen);
+                //printf("[ECLNT] Stop007: send iobuf again! leftLen=%d",
+                //                        lLeftLen);
                 goto SendAgain;
             }
             else
@@ -382,14 +384,14 @@ SendAgain:
         }
         else if ( lRet == 0 )
         {
-            PEvent("[ECLNT] Inner-Send is zero! INNER-Info=[%d]", pstConn->m_Fd);
+            //PEvent("[ECLNT] Inner-Send is zero! INNER-Info=[%d]", pstConn->m_Fd);
             return;
         }
         else
         {
             if(errno == EAGAIN )
             {
-                PEvent("[ECLNT] FD=[%d], packets must send again ", pstConn->m_Fd);
+                //PEvent("[ECLNT] FD=[%d], packets must send again ", pstConn->m_Fd);
                 return;
             }
             
@@ -424,7 +426,7 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         {
             if ( errno == EISCONN )
             {
-                PEvent("[ECLNT] fd=%d, connect successful!", pstConn->m_Fd);
+                //PEvent("[ECLNT] fd=%d, connect successful!", pstConn->m_Fd);
                 pstConn->m_conn_status = CONN_STATUS_CONNECTED;
             }
             else if (errno == EINPROGRESS || errno == EAGAIN || errno == EINTR)
@@ -445,7 +447,7 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         else
         {
             pstConn->m_conn_status = CONN_STATUS_CONNECTED;
-            PEvent("[ECLNT]  connect to access server successful, fd=%d", pstConn->m_Fd);
+            //PEvent("[ECLNT]  connect to access server successful, fd=%d", pstConn->m_Fd);
         }
     }
     
@@ -469,10 +471,12 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         if ( lError > 0  )
         {
             pstConn->m_rx_flows += lError;
+            #if 0
             printf("fd=%d, peer_fd=%d, recv all flow=%d, lError=%d,buf=\n%s\n",
                     pstConn->m_Fd,pstConn->m_peer_fd, 
                     pstConn->m_rx_flows, lError, pcData);
-            
+            #endif
+            //printf("recv flows=%d\n", pstConn->m_rx_flows);
             /*继续更新*/
             VOS_IOBUF_RCVUPDATE_SIZE(pstConn->m_pstRecvIobuf->m_pstIobuf, (uint32_t)lError);
             if ( 0 >= pstConn->m_pstRecvIobuf->m_pstIobuf->InLeftSize )
@@ -482,8 +486,8 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         }
         else if ( 0 == lError )
         {
-            PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d",
-                        pstConn->m_Fd, errno, strerror(errno), lError);
+            //PError("[ECLNT] terminal sock recv error!,fd=%d, errno=[%d]:[%s], lError=%d",
+            //            pstConn->m_Fd, errno, strerror(errno), lError);
             pstConn->netconn_release();
             return;
         }
@@ -491,15 +495,15 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         {
             if ( errno == EAGAIN )
             {
-                PError("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno:%s--[%d]", 
-                            pstConn->m_Fd, strerror(errno),  errno);
+                //PError("[ECLNT] Step006: Start Main handler the recv splice buffer!fd=%d, errno:%s--[%d]", 
+                //            pstConn->m_Fd, strerror(errno),  errno);
                 break;
             }
             
             if ( errno == EINTR )
             {
-                PError("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
-                            pstConn->m_Fd, errno);
+                //PError("[ECLNT] Step005: Start Main handler the recv splice buffer!fd=%d, errno=%d", 
+                //            pstConn->m_Fd, errno);
                 continue;
             }
             
@@ -510,10 +514,10 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         }
     }
     
-    printf("m_echo_enable=%d, fd=%d,m_forward_enable=%d\n",
-            pstConn->m_echo_enable,
-            ifd, 
-            pstConn->m_forward_enable);
+    //printf("m_echo_enable=%d, fd=%d,m_forward_enable=%d\n",
+    //        pstConn->m_echo_enable,
+    //        ifd, 
+    //        pstConn->m_forward_enable);
     
     if ( 1 == pstConn->m_echo_enable )
     {
@@ -549,8 +553,8 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         }
         else
         {
-            printf("forward the data to fd=%d successful! stList=%p\n", 
-                net_conn_sptr->m_Fd, &net_conn_sptr->m_stSendList);
+            //printf("forward the data to fd=%d successful! stList=%p\n", 
+            //    net_conn_sptr->m_Fd, &net_conn_sptr->m_stSendList);
         }
     }
     else
@@ -563,7 +567,7 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
 
 void     CEvtrctNetConn::netconn_release()
 {
-    printf("net connection release,fd=%d\n", m_Fd);
+    //printf("net connection release,fd=%d\n", m_Fd);
     //PrintTraceEvent("[INNER] Inner network connetion release success! conn-info=[%d:%s]", pstConn->lFd, pstConn->stSid.acID );
     //pstConn->pstRctCtx->iAllConnNums--;
     /*内网管理去掉, 然后重新排序*/
@@ -703,18 +707,18 @@ int32_t CEvtrctNetConn::netconn_create(CEvtrctNetSlave* slave, const std::string
         return SYS_ERR;
     }
     
-    PEvent("forward new conntion create fd=%d, sev-addr=%s:%d",m_Fd, serv_addr.c_str(), serv_port);
+    //PEvent("forward new conntion create fd=%d, sev-addr=%s:%d",m_Fd, serv_addr.c_str(), serv_port);
     return SYS_OK;
 }
 
 CEvtrctNetConn::CEvtrctNetConn()
 {
-    std::cout << "CEvtrctNetConn entry" << std::endl;
+    //std::cout << "CEvtrctNetConn entry" << std::endl;
 };
 
 CEvtrctNetConn::~CEvtrctNetConn()
 {
-    std::cout << "~CEvtrctNetConn entry,fd="<< m_Fd << std::endl;
+    //std::cout << "~CEvtrctNetConn entry,fd="<< m_Fd << std::endl;
 }
     
     

@@ -17,12 +17,12 @@ CVosIobuf::CVosIobuf(int32_t buf_size)
     {
         m_pstIobuf = VOS_IOBuf_malloc(0);
     }
-    printf("CVosIobuf entry, new this=%p\n", this);
+    //printf("CVosIobuf entry, new this=%p\n", this);
 }
 
 CVosIobuf::~CVosIobuf()
 {
-    printf("~CVosIobuf entry, delete this=%p\n", this);
+    //printf("~CVosIobuf entry, delete this=%p\n", this);
     if (NULL != m_pstIobuf )
     {
         VOS_IOBuf_free(m_pstIobuf);
