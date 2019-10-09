@@ -212,6 +212,7 @@ INT32_T   VRCT_API_NetworkOptCtrl(PVOID pvRctor,  INT32_T fd, INT32_T EvtMask)
         || fd >= VRCT_FDMAX-1 )
     {
         PError("Param error! fd=%d", fd);
+        VOS_ASSERT(0);
         return SYS_ERR_PARAM;
     }
     

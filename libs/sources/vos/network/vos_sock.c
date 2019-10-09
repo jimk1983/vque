@@ -705,11 +705,12 @@ int32_t VOS_SOCK_Create(uint32_t ulType)
 
 int32_t VOS_SOCK_Close(int32_t lSockfd)
 {
-    if ( VOS_SOCKET_INVALID == lSockfd )
+    if ( VOS_SOCKET_INVALID == lSockfd 
+        || 0 == lSockfd )
     {
         return VOS_ERR;
     }
-
+    /*保护不能关闭fd=0的句柄*/
     close(lSockfd);
 
     return VOS_OK;
@@ -824,14 +825,15 @@ int32_t VOS_SOCK_SetProMiscMode(int32_t lSockfd, char *pcIfName)
 *****************************************************************************/
 int32_t VOS_SOCK_ServCreate(char *pcAddr, int32_t iPort)
 {
-    int     lSockfd         = SYS_ERR;
-    int32_t    lRet            = 0;
-    int32_t    lnonBlockflag   = 1;
-    int32_t    lSndBufsize     = VOS_SOCK_SNDWINSIZE;
-    int32_t    lRcvBufsize     = VOS_SOCK_RCVWINSIZE;
+    int         lSockfd         = SYS_ERR;
+    int32_t     lRet            = 0;
+    int32_t     lnonBlockflag   = 1;
+    int32_t     lSndBufsize     = VOS_SOCK_SNDWINSIZE;
+    int32_t     lRcvBufsize     = VOS_SOCK_RCVWINSIZE;
     struct  linger so_linger= {0};
-    int32_t   lOn             = 1;
+    int32_t     lOn             = 1;
     struct sockaddr_in stServerAddr = {0};
+    int         enable = 1;
 
     so_linger.l_onoff = 1;
     so_linger.l_linger = 0;
@@ -883,7 +885,14 @@ int32_t VOS_SOCK_ServCreate(char *pcAddr, int32_t iPort)
         close(lSockfd);
         return SYS_ERR;
     }
-
+    
+    lRet = setsockopt(lSockfd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+    if ( 0 != lRet )
+    {
+        printf("setsockopt socket TCP_NODELAY error!(errno=%d:%s)\n",errno, strerror(errno));
+        close(lSockfd);
+        return SYS_ERR;
+    }
     
     stServerAddr.sin_family = AF_INET;
     if ( NULL != pcAddr )
@@ -930,12 +939,12 @@ int32_t VOS_SOCK_ServCreate(char *pcAddr, int32_t iPort)
 *****************************************************************************/
 int32_t VOS_SOCK_ClntCreate()
 {
-    int     lSockfd         = SYS_ERR;
-    int32_t    lRet            = 0;
-    int32_t    lnonBlockflag   = 1;
-    int32_t    lSndBufsize     = VOS_SOCK_SNDWINSIZE;
-    int32_t    lRcvBufsize     = VOS_SOCK_RCVWINSIZE;
-
+    int         lSockfd         = SYS_ERR;
+    int32_t     lRet            = 0;
+    int32_t     lnonBlockflag   = 1;
+    int32_t     lSndBufsize     = VOS_SOCK_SNDWINSIZE;
+    int32_t     lRcvBufsize     = VOS_SOCK_RCVWINSIZE;
+    int         enable = 1;
     
     lSockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); 
     if ( 0 >= lSockfd )
@@ -951,7 +960,15 @@ int32_t VOS_SOCK_ClntCreate()
         close(lSockfd);
         return SYS_ERR;
     }
-
+    
+    lRet = setsockopt(lSockfd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+    if ( 0 != lRet )
+    {
+        printf("setsockopt socket TCP_NODELAY error!(errno=%d:%s)\n",errno, strerror(errno));
+        close(lSockfd);
+        return SYS_ERR;
+    }
+    
     lRet = setsockopt(lSockfd, SOL_SOCKET, SO_SNDBUF,(const char *)&lSndBufsize, sizeof(int32_t) );
     if ( 0 != lRet )
     {
@@ -981,7 +998,8 @@ int32_t VOS_SOCK_SetOption(int32_t lSockfd)
     int32_t lSndBufsize = 65535;//EQUE_SOCKBUF_SIZE;
     int32_t lRcvBufsize = 65535;//EQUE_SOCKBUF_SIZE;
     struct linger so_linger = {0};
-
+    int     enable = 1;
+    
     /*不允许字节逗留,直接关闭*/
     so_linger.l_onoff = 1;
     so_linger.l_linger = 0;
@@ -1005,7 +1023,15 @@ int32_t VOS_SOCK_SetOption(int32_t lSockfd)
         printf("setsockopt socket FIONBIO error!(errno=%d:%s)\n",errno, strerror(errno));
         return VOS_ERR;
     }
-
+    
+    lRet = setsockopt(lSockfd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+    if ( 0 != lRet )
+    {
+        printf("setsockopt socket SO_SNDBUF error!(errno=%d:%s)\n",errno, strerror(errno));
+        close(lSockfd);
+        return SYS_ERR;
+    }
+    
     lRet = setsockopt(lSockfd, SOL_SOCKET, SO_SNDBUF,(const char *)&lSndBufsize, sizeof(int32_t) );
     if ( 0 != lRet )
     {

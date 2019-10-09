@@ -326,7 +326,7 @@ void CEvtrctNetConn::net_conn_send_cb(int ifd, void *pvCtx)
         //    ifd, pstConn->m_conn_status, &pstConn->m_stSendList);
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_rctor_, ifd, VRCT_POLL_LTIN) )
         {
-            //printf("[ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
+            printf("aa [ECLNT] terminal ctrl fd=[%d] error! errno=%d\n", ifd, errno);
             pstConn->netconn_release();
             return;
         }
@@ -528,7 +528,7 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(pstConn->m_slave_ptr->m_Rctor, ifd, VRCT_POLL_LTINOUT) )
         {
-            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d", ifd, errno);
+            PError("22 [ESEVR] terminal ctrl fd=[%d] error! errno=%d", ifd, errno);
             pstConn->netconn_release();
             return;
         }
@@ -547,7 +547,7 @@ void CEvtrctNetConn::net_conn_recv_cb(int ifd, void *pvCtx)
         
         if( SYS_ERR == VRCT_API_NetworkOptCtrl(net_conn_sptr->m_rctor_, net_conn_sptr->m_Fd, VRCT_POLL_LTINOUT) )
         {
-            PError("[ESEVR] terminal ctrl fd=[%d] error! errno=%d", net_conn_sptr->m_Fd, errno);
+            PError("33 [ESEVR] terminal ctrl fd=[%d] error! errno=%d", net_conn_sptr->m_Fd, errno);
             pstConn->netconn_release();
             return;
         }

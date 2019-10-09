@@ -39,7 +39,8 @@ cevt_net_slave_sptr  CEvtrctNetProxy::GetSlaveByIndex(int32_t HashIndex)
 
 int32_t    CEvtrctNetProxy::slave_task_init()
 {
-    m_arry_slave_nums_ = VOS_GetCpuCoreNum()*2;
+    //m_arry_slave_nums_ = VOS_GetCpuCoreNum()*2;
+    
     
     std::cout << "slave task init()" << std::endl;
     
@@ -114,8 +115,8 @@ void    CEvtrctNetProxy::dispatch()
     
     if( VOS_ERR == GetSlaveByIndex(hashIndex)->dispatch_connect(lClientFd, stClientAddr.sin_addr, usClientPort))
     {
-        printf("slave dispatch connect failed!\n");
-        close(lClientFd);
+        printf("proxy-server: slave dispatch connect failed!lClientFd=%d\n", lClientFd);
+        VOS_SOCK_Close(lClientFd);
         return;
     } 
 }
@@ -209,11 +210,13 @@ int     CEvtrctNetProxy::start(const pexm_proxy_cfg_s cfg)
     m_listenaddr_       = (char *)cfg->acLocalAddr;
     m_forward_port_     = cfg->ProxyPort;
     m_forward_addr_     = (char *)cfg->acProxyAddr;
+    m_arry_slave_nums_  = cfg->ProxyPthNums;
     
     std::cout << "local addr=" << m_listenaddr_ << std::endl;
     std::cout << "local port=" << m_listenport_ << std::endl;
     std::cout << "listen addr=" << m_forward_addr_ << std::endl;
     std::cout << "listen port=" << m_forward_port_ << std::endl;
+    std::cout << "slave nums=" << m_arry_slave_nums_ << std::endl;
     
     init();
     

@@ -37,6 +37,11 @@ static void msqctrl_cb(UINT32_T Value, VOID *pvMsg, INT32_T iMsgLen, VOID *pvCtx
 int32_t CEvtrctNetSlave::dispatch_connect(const int& fd,const struct in_addr& ClntNAddr,const uint32_t& ClntPort)
 {
     pslave_msgdpconn_s      pstMsgData = NULL;
+
+    if (0 >= fd )
+    {
+        return VOS_ERR;
+    }
     
     pstMsgData = (pslave_msgdpconn_s)malloc(sizeof(slave_msgdpconn_s));
     if(NULL == pstMsgData)

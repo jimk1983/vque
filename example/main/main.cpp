@@ -17,6 +17,7 @@ static const struct option long_options[] = {
     {"remote-addr", required_argument,  NULL, 'r'},
     {"remote-port", required_argument,  NULL, 'p'},
     {"mode ",       required_argument,  NULL, 'm'},
+    {"core ",       required_argument,  NULL, 'c'},
     {"help    ",    optional_argument,  NULL, 'h'}, 
     {0, 0, 0, 0}
 };
@@ -36,7 +37,8 @@ void option_usage() {
     print_opt_help(5,  "remote server address.          -r 192.168.1.100 \n");
     print_opt_help(6,  "remote server port..            -p 3306\n");
     print_opt_help(7,  "mode.                           -m (0:monitor,1:client,2:server,3:proxy)\n");
-    print_opt_help(8,  "help.        \n");
+    print_opt_help(8,  "core..                          -c 2\n");
+    print_opt_help(9,  "help.        \n");
     
     printf("Examples:\n");
     printf("\t./app-test -l 9527 -r 192.168.1.300 -p 3306 -m 3 \n");
@@ -61,9 +63,10 @@ typedef struct tag_argv_action_Info
     int32_t     port;
     char        pxy_addr[32];
     int32_t     pxy_port;
+    int32_t     core_nums;
 }argv_actinfo_s,*pargv_actinfo_s;
 
-static char optstring[] = "sev:a:l:r:p:m:h";
+static char optstring[] = "sev:a:l:r:p:m:c:h";
 
 void     start_with_config(pargv_actinfo_s pstinfo)
 {
@@ -130,12 +133,11 @@ void     start(pargv_actinfo_s pstinfo)
                 exm_proxy_cfg_s      stcfg;
                 
                 /*默认开启2个线程转发*/
-                stcfg.ProxyPthNums = 2;
+                stcfg.ProxyPthNums = pstinfo->core_nums;
                 strcpy((char*)stcfg.acLocalAddr, pstinfo->addr);
                 stcfg.LocalPort = pstinfo->port;
                 strcpy((char*)stcfg.acProxyAddr, pstinfo->pxy_addr);
                 stcfg.ProxyPort = pstinfo->pxy_port;
-                
                 proxy_main(&stcfg);
             }
             break;
@@ -208,6 +210,9 @@ int main(int argc, char *argv[])
             case 'm':
                 stactinfo.mode = std::atoi(optarg);
                 break;
+            case 'c':
+                stactinfo.core_nums = std::atoi(optarg);
+                break;
             case 'h':
                 option_usage();
                 break;
@@ -217,11 +222,17 @@ int main(int argc, char *argv[])
         }
     }
     
+    if( 0 == stactinfo.core_nums)
+    {
+        stactinfo.core_nums = 1;
+    }
+    
     printf("stactinfo: addr=%s\n", stactinfo.addr);
     printf("         : port=%d\n", stactinfo.port);
     printf("         : proxy addr=%s\n", stactinfo.pxy_addr);
     printf("         : proxy port=%d\n", stactinfo.pxy_port);
     printf("         : mode=%d\n", stactinfo.mode);
+    printf("         : core=%d\n", stactinfo.core_nums);
     
     /*通过配置文件启动*/
     if ( stactinfo.mode == ARGV_MODE_CFGFILE) {
