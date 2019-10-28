@@ -29,19 +29,19 @@ do {                                \
 
 void option_usage() {
     printf("Usage:\n");
-    print_opt_help(0,  "action  start with config_*.json, example: -s 0(0:monitor,1:client,2:server,3:proxy)\n");
+    print_opt_help(0,  "action  start with config_*.json, example: -s 0(0:monitor,1:client,2:server,3:msgque,4:proxy)\n");
     print_opt_help(1,  "action  exit \n");
     print_opt_help(2,  "display version \n");
     print_opt_help(3,  "address.                        -a 192.168.1.1\n");
     print_opt_help(4,  "listen port.                    -l 9527 \n");
     print_opt_help(5,  "remote server address.          -r 192.168.1.100 \n");
     print_opt_help(6,  "remote server port..            -p 3306\n");
-    print_opt_help(7,  "mode.                           -m (0:monitor,1:client,2:server,3:proxy)\n");
+    print_opt_help(7,  "mode.                           -m (0:monitor,1:client,2:server,3:mque,4:proxy)\n");
     print_opt_help(8,  "core..                          -c 2\n");
     print_opt_help(9,  "help.        \n");
     
     printf("Examples:\n");
-    printf("\t./app-test -l 9527 -r 192.168.1.300 -p 3306 -m 3 \n");
+    printf("\t./app-test -l 9527 -r 192.168.1.300 -p 3306 -m 4 \n");
 }
 
 enum

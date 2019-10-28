@@ -107,7 +107,7 @@ VOID    VRCT_MsgQueMainCb(INT32_T fd, VOID *pvCtx)
         
         pstMsgNode = VOS_DLIST_ENTRY(pstEntry, VRCT_MSQ_ENTRY_S, stNode);
         
-        PEvent("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
+        PDebug("[TKD:%02d EID:%02d]=>PipeFliterID=%d, MessageCode=%d, msg-ptr=%p, msg-size=%d!",
                 pstRctor->stInfo.TaskID, 
                 pstRctor->stInfo.Epollfd, 
                 pstMsgNode->PipeFliterID, 
